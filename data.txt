@@ -1,10 +1,34 @@
-Montag
-8.20|7.2|Ausfall
-14.30|8.3|H2-11
-8.20|6.1|H0-2
-9.50|12|H0-6: Bitte die Bücher mitbringen
-Dienstag
-8.20|13|Ausfall
-11.05|7.4|H2-7
-9.50|13|Ausfall
-9.50|12|H1-4 --> H1-3
+// TAB-Breite = 8
+
+ OFFLINE
+=========
+
+Tag/Uhrzeit	Lehrer			Fach	Klasse/Jahrgang	Vertretender Lehrer	Änderung
+--------------------------------------------------------------------------------------------------------
+Montag, 8.20	Herr Wüstenberg		Ma-LK	13		-			H0-2		// Raumänderung
+Montag, 8.20	Herr Wüstenberg		Ma-LK	13		Frau Lange		-		// Vertretung
+Montag, 8.20	Herr Wüstenberg		Ma-LK	13		-			Ausfall		// Ausfall
+Montag, 8.20	Herr Wüstenberg		Ma-LK	13		Frau Lange		Geschichte	// Vertretung mit Fachwechsel
+Montag, 8.20	Herr Wüstenberg		Ma-LK	13		Frau Lange		Geschichte H0-2	// Vertretung mit Fach- und Raumwechsel
+
+
+ ONLINE
+========
+
+Tag/Uhrzeit	Fach	Klasse	Originalraum	Änderung
+------------------------------------------------------------------------
+Montag, 8.20	Ma-LK	13	H1-4		H0-2			// Raumänderung
+Montag, 8.20	Ma-LK	13	H1-4		Ausfall			// Ausfall
+Montag, 8.20	Ma-LK	13	H1-4		Geschichte		// Vertretung mit Fachwechsel
+Montag, 8.20	Ma-LK	13	H1-4		Geschichte H0-2		// Vertretung mit Fach- und Raumwechsel
+
+
+Beispiel:
+
+1234567890|Herr Wüstenberg|Ma-LK|13|H1-4|Frau Lange|Geschichte in Raum H0-2
+
+online:
+++++++++++|---------------|+++++|++|++++|----------|+++++++++++++++++++++++
+
+offline:
+++++++++++|+++++++++++++++|+++++|++|----|++++++++++|+++++++++++++++++++++++
