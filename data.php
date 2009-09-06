@@ -17,7 +17,7 @@
   <tr>
     <td><span style="font-weight: bold;">Uhrzeit</span></td>
     <td><span style="font-weight: bold;">Klasse</span></td>
-    <td><span style="font-weight: bold;">Raumänderung/Bemerkung</span></td>
+    <td><span style="font-weight: bold;">Raum&auml;nderung/Bemerkung</span></td>
   </tr>
 <?php
 		} else { // $line is not a day of the week
