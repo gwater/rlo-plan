@@ -23,4 +23,8 @@
 	// show tables filtered by GET parameter
 	include('data.php');
 ?>
-</body></html>
+</body>
+
+<a href="javascript:window.print()">Seite ausdrucken</a>
+
+</html>
