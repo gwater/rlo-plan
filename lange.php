@@ -7,11 +7,11 @@
 <?php
 	// save updated data received from the form below
 	if (!empty($_POST['updated_data'])) {
-		file_put_contents('data.txt', $_POST['updated_data']);
+		file_put_contents('data.txt', stripslashes($_POST['updated_data']));
 	}
 
-	// show the (possibly updated) table
-	include('data.php');
+	$offline_data = true;	// tell data.php that we want to see the offline data too
+	include('data.php');	// show the (possibly updated) table
 ?>
 <div id="update_form">
 <form action="<?=$_SERVER['PHP_SELF']?>" method="post">
