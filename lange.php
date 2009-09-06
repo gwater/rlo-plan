@@ -11,7 +11,7 @@
 	}
 
 	// show the (possibly updated) table
-	include('data.html');
+	include('data.php');
 ?>
 <div id="update_form">
 <form action="<?=$_SERVER['PHP_SELF']?>" method="post">
