@@ -1,1 +1,2 @@
 1034576400|Herr Wüstenberg|Ma-LK|13|H1-4|Frau Lange|Geschichte in Raum H0-2
+1034576400|Herr Brandes|Informatik|13|H1-7|-|Ausfall
