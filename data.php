@@ -17,53 +17,61 @@
 				echo '</tbody></table><br>';	// close the previous table
 			}
 ?>
-<div style="margin-left: 40px;"><big style="text-decoration: underline;"><?=$day?></big></div><br>
-<table style="text-align: left; width: 80%;" border="1" cellpadding="2" cellspacing="2">
+<div style="margin-left: 20px; text-decoration: underline;"><?=$day?></div><br>
+<table style="text-align: left;" border="1" cellpadding="2" cellspacing="0">
 <tbody>
   <tr>
 <?php
-			if (isset($offline_data)) {
+			if (isset($offline_view)) {
 				echo '
-    <td><span style="font-weight: bold;">Uhrzeit</span></td>
-    <td><span style="font-weight: bold;">Lehrer</span></td>
-    <td><span style="font-weight: bold;">Fach/Kurs</span></td>
-    <td><span style="font-weight: bold;">Klasse</span></td>
-    <td><span style="font-weight: bold;">Vertretung</span></td>
-    <td><span style="font-weight: bold;">&Auml;nderung</span></td>';
+    <th>Uhrzeit</th>
+    <th>Lehrer</th>
+    <th>Fach/Kurs</th>
+    <th>Dauer</th>
+    <th>Klasse</th>
+    <th>Vertretung</th>
+    <th>&Auml;nderung</th>
+';
 			} else {
 				echo '
-    <td><span style="font-weight: bold;">Uhrzeit</span></td>
-    <td><span style="font-weight: bold;">Fach/Kurs</span></td>
-    <td><span style="font-weight: bold;">Klasse</span></td>
-    <td><span style="font-weight: bold;">Originalraum</span></td>
-    <td><span style="font-weight: bold;">&Auml;nderung</span></td>';
+    <th>Uhrzeit</th>
+    <th>Fach/Kurs</th>
+    <th>Klasse</th>
+    <th>Originalraum</th>
+    <th>&Auml;nderung</th>
+';
 			}
 			echo '  </tr>';
 		}
 		$param = $_GET["klasse"];
 
 		// filter out non-matching lines
-		if (!isset($param) || substr_compare($fields[3], $param, 0, 2) == 0) {
+		if (!isset($param) || substr_compare($fields[4], $param, 0, 2) == 0) {
 			echo "  <tr>\n";
-			if (isset($offline_data)) {
-				echo '    <td>'.strftime('%H.%M', $fields[0])."</td>\n";
-				echo '    <td>'.$fields[1]."</td>\n";
-				echo '    <td>'.$fields[2]."</td>\n";
-				echo '    <td>'.$fields[3]."</td>\n";
-				echo '    <td>'.$fields[5]."</td>\n";
-				echo '    <td>'.$fields[6]."</td>\n";
+			if (isset($offline_view)) {
+				echo_cell(strftime('%H.%M', $fields[0]));
+				echo_cell($fields[1]);
+				echo_cell($fields[2]);
+				echo_cell($fields[3]);
+				echo_cell($fields[4]);
+				echo_cell($fields[6]);
+				echo_cell($fields[7]);
 			} else {
-				echo '    <td>'.strftime('%H.%M', $fields[0])."</td>\n";
-				echo '    <td>'.$fields[2]."</td>\n";
-				echo '    <td>'.$fields[3]."</td>\n";
-				echo '    <td>'.$fields[4]."</td>\n";
-				echo '    <td>'.$fields[6]."</td>\n";
+				echo_cell(strftime('%H.%M', $fields[0]));
+				echo_cell($fields[2]);
+				echo_cell($fields[4]);
+				echo_cell($fields[5]);
+				echo_cell($fields[7]);
 			}
 			echo "  </tr>\n";
 		}
 	}
 	if (!$first) {
 		echo "</tbody></table><br>\n";
+	}
+	
+	function echo_cell($str) {
+		echo '    <td>'.$str."</td>\n";
 	}
 ?>
 </div>

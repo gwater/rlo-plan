@@ -4,6 +4,11 @@
 <title>Online-Vertretungsplan</title>
 </head><body>
 <div id="header">Willkommen beim Online-Vertretungsplan der Rosa-Luxemburg-Oberschule!<br><br></div>
+<?php
+	if ($_GET['logout'] == 'true') {
+		echo '<div id="note">Sie wurden abgemeldet.<br><br></div>';
+	}
+?>
 <div id="filters">
 <?php
 	// show line of links that filter the tables, currently selected filter is not a link
@@ -23,8 +28,6 @@
 	// show tables filtered by GET parameter
 	include('data.php');
 ?>
-</body>
-
 <a href="javascript:window.print()">Seite ausdrucken</a>
-
+</body>
 </html>
