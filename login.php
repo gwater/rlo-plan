@@ -1,14 +1,14 @@
 <?php
 	session_start();
 
-	if(!$_POST['submit'] || !$_POST['password']) {
+	if(!$_POST['password']) {
 ?>
 <html>
 <body>
 <h1><Login</h1>
 <?php
 	if ($_GET['wrong'] == 'true') {
-		echo '<p>Falsches Passwort!</p>';
+		echo '<font color="red">Falsches Passwort!</font>';
 	}
 ?>
 <form method="post" action="login.php">

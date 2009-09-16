@@ -6,7 +6,7 @@
 <div id="header">Willkommen beim Online-Vertretungsplan der Rosa-Luxemburg-Oberschule!<br><br></div>
 <?php
 	if ($_GET['logout'] == 'true') {
-		echo '<div id="note">Sie wurden abgemeldet.<br><br></div>';
+		echo '<font color="green">Sie wurden abgemeldet.<br><br></font>';
 	}
 ?>
 <div id="filters">

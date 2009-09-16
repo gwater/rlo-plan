@@ -16,7 +16,7 @@
 <div id="header">Willkommen beim Online-Vertretungsplan der Rosa-Luxemburg-Oberschule! <a href="logout.php">Abmelden</a><br><br></div>
 <?php
 	// save updated data received from the form below
-	if (!empty($_POST)) {
+	if (isset($_POST['add'])) {
 		$dayofweek	= $_POST['dayofweek'];
 		$time		= $_POST['time'];
 		$teacher	= $_POST['teacher'];
@@ -28,59 +28,84 @@
 		$change		= $_POST['change'];
 		if ($dayofweek && $time && $teacher && $subject && $duration &&
 		    $class && $originalroom && $substitute && $change) {
-			// TODO: calculate unix time stamp
-			$line = '1034576400,"'.$teacher.'","'.$subject.'","'.$duration.'","';
-			$line .= $class.'","'.$originalroom.'","'.$substitute.'","'.$change."\"\n";
-			$handle = fopen('data.txt', 'a');
-			fwrite($handle, $line);
-			fclose($handle);
-			echo '<font color="green">Der Eintrag wurde hinzugefügt.</font><br>';
+			$tm_array = strptime($time, '%H.%M');
+			$rawtime = mktime($tm_array['tm_hour'], $tm_array['tm_min'], 0, 1, $dayofweek + 4, 2009);
+			$newline = $rawtime.',"'.$teacher.'","'.$subject.'","'.$duration.'","';
+			$newline .= $class.'","'.$originalroom.'","'.$substitute.'","'.$change."\"\n";
+			$data = file('data.txt');
+			$data[] = $newline;
+			sort($data); // FIXME: sorts by $rawtime, (should be sorted by $dayofweek then by $teacher)
+			$fh = fopen('data.txt', 'w');
+			foreach ($data as $line) {
+				fwrite($fh, $line);
+			}
+			fclose($fh);
+			echo '<font color="green">Der Eintrag wurde hinzugefügt.</font><br><br>';
 		} else {
-			echo '<font color="red">Bitte überprüfen Sie Ihre Angaben.</font><br>';
+			echo '<font color="red">Bitte überprüfen Sie Ihre Angaben.</font><br><br>';
+			define('ERROR', 'TRUE');
 		}
-		//file_put_contents('data.txt', stripslashes($_POST['updated_data']));
+	} else if (isset($_POST['delete'])){
+		$entry = $_POST['entry'];
+		$data = file('data.txt');
+		unset($data[$entry - 1]);
+		$fh = fopen('data.txt', 'w');
+		foreach ($data as $line) {
+			fwrite($fh, $line);
+		}
+		fclose($fh);
+		echo '<font color="green">Der '.$entry.'. Eintrag wurde gelöscht.</font><br><br>';
 	}
 
 	$offline_view = true;	// tell data.php that we want to see the offline view
 	include('data.php');	// show the (possibly updated) table
+	
+	function selected($option) {
+		if (defined('ERROR') && $_POST['dayofweek'] == $option) {
+			return ' selected';
+		}
+	}
 ?>
-<div id="update_form">
-<form action="<?=$_SERVER['PHP_SELF']?>" method="post">
-  <table border="1" cellpadding="2" cellspacing="0">
-    <tr>
-      <td>Wochentag</td>
-      <td>Uhrzeit</td>
-      <td>Lehrer</td>
-      <td>Fach</td>
-      <td>Dauer</td>
-      <td>Klasse</td>
-      <td>Originalraum</td>
-      <td>Vertretung</td>
-      <td>Änderung</td>
-    </tr>
+    <form action="<?=$_SERVER['PHP_SELF']?>" method="post">
     <tr>
       <td>
         <select name="dayofweek">
-          <option value="1">Montag</option>
-          <option value="2">Dienstag</option>
-          <option value="3">Mittwoch</option>
-          <option value="4">Donnerstag</option>
-          <option value="5">Freitag</option>
-          <option value="6">Samstag</option>
-          <option value="7">Sonntag</option>
+          <option value="1"<?=selected(1)?>>Montag</option>
+          <option value="2"<?=selected(2)?>>Dienstag</option>
+          <option value="3"<?=selected(3)?>>Mittwoch</option>
+          <option value="4"<?=selected(4)?>>Donnerstag</option>
+          <option value="5"<?=selected(5)?>>Freitag</option>
+          <option value="6"<?=selected(6)?>>Samstag</option>
+          <option value="7"<?=selected(7)?>>Sonntag</option>
         </select>
       </td>
+<?php
+	if (defined('ERROR')) {
+?>
+      <td><input type="text" name="time" size="5" value="<?=$_POST['time']?>"></input></td>
+      <td><input type="text" name="teacher" value="<?=$_POST['teacher']?>"></input></td>
+      <td><input type="text" name="subject" value="<?=$_POST['subject']?>"></input></td>
+      <td><input type="text" name="duration" size="3" value="<?=$_POST['duration']?>"></input></td>
+      <td><input type="text" name="class" size="3" value="<?=$_POST['class']?>"></input></td>
+      <td><input type="text" name="originalroom" size="4" value="<?=$_POST['originalroom']?>"></input></td>
+      <td><input type="text" name="substitute" value="<?=$_POST['substitute']?>"></input></td>
+      <td><input type="text" name="change" value="<?=$_POST['change']?>"></input></td>
+<?php
+	} else {
+?>
       <td><input type="text" name="time" size="5"></input></td>
       <td><input type="text" name="teacher"></input></td>
       <td><input type="text" name="subject"></input></td>
       <td><input type="text" name="duration" size="3"></input></td>
-      <td><input type="text" name="class"></input></td>
+      <td><input type="text" name="class" size="3"></input></td>
       <td><input type="text" name="originalroom" size="4"></input></td>
       <td><input type="text" name="substitute"></input></td>
       <td><input type="text" name="change"></input></td>
+<?php
+	}
+?>
+      <td><input type="submit" name="add" value="Hinzufügen"></input></td>
     </tr>
-  </table><br>
-  <input type="submit" value="Hinzufügen">
-</form>
-</div>
+    </form>
+  </table>
 </body></html>
