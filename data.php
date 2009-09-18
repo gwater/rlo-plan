@@ -70,7 +70,7 @@
 				echo_cell('
 <form action="lange.php" method="post">
   <input type="hidden" name="entry" value="'.$count.'"></input>
-  <input type="submit" name="delete" value="Löschen"></input>
+  <input type="submit" name="delete" value="L&ouml;schen"></input>
 </form>');
 			} else {
 				echo_cell(strftime('%H.%M', $fields[0]));

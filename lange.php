@@ -16,6 +16,7 @@
 <div id="header">Willkommen beim Online-Vertretungsplan der Rosa-Luxemburg-Oberschule! <a href="logout.php">Abmelden</a><br><br></div>
 <?php
 	// save updated data received from the form below
+	// FIXME: This method should convert all umlauts to html code. (like &uuml;)
 	if (isset($_POST['add'])) {
 		$dayofweek	= $_POST['dayofweek'];
 		$time		= $_POST['time'];
@@ -40,9 +41,9 @@
 				fwrite($fh, $line);
 			}
 			fclose($fh);
-			echo '<font color="green">Der Eintrag wurde hinzugefügt.</font><br><br>';
+			echo '<font color="green">Der Eintrag wurde hinzugefi&uuml;gt.</font><br><br>';
 		} else {
-			echo '<font color="red">Bitte überprüfen Sie Ihre Angaben.</font><br><br>';
+			echo '<font color="red">Bitte &uuml;berprüfen Sie Ihre Angaben.</font><br><br>';
 			define('ERROR', 'TRUE');
 		}
 	} else if (isset($_POST['delete'])){
@@ -54,7 +55,7 @@
 			fwrite($fh, $line);
 		}
 		fclose($fh);
-		echo '<font color="green">Der '.$entry.'. Eintrag wurde gelöscht.</font><br><br>';
+		echo '<font color="green">Der '.$entry.'. Eintrag wurde gelö&ouml;scht.</font><br><br>';
 	}
 
 	$offline_view = true;	// tell data.php that we want to see the offline view
@@ -104,7 +105,7 @@
 <?php
 	}
 ?>
-      <td><input type="submit" name="add" value="Hinzufügen"></input></td>
+      <td><input type="submit" name="add" value="Hinzuf&uuml;gen"></input></td>
     </tr>
     </form>
   </table>
