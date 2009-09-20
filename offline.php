@@ -9,13 +9,18 @@ $handle = fopen("data.txt", "r");
 $fulldate = getdate();
 $offset = $fulldate['hours']*60*60 - $fulldate['minutes']*60;
 $today = time() - $offset;
+if ($_GET['date']) {
+	$today = strtotime($_GET['date']);
+}
+
 $tomorrow = $today + 24*60*60;
+$yesterday = $today - 24*60*60;
 
 
 $i = 0;
 while (($set = fgetcsv($handle, 1000, ",")) !== FALSE) {
 	$lesson = (int) $set[0];
-	// only display data for today
+	// only display lessons for today
 	if (($lesson > $today) && ($lesson < $tomorrow)) {
 		$data[$i] = $set;
 		$i++;
@@ -73,8 +78,10 @@ foreach ($data as $set) {
 	}
 
 }
-	echo '</table>';
+echo '</table>';
 
+echo '<a href="?date='.date('Y-m-d', $yesterday).'">Gehe einen Tag zurück.</a><br>';
+echo '<a href="?date='.date('Y-m-d', $tomorrow).'">Gehe einen Tag weiter.</a>';
 ?>
 </div>
 </body>
