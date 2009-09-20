@@ -29,13 +29,9 @@
 		$change		= $_POST['change'];
 		if ($dayofweek && $time && $teacher && $subject && $duration &&
 		    $class && $originalroom && $substitute && $change) {
-
-			// What follows is an ugly hack to get a timstamp for a lesson next week.
 			$tm_array = strptime($time, '%H.%M');
-			$now_array = getdate();
-			$day = $now_array['mday'] + (($dayofweek - $now_array['wday'] + 7) % 7);
-			$rawtime = mktime($tm_array['tm_hour'], $tm_array['tm_min'], 0, $now_array['mon'], $day, $now_array['year']);
-
+			$plusdays = ($dayofweek - localtime()['tm_wday'] + 7) % 7;
+			$rawtime = strtotime('+'.$plusdays.' days '.$tm_array['tm_hour'].':'.$tm_array['tm_min']);
 			$newline = $rawtime.',"'.$teacher.'","'.$subject.'","'.$duration.'","';
 			$newline .= $class.'","'.$originalroom.'","'.$substitute.'","'.$change."\"\n";
 			$data = file('data.txt');
