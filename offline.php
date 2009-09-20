@@ -16,7 +16,6 @@ if ($_GET['date']) {
 $tomorrow = $today + 24*60*60;
 $yesterday = $today - 24*60*60;
 
-
 $i = 0;
 while (($set = fgetcsv($handle, 1000, ",")) !== FALSE) {
 	$lesson = (int) $set[0];
@@ -80,9 +79,10 @@ foreach ($data as $set) {
 }
 echo '</table>';
 
-echo '<a href="?date='.date('Y-m-d', $yesterday).'">Gehe einen Tag zurück.</a><br>';
-echo '<a href="?date='.date('Y-m-d', $tomorrow).'">Gehe einen Tag weiter.</a>';
+echo '<br><a href="?date='.date('Y-m-d', $yesterday).'">Gehe einen Tag zurück.</a>';
+echo '<br><a href="?date='.date('Y-m-d', $tomorrow).'">Gehe einen Tag weiter.</a>';
 ?>
 </div>
+<a href="javascript:window.print()">Seite ausdrucken</a>
 </body>
 </html>
