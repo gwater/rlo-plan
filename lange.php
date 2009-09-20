@@ -29,7 +29,8 @@
 		$change		= $_POST['change'];
 		if ($dayofweek && $time && $teacher && $subject && $duration &&
 		    $class && $originalroom && $substitute && $change) {
-			$tm_array = strptime($time, '%H.%M');
+		    $time = substr($time, 0 , 2) . substr($time, 3, 2);
+			$tm_array = strptime($time, '%H%M');
 			$localtime = localtime();
 			$plusdays = ($dayofweek - $localtime['tm_wday'] + 7) % 7;
 			$rawtime = strtotime('+'.$plusdays.' days '.$tm_array['tm_hour'].':'.$tm_array['tm_min']);
@@ -43,7 +44,7 @@
 				fwrite($fh, $line);
 			}
 			fclose($fh);
-			echo '<font color="green">Der Eintrag wurde hinzugefi&uuml;gt.</font><br><br>';
+			echo '<font color="green">Der Eintrag wurde hinzugef&uuml;gt.</font><br><br>';
 		} else {
 			echo '<font color="red">Bitte &uuml;berpr&uuml;fen Sie Ihre Angaben.</font><br><br>';
 			define('ERROR', 'TRUE');
