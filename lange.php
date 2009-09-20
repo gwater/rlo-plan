@@ -29,8 +29,13 @@
 		$change		= $_POST['change'];
 		if ($dayofweek && $time && $teacher && $subject && $duration &&
 		    $class && $originalroom && $substitute && $change) {
+
+			// What follows is an ugly hack to get a timstamp for a lesson next week.
 			$tm_array = strptime($time, '%H.%M');
-			$rawtime = mktime($tm_array['tm_hour'], $tm_array['tm_min'], 0, 1, $dayofweek + 4, 2009);
+			$now_array = getdate();
+			$day = $now_array['mday'] + (($dayofweek - $now_array['wday'] + 7) % 7);
+			$rawtime = mktime($tm_array['tm_hour'], $tm_array['tm_min'], 0, $now_array['mon'], $day, $now_array['year']);
+
 			$newline = $rawtime.',"'.$teacher.'","'.$subject.'","'.$duration.'","';
 			$newline .= $class.'","'.$originalroom.'","'.$substitute.'","'.$change."\"\n";
 			$data = file('data.txt');
@@ -43,7 +48,7 @@
 			fclose($fh);
 			echo '<font color="green">Der Eintrag wurde hinzugefi&uuml;gt.</font><br><br>';
 		} else {
-			echo '<font color="red">Bitte &uuml;berprüfen Sie Ihre Angaben.</font><br><br>';
+			echo '<font color="red">Bitte &uuml;berpr&uuml;fen Sie Ihre Angaben.</font><br><br>';
 			define('ERROR', 'TRUE');
 		}
 	} else if (isset($_POST['delete'])){
@@ -55,7 +60,7 @@
 			fwrite($fh, $line);
 		}
 		fclose($fh);
-		echo '<font color="green">Der '.$entry.'. Eintrag wurde gelö&ouml;scht.</font><br><br>';
+		echo '<font color="green">Der '.$entry.'. Eintrag wurde gel&ouml;scht.</font><br><br>';
 	}
 
 	$offline_view = true;	// tell data.php that we want to see the offline view
