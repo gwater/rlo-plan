@@ -1,3 +1,13 @@
+<?php
+	session_start();
+	if (!$_SESSION['id']) {
+		$host = $_SERVER['HTTP_HOST'];
+		$uri  = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+		$page = 'login.php?continue=http://'.$host.$_SERVER['PHP_SELF'];
+		header("Location: http://$host$uri/$page");
+		exit;
+	}
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
@@ -25,64 +35,68 @@ while (($set = fgetcsv($handle, 1000, ",")) !== FALSE) {
 		$i++;
 	}
 }
+if (!isset($data)) {
+	echo 'Keine Einträge für diesen Tag.';
+} else {
 
-//FIXME: day is ignored - all entries from data.txt will be used.
-function compare_teacher($a, $b)
-{
-	// ignore genders, be politically correct
-	$a = substr($a, 5);
-	$b = substr($b, 5);
-	// sort by teacher and time
-	$ret = strnatcmp($a[1], $b[1]);
-	if (!$ret) return strnatcmp($a[0], $b[0]);
-	return $ret;
-}
-// sort alphabetically by name
-usort($data, 'compare_teacher');
-
-$previous = '';
-
-echo '<table border="1" cellpadding="2" cellspacing="0">';
-echo "<tr>
-		<td>Uhrzeit</td>
-		<td>Klasse</td>
-		<td>Fach</td>
-		<td>Dauer</td>
-		<td>Vertretung durch</td>
-		<td>Raum</td>
-	</tr>";
-
-
-foreach ($data as $set) {
-	if ( $previous != $set[1]) {
-		echo '<tr>' .
-				'<th align="left" colspan="6"><br>'.$set[1].'</th>' .
-			'</tr>';
+	//FIXME: day is ignored - all entries from data.txt will be used.
+	function compare_teacher($a, $b)
+	{
+		// ignore genders, be politically correct
+		$a = substr($a, 5);
+		$b = substr($b, 5);
+		// sort by teacher and time
+		$ret = strnatcmp($a[1], $b[1]);
+		if (!$ret) return strnatcmp($a[0], $b[0]);
+		return $ret;
 	}
+	// sort alphabetically by name
+	usort($data, 'compare_teacher');
 
-	#$date = date('d.m.Y',(int) $set[0]);
-	$time = date('G:i', (int) $set[0]);
+	$previous = '';
+
+	echo '<table border="1" cellpadding="2" cellspacing="0">';
 	echo "<tr>
-			<td>$time</td>
-			<td>$set[4]</td>
-			<td>$set[2]</td>
-			<td>$set[3]</td>
-			<td>$set[6], $set[7]</td>
-			<td>$set[5]</td>
+			<td>Uhrzeit</td>
+			<td>Klasse</td>
+			<td>Fach</td>
+			<td>Dauer</td>
+			<td>Vertretung durch</td>
+			<td>Raum</td>
 		</tr>";
 
 
-	if ($previous != $set[1]) {
-		$previous = $set[1];
+	foreach ($data as $set) {
+		if ( $previous != $set[1]) {
+			echo '<tr>' .
+					'<th align="left" colspan="6"><br>'.$set[1].'</th>' .
+				'</tr>';
+		}
+
+		#$date = date('d.m.Y',(int) $set[0]);
+		$time = date('G:i', (int) $set[0]);
+		echo "<tr>
+				<td>$time</td>
+				<td>$set[4]</td>
+				<td>$set[2]</td>
+				<td>$set[3]</td>
+				<td>$set[6], $set[7]</td>
+				<td>$set[5]</td>
+			</tr>";
+
+
+		if ($previous != $set[1]) {
+			$previous = $set[1];
+		}
+
 	}
-
+	echo '</table>';
 }
-echo '</table>';
 
-echo '<br><a href="?date='.date('Y-m-d', $yesterday).'">Gehe einen Tag zurÃ¼ck.</a>';
-echo '<br><a href="?date='.date('Y-m-d', $tomorrow).'">Gehe einen Tag weiter.</a>';
+echo '<br><a href="?date='.date('Y-m-d', $yesterday).'">&lt; ein Tag zur&uuml;ck</a>';
+echo ' | <a href="?date='.date('Y-m-d', $tomorrow).'">ein Tag weiter &gt;</a>';
 ?>
 </div>
-<a href="javascript:window.print()">Seite ausdrucken</a>
+<br><a href="javascript:window.print()">Seite ausdrucken</a>
 </body>
 </html>

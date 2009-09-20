@@ -29,7 +29,7 @@
 		$change		= $_POST['change'];
 		if ($dayofweek && $time && $teacher && $subject && $duration &&
 		    $class && $originalroom && $substitute && $change) {
-		    $time = substr($time, 0 , 2) . substr($time, 3, 2);
+			$time = substr($time, 0, 2) . substr($time, 3, 2); // TODO: make sure $time is in this format
 			$tm_array = strptime($time, '%H%M');
 			$localtime = localtime();
 			$plusdays = ($dayofweek - $localtime['tm_wday'] + 7) % 7;
