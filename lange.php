@@ -34,6 +34,14 @@
 			$localtime = localtime();
 			$plusdays = ($dayofweek - $localtime['tm_wday'] + 7) % 7;
 			$rawtime = strtotime('+'.$plusdays.' days '.$tm_array['tm_hour'].':'.$tm_array['tm_min']);
+			
+			function fix_uml($text) {
+				return str_replace(array("ä","ö","ü"), array("&auml;", "&ouml;", "&uuml;"), $text);
+			}
+			$teacher = fix_uml($teacher);
+			$subject = fix_uml($subject);
+			$substitute = fix_uml($substitute);
+			$change = fix_uml($change);
 			$newline = $rawtime.',"'.$teacher.'","'.$subject.'","'.$duration.'","';
 			$newline .= $class.'","'.$originalroom.'","'.$substitute.'","'.$change."\"\n";
 			$data = file('data.txt');

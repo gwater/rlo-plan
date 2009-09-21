@@ -11,7 +11,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
 <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-<title>Online-Vertretungsplan</title>
+<title>Druckansicht - Online-Vertretungsplan</title>
 </head><body>
 <div id="tables">
 <?php
@@ -23,23 +23,22 @@ if ($_GET['date']) {
 	$today = strtotime($_GET['date']);
 }
 
-$tomorrow = $today + 24*60*60;
-$yesterday = $today - 24*60*60;
+$tomorrow = strtotime("+1 day", $today);
+$yesterday = strtotime("-1 day", $today);
 
 $i = 0;
 while (($set = fgetcsv($handle, 1000, ",")) !== FALSE) {
 	$lesson = (int) $set[0];
-	// only display lessons for today
+	// only display lessons for one day
 	if (($lesson > $today) && ($lesson < $tomorrow)) {
 		$data[$i] = $set;
 		$i++;
 	}
 }
 if (!isset($data)) {
-	echo 'Keine Einträge für diesen Tag.';
+	echo 'Keine Eintr&auml;ge f&uuml;r diesen Tag.';
 } else {
 
-	//FIXME: day is ignored - all entries from data.txt will be used.
 	function compare_teacher($a, $b)
 	{
 		// ignore genders, be politically correct
@@ -50,7 +49,7 @@ if (!isset($data)) {
 		if (!$ret) return strnatcmp($a[0], $b[0]);
 		return $ret;
 	}
-	// sort alphabetically by name
+	// sort alphabetically by name and time
 	usort($data, 'compare_teacher');
 
 	$previous = '';
@@ -84,10 +83,7 @@ if (!isset($data)) {
 				<td>$set[5]</td>
 			</tr>";
 
-
-		if ($previous != $set[1]) {
-			$previous = $set[1];
-		}
+		$previous = $set[1];
 
 	}
 	echo '</table>';
