@@ -34,7 +34,7 @@
 			$localtime = localtime();
 			$plusdays = ($dayofweek - $localtime['tm_wday'] + 7) % 7;
 			$rawtime = strtotime('+'.$plusdays.' days '.$tm_array['tm_hour'].':'.$tm_array['tm_min']);
-			
+
 			function fix_uml($text) {
 				return str_replace(array("ä","ö","ü"), array("&auml;", "&ouml;", "&uuml;"), $text);
 			}
