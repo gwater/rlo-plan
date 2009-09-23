@@ -85,7 +85,7 @@
 	if (!$first && !isset($offline_view)) {
 		echo "</tbody></table><br>\n";
 	}
-	
+
 	function echo_cell($str) {
 		echo '    <td>'.$str."</td>\n";
 	}

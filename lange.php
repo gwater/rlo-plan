@@ -13,10 +13,10 @@
 <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
 <title>Online-Vertretungsplan</title>
 </head><body>
-<div id="header">Willkommen beim Online-Vertretungsplan der Rosa-Luxemburg-Oberschule! <a href="logout.php">Abmelden</a><br><br></div>
+<div id="header">Willkommen beim Online-Vertretungsplan BETA der Rosa-Luxemburg-Oberschule! <a href="logout.php">Abmelden</a><br><br><br>
+Bitte nicht den letzten Eintrag l&ouml;schen.<br></div>
 <?php
 	// save updated data received from the form below
-	// FIXME: This method should convert all umlauts to html code. (like &uuml;)
 	if (isset($_POST['add'])) {
 		$dayofweek	= $_POST['dayofweek'];
 		$time		= $_POST['time'];
@@ -71,7 +71,7 @@
 
 	$offline_view = true;	// tell data.php that we want to see the offline view
 	include('data.php');	// show the (possibly updated) table
-	
+
 	function selected($option) {
 		if (defined('ERROR') && $_POST['dayofweek'] == $option) {
 			return ' selected';

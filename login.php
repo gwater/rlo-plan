@@ -20,6 +20,7 @@ Passwort: <input type="password" name="password" maxlength="16">
 	}
 ?>
 </form>
+Das Passwort lautet "lange".
 </body>
 </html>
 <?php
