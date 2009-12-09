@@ -1,6 +1,6 @@
 <?php
 
-abstract class ovp_content {
+abstract class ovp_source {
     private $type;
     private $db;
 
@@ -17,7 +17,7 @@ abstract class ovp_content {
     }
 }
 
-class ovp_table_public extends ovp_content {
+class ovp_table_public extends ovp_source {
     public function __construct() {
         parent::__construct("public");
     }
@@ -34,6 +34,22 @@ class ovp_table_public extends ovp_content {
 
    }
 
+}
+
+class ovp_page {
+
+    private $source; // the ovp_source object used to generate the page
+    private $content; // the whole html page
+
+
+    public function __construct($source) {
+        $this->source = $source;
+        $this->content = "<html></html>";
+    }
+
+    public function get_html() {
+        return $content;
+    }
 }
 
 /* missing classes:
