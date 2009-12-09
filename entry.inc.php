@@ -13,7 +13,7 @@ class entry {
     public $change;
     // TODO: what else?
 
-    public function__construct($id, $time, $teacher, $subject, $duration, $course, $oldroom, $sub, $change) {
+    public function __construct($id, $time, $teacher, $subject, $duration, $course, $oldroom, $sub, $change) {
         $this->id = $id;
         $this->time = $time;
         $this->teacher = $teacher;
