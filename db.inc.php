@@ -55,7 +55,8 @@ class db extends mysqli {
             `id`   INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
             `name` VARCHAR(20)  NOT NULL,
             `pwd`  CHAR(64)     NOT NULL,
-            `priv` INT UNSIGNED NOT NULL DEFAULT 1
+            `priv` INT UNSIGNED NOT NULL DEFAULT 1,
+            `ip`   INT UNSIGNED NULL     DEFAULT NULL
         )");
 
         /*
