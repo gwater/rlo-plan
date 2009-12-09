@@ -1,6 +1,7 @@
 <?php
 
 require_once('config.inc.php');
+require_once('entry.inc.php');
 
 class db extends mysqli {
 
@@ -18,7 +19,21 @@ class db extends mysqli {
         }
     }
 
-    public function query($query) {
+    // format of $date: unix timestamp of midnight (the beginning) on that day
+    public function get_entries(int $date = 0) {
+        if ($date == 0) {
+            $result = $this->query("SELECT * FROM `entry` ORDER BY `teacher`, `time`");
+        } else {
+            $result = $this->query("SELECT * FROM `entry` WHERE `time` >= '".$this->protect($date)."' AND `time` < '".$this->protect($date + 60*60*24)."' ORDER BY `teacher`, `time`");
+        }
+        $entries = array();
+        while ($row = $this->fetch_assoc($result)) {
+            $entries[] = new entry($row['id'], $row['time'], $row['teacher'], $row['subject'], $row['duration'], $row['course'], $row['oldroom'], $row['sub'], $row['change']);
+        }
+        return $entries;
+    }
+
+    private function query(string $query) {
         if (!($result = parent::query($query))) {
             if (DEBUG) {
                 $this->fail($this->error);
@@ -29,7 +44,7 @@ class db extends mysqli {
         return $result;
     }
 
-    public function protect($str) {
+    private function protect($str) {
         return $this->escape_string(htmlspecialchars($str));
     }
 
@@ -66,7 +81,7 @@ class db extends mysqli {
         teacher:  name of the absent teacher (e.g. Mr. Doe)
         subject:  name and type of the course or subject (e.g. Ma-LK)
         duration: duration of this class in minutes (e.g. 75) (TODO: old or new duration?)
-        class:    name of the class (e.g. '9.3')
+        course:   name of the course (e.g. '9.3')
         oldroom:  room the class was supposed to take place in originally (e.g. H2-3)
         sub:      name of the substitute teacher (e.g. 'Fr. Musterfrau')
         change:   what class takes place [where] instead (e.g. 'Geschichte H0-2' or 'Ausfall')
@@ -77,7 +92,7 @@ class db extends mysqli {
             `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
             `subject`  VARCHAR(20)       NULL     DEFAULT NULL,
             `duration` SHORTINT UNSIGNED NULL     DEFAULT NULL,
-            `class`    VARCHAR(3)        NULL     DEFAULT NULL,
+            `course`   VARCHAR(3)        NULL     DEFAULT NULL,
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
             `change`   VARCHAR(50)       NULL     DEFAULT NULL
