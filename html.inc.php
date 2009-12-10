@@ -19,8 +19,17 @@ abstract class ovp_source {
         $this->title = $title;
     }
 
-    abstract public function get_header();
-    abstract public function get_view();
+    abstract private function generate_html();
+
+    public function get_header() {
+        $header = "<title>".get_title()."</title>\n";
+        return $header;
+    }
+
+    public function get_view() {
+        $html = generate_html();
+        return $html;
+    }
 
     public function get_type() {
         return $this->type;
@@ -43,33 +52,23 @@ class ovp_table_public extends ovp_source {
         $this->entries = $db->get_entries(time());
     }
 
-    public function get_header() {
-        $header = "<title>".get_title()."</title>\n";
-        return $header;
-    }
-
-    public function get_view() {
-        $html = generate_html();
-        return $html;
-    }
-
     private function generate_html() {
         $html =
          '<div class="ovp_container">
             <div class="ovp_table_heading">'.get_title().'</div>
-            <table class="ovp_table" id="ovp_table_public">
+            <table class="ovp_table" id="ovp_table_'.get_type().'">
               <tr class="ovp_table_firstline">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
                 <td class="ovp_column_subject">Fach</td>
+                <td class="ovp_column_oldroom">Originalraum</td>
                 <td class="ovp_column_duration">Dauer</td>
-                <td class="ovp_column_sub">Vertretung durch</td>
-                <td class="ovp_column_room">Raum</td>
+                <td class="ovp_column_change">Änderung</td>
               </tr>';
         foreach ($entries as $entry) {
             $html .=
              '<tr class="ovp_table_entryline">
-                <td class="ovp_column_time">'.strftime('%H:%M', $entry->time).'</td>
+                <td class="ovp_column_time">'.    $entry->get_time().'</td>
                 <td class="ovp_column_course">'.  $entry->course.  '</td>
                 <td class="ovp_column_subject">'. $entry->subject. '</td>
                 <td class="ovp_column_oldroom">'. $entry->oldroom. '</td>
@@ -80,31 +79,75 @@ class ovp_table_public extends ovp_source {
         $html .=
            '</table>
           </div>';
+        return $html;
     }
 
 }
 
 /**
  * This source provides the traditional view for printout.
+ * It displays only one day at a time.
  * since it contains sensitive information its access must be restricted to
  * school personnel.
  */
 class ovp_table_print extends ovp_source {
     public function __construct($db) {
-        parent::__construct("print", $db);
+        parent::__construct("print", $db, "Vertretungsplan");
     }
 
-    public function get_header() {
-        $header = "<title>RLO Offlinevertretungsplan</title>\n";
-        return $header;
+    private function generate_html() {
+        $html =
+         '<div class="ovp_container">
+            <div class="ovp_table_heading">'.get_title().'</div>
+            <div class="ovp_date">'.$entries[0].get_date().'</div>
+            <table class="ovp_table" id="ovp_table_'.get_type().'">
+              <tr class="ovp_table_firstline">
+                <td class="ovp_column_time">Uhrzeit</td>
+                <td class="ovp_column_course">Klasse</td>
+                <td class="ovp_column_subject">Fach</td>
+                <td class="ovp_column_duration">Dauer</td>
+                <td class="ovp_column_sub">Vertretung durch</td>
+                <td class="ovp_column_newroom">Raum</td>
+              </tr>';
+
+        $oldteacher = "";
+
+        foreach ($entries as $entry) {
+            if ($entry->teacher != $oldteacher) {
+                $html .=
+             '<tr class="ovp_table_emptyline"></tr>
+              <tr class="ovp_table_teacherline">
+                <td class="ovp_table_teachercell">'.$entry->teacher.'</td>
+              </tr>';
+                $oldteacher = $entry->teacher;
+            }
+
+            /* An ugly hack to properly merge the changes column follows */
+            $changes = "";
+            if ($entry->sub != "") {
+                $changes = $entry->sub;
+                if ($entry->change != "") {
+                    $changes .= ", ";
+                }
+            } if ($entry->change != "") {
+                $changes .= $entry->change;
+            }
+
+            $html .=
+             '<tr class="ovp_table_entryline">
+                <td class="ovp_column_time">'.    $entry->get_time().'</td>
+                <td class="ovp_column_course">'.  $entry->course.  '</td>
+                <td class="ovp_column_subject">'. $entry->subject. '</td>
+                <td class="ovp_column_duration">'.$entry->duration.'</td>
+                <td class="ovp_column_sub">'.     $changes.        '</td>
+                <td class="ovp_column_newroom">'. $entry->newroom. '</td>
+              </tr>';
+        }
+        $html .=
+           '</table>
+          </div>';
+        return $html;
     }
-
-    public function get_view() {
-    /* TODO: At this point I need a working database connection
-     * and knowledge of the database layout.
-     */
-   }
-
 }
 
 /**
@@ -114,20 +157,12 @@ class ovp_table_print extends ovp_source {
  */
 class ovp_lange extends ovp_source {
     public function __construct($db) {
-        parent::__construct("lange", $db);
+        parent::__construct("lange", $db, "RLO Onlinevertretungsplan Zentrale");
     }
 
-    public function get_header() {
-        $header = "<title>RLO Onlinevertretungsplan Kontrolle</title>\n";
-        return $header;
+    private function generate_html() {
+        //FIXME: i need implementing ;-)
     }
-
-    public function get_view() {
-    /* TODO: At this point I need a working database connection
-     * and knowledge of the database layout.
-     */
-   }
-
 }
 
 /**
@@ -137,20 +172,12 @@ class ovp_lange extends ovp_source {
  */
 class ovp_login extends ovp_source {
     public function __construct($db) {
-        parent::__construct("login", $db);
+        parent::__construct("login", $db, "RLO Onlinevertretungsplan Login");
     }
 
-    public function get_header() {
-        $header = "<title>RLO Onlinevertretungsplan Login</title>\n";
-        return $header;
+    private function generate_html() {
+        //FIXME: i need implementing ;-)
     }
-
-    public function get_view() {
-    /* TODO: At this point I need a working database connection
-     * and knowledge of the database layout.
-     */
-   }
-
 }
 
 /**
@@ -160,19 +187,12 @@ class ovp_login extends ovp_source {
  */
 class ovp_admin extends ovp_source {
     public function __construct($db) {
-        parent::__construct("admin", $db);
+        parent::__construct("admin", $db, "RLO Onlinevertretungsplan Admin");
     }
 
-    public function get_header() {
-        $header = "<title>RLO Onlinevertretungsplan Administration</title>\n";
-        return $header;
+    private function generate_html() {
+        //FIXME: i need implementing ;-)
     }
-
-    public function get_view() {
-    /* TODO: At this point I need a working database connection
-     * and knowledge of the database layout.
-     */
-   }
 
 }
 
