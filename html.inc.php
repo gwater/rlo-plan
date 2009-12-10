@@ -1,27 +1,6 @@
 <?php
 
 /**
- * I need the following functions in class db:
- * - get_entries():
- *      should return an array of entry_objects which directly map the
- *      entry table from the db, optionally with the possibility to select
- *      special classes/courses or timeframes.
- *
- * - remove_entry($entry):
- *      removes an entry from the db. is given n entry_object as an argument.
- * - add_entry($entry):
- *      adds an entry to the db. is given an entry_object as an argument.
- * - cleanup_entries():
- *      just a maintenance thing. remove all data no longer needed from the db
- *      DATENSCHUTZ!!!
- *
- * - verify_user($name, $pw) //???? no idea how that should work...
- * - remove_user($name)
- * - add_user($name, $pw_hash, $priv=0)
- */
-
-
-/**
  * This is the basic API for all content provided by rlo-plan
  *
  * There are several different sources which provide the different views each
@@ -61,7 +40,7 @@ class ovp_table_public extends ovp_source {
 
     public function __construct($db) {
         parent::__construct("public", $db, "RLO Onlinevertretungsplan");
-        $this->entries = $db->get_entries();
+        $this->entries = $db->get_entries(time());
     }
 
     public function get_header() {
@@ -70,25 +49,37 @@ class ovp_table_public extends ovp_source {
     }
 
     public function get_view() {
-    $html = generate_html();
-    return $html;
+        $html = generate_html();
+        return $html;
     }
 
     private function generate_html() {
-        $html = '<div class="ovp_container">
-                <div class="ovp_table_heading">'
-                .get_title().'</div>
-                <table class="ovp_table" id="ovp_table_public">
-                <tr class="ovp_table_firstline">
+        $html =
+         '<div class="ovp_container">
+            <div class="ovp_table_heading">'.get_title().'</div>
+            <table class="ovp_table" id="ovp_table_public">
+              <tr class="ovp_table_firstline">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
                 <td class="ovp_column_subject">Fach</td>
                 <td class="ovp_column_duration">Dauer</td>
                 <td class="ovp_column_sub">Vertretung durch</td>
                 <td class="ovp_column_room">Raum</td>
-                </tr>';
-
-
+              </tr>';
+        foreach ($entries as $entry) {
+            $html .=
+             '<tr class="ovp_table_entryline">
+                <td class="ovp_column_time">'.strftime('%H:%M', $entry->time).'</td>
+                <td class="ovp_column_course">'.  $entry->course.  '</td>
+                <td class="ovp_column_subject">'. $entry->subject. '</td>
+                <td class="ovp_column_oldroom">'. $entry->oldroom. '</td>
+                <td class="ovp_column_duration">'.$entry->duration.'</td>
+                <td class="ovp_column_change">'.  $entry->change.  '</td>
+              </tr>';
+        }
+        $html .=
+           '</table>
+          </div>';
     }
 
 }
@@ -112,7 +103,6 @@ class ovp_table_print extends ovp_source {
     /* TODO: At this point I need a working database connection
      * and knowledge of the database layout.
      */
-
    }
 
 }
@@ -136,7 +126,6 @@ class ovp_lange extends ovp_source {
     /* TODO: At this point I need a working database connection
      * and knowledge of the database layout.
      */
-
    }
 
 }
@@ -160,7 +149,6 @@ class ovp_login extends ovp_source {
     /* TODO: At this point I need a working database connection
      * and knowledge of the database layout.
      */
-
    }
 
 }
@@ -184,7 +172,6 @@ class ovp_admin extends ovp_source {
     /* TODO: At this point I need a working database connection
      * and knowledge of the database layout.
      */
-
    }
 
 }
@@ -205,13 +192,16 @@ class ovp_page {
     }
 
     private function generate_html() {
-        $html = "<!doctype html>\n"
-                ."<html>\n<head>\n"
-                .$this->source->get_header()
-                ."</head>\n<body>\n"
-                .$this->source->get_view()
-                ."</body>\n</html>\n";
-
+        $html =
+            '<!DOCTYPE html>
+             <html>
+             <head>
+            '.$this->source->get_header().'
+             </head>
+             <body>
+            '.$this->source->get_view().'
+             </body>
+             </html>';
         return $html;
     }
 

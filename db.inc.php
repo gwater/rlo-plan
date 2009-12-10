@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * I need the following functions in class db:
+ * - get_entries():
+ *      should return an array of entry_objects which directly map the
+ *      entry table from the db, optionally with the possibility to select
+ *      special classes/courses or timeframes.
+ *
+ * - remove_entry($entry):
+ *      removes an entry from the db. is given n entry_object as an argument.
+ * - add_entry($entry):
+ *      adds an entry to the db. is given an entry_object as an argument.
+ * - cleanup_entries():
+ *      just a maintenance thing. remove all data no longer needed from the db
+ *      DATENSCHUTZ!!!
+ *
+ * - verify_user($name, $pw) //???? no idea how that should work...
+ * - remove_user($name)
+ * - add_user($name, $pw_hash, $priv=0)
+ */
+
 require_once('config.inc.php');
 require_once('entry.inc.php');
 
