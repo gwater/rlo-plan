@@ -32,10 +32,12 @@
 abstract class ovp_source {
     private $type;
     private $db;
+    private $title;
 
-    public function __construct($type, $db) {
+    public function __construct($type, $db, $title="") {
         $this->type = $type;
         $this->db = $db;
+        $this->title = $title;
     }
 
     abstract public function get_header();
@@ -44,6 +46,10 @@ abstract class ovp_source {
     public function get_type() {
         return $this->type;
     }
+
+    public function get_title() {
+        return $this->title;
+    }
 }
 
 /**
@@ -51,21 +57,39 @@ abstract class ovp_source {
  * Sensitive information like teachers names is not included.
  */
 class ovp_table_public extends ovp_source {
+    private $entries;
+
     public function __construct($db) {
-        parent::__construct("public", $db);
+        parent::__construct("public", $db, "RLO Onlinevertretungsplan");
+        $this->entries = $db->get_entries();
     }
 
     public function get_header() {
-        $header = "<title>RLO Onlinevertretungsplan</title>\n";
+        $header = "<title>".get_title()."</title>\n";
         return $header;
     }
 
     public function get_view() {
-    /* TODO: At this point I need a working database connection
-     * and knowledge of the database layout.
-     */
+    $html = generate_html();
+    return $html;
+    }
 
-   }
+    private function generate_html() {
+        $html = '<div class="ovp_container">
+                <div class="ovp_table_heading">'
+                .get_title().'</div>
+                <table class="ovp_table" id="ovp_table_public">
+                <tr class="ovp_table_firstline">
+                <td class="ovp_column_time">Uhrzeit</td>
+                <td class="ovp_column_course">Klasse</td>
+                <td class="ovp_column_subject">Fach</td>
+                <td class="ovp_column_duration">Dauer</td>
+                <td class="ovp_column_sub">Vertretung durch</td>
+                <td class="ovp_column_room">Raum</td>
+                </tr>';
+
+
+    }
 
 }
 
