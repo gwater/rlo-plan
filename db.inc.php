@@ -19,7 +19,31 @@ class db extends mysqli {
         }
     }
 
-    // format of $date: unix timestamp of midnight (the beginning) on that day
+    /**
+     * Adds an entry to the database.
+     */
+    public function add_entry(entry $entry) {
+        $this->query("INSERT INTO `entry` VALUES(NULL, '".$entry->$time".', '".$entry->$teacher".', '".$entry->$subject".', '".$entry->$duration."', '".$entry->$course."', '".$entry->$oldroom."', '".$entry->$sub."', '".$entry->$change."')");
+    }
+
+    /**
+     * Deletes the entry reference by the id int $entry or entry $entry->id.
+     * @return: true if the entry was found and deleted
+     */
+    public function remove_entry($entry) {
+        if (is_numeric($entry)) {
+            $id = $entry;
+        } else {
+            $id = $entry->$id;
+        }
+        $this->query("DELETE FROM `entry` WHERE `id` = '".$id."' LIMIT 1");
+        return $this->affected_rows == 1;
+    }
+
+    /**
+     * Retrieves an array of entries from the database on the given day.
+     * Format of $date: unix timestamp of midnight (the beginning) on the requested day.
+     */
     public function get_entries(int $date = 0) {
         if ($date == 0) {
             $result = $this->query("SELECT * FROM `entry` ORDER BY `teacher`, `time`");
