@@ -28,11 +28,11 @@ class entry {
     }
 
     public function get_date() {
-        return strftime("%A, %d.%m.%y", $time);
+        return strftime("%A, %d.%m.%y", $this->time);
     }
 
     public function get_time() {
-        return strftime('%H:%M', $time)
+        return strftime('%H:%M', $this->time)
     }
 }
 

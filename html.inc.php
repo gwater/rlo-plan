@@ -47,16 +47,16 @@ abstract class ovp_source {
 class ovp_table_public extends ovp_source {
     private $entries;
 
-    public function __construct($db) {
+    public function __construct($db, $time=time()) {
         parent::__construct("public", $db, "RLO Onlinevertretungsplan");
-        $this->entries = $db->get_entries(time());
+        $this->entries = $db->get_entries($time);
     }
 
     private function generate_html() {
         $html =
          '<div class="ovp_container">
-            <div class="ovp_table_heading">'.get_title().'</div>
-            <table class="ovp_table" id="ovp_table_'.get_type().'">
+            <div class="ovp_table_heading">'.$this->title.'</div>
+            <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_table_firstline">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
@@ -64,16 +64,18 @@ class ovp_table_public extends ovp_source {
                 <td class="ovp_column_oldroom">Originalraum</td>
                 <td class="ovp_column_duration">Dauer</td>
                 <td class="ovp_column_change">Änderung</td>
+                <td class="ovp_column_newroom">Neuer Raum</td>
               </tr>';
-        foreach ($entries as $entry) {
+        foreach ($this->entries as $entry) {
             $html .=
              '<tr class="ovp_table_entryline">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
-                <td class="ovp_column_course">'.  $entry->course.  '</td>
-                <td class="ovp_column_subject">'. $entry->subject. '</td>
-                <td class="ovp_column_oldroom">'. $entry->oldroom. '</td>
-                <td class="ovp_column_duration">'.$entry->duration.'</td>
-                <td class="ovp_column_change">'.  $entry->change.  '</td>
+                <td class="ovp_column_course">'.  $entry->course.    '</td>
+                <td class="ovp_column_subject">'. $entry->subject.   '</td>
+                <td class="ovp_column_oldroom">'. $entry->oldroom.   '</td>
+                <td class="ovp_column_duration">'.$entry->duration.  '</td>
+                <td class="ovp_column_change">'.  $entry->change.    '</td>
+                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
               </tr>';
         }
         $html .=
@@ -91,16 +93,20 @@ class ovp_table_public extends ovp_source {
  * school personnel.
  */
 class ovp_table_print extends ovp_source {
-    public function __construct($db) {
+    private $entries;
+
+    public function __construct($db, $time=time()) {
         parent::__construct("print", $db, "Vertretungsplan");
+        $this->entries = $db->get_entries($time);
+
     }
 
     private function generate_html() {
         $html =
          '<div class="ovp_container">
-            <div class="ovp_table_heading">'.get_title().'</div>
-            <div class="ovp_date">'.$entries[0].get_date().'</div>
-            <table class="ovp_table" id="ovp_table_'.get_type().'">
+            <div class="ovp_table_heading">'.$this->title.'</div>
+            <div class="ovp_date">'.$this->entries[0]->get_date().'</div>
+            <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_table_firstline">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
@@ -111,8 +117,7 @@ class ovp_table_print extends ovp_source {
               </tr>';
 
         $oldteacher = "";
-
-        foreach ($entries as $entry) {
+        foreach ($this->entries as $entry) {
             if ($entry->teacher != $oldteacher) {
                 $html .=
              '<tr class="ovp_table_emptyline"></tr>
@@ -124,23 +129,22 @@ class ovp_table_print extends ovp_source {
 
             /* An ugly hack to properly merge the changes column follows */
             $changes = "";
-            if ($entry->sub != "") {
+            if (($entry->sub != "") && ($entry->change != "")) {
+                $changes = $entry->sub.", ".$entry->change;
+            } else if ($entry->sub != "") {
                 $changes = $entry->sub;
-                if ($entry->change != "") {
-                    $changes .= ", ";
-                }
-            } if ($entry->change != "") {
-                $changes .= $entry->change;
+            } else if ($entry->change != "") {
+                $change = $entry->change;
             }
 
             $html .=
              '<tr class="ovp_table_entryline">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
-                <td class="ovp_column_course">'.  $entry->course.  '</td>
-                <td class="ovp_column_subject">'. $entry->subject. '</td>
-                <td class="ovp_column_duration">'.$entry->duration.'</td>
-                <td class="ovp_column_sub">'.     $changes.        '</td>
-                <td class="ovp_column_newroom">'. $entry->newroom. '</td>
+                <td class="ovp_column_course">'.  $entry->course.    '</td>
+                <td class="ovp_column_subject">'. $entry->subject.   '</td>
+                <td class="ovp_column_duration">'.$entry->duration.  '</td>
+                <td class="ovp_column_sub">'.     $changes.          '</td>
+                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
               </tr>';
         }
         $html .=
@@ -156,12 +160,63 @@ class ovp_table_print extends ovp_source {
  * authorized school personnel.
  */
 class ovp_lange extends ovp_source {
+    private $entries;
+
     public function __construct($db) {
         parent::__construct("lange", $db, "RLO Onlinevertretungsplan Zentrale");
+        $this->entries = $db->get_entries();
     }
 
     private function generate_html() {
-        //FIXME: i need implementing ;-)
+        // FIXME: Not yet interactive
+        $html =
+         '<div class="ovp_container">
+            <div class="ovp_table_heading">'.$this->title.'</div>';
+
+        $olddate = "";
+        $oldteacher = "";
+        foreach ($this->entries as $entry) {
+            if ($olddate != $entry->get_date()) {
+                $html .=
+           '<div class="ovp_date">'.$entry->get_date().'</div>
+            <table class="ovp_table" id="ovp_table_'.$type.'">
+              <tr class="ovp_table_firstline">
+                <td class="ovp_column_time">Uhrzeit</td>
+                <td class="ovp_column_course">Klasse</td>
+                <td class="ovp_column_subject">Fach</td>
+                <td class="ovp_column_duration">Dauer</td>
+                <td class="ovp_column_sub">Vertretung durch</td>
+                <td class="ovp_column_change">Weitere Änderungen</td>
+                <td class="ovp_column_oldroom">Alter Raum</td>
+                <td class="ovp_column_newroom">Neuer Raum</td>
+              </tr>';
+            }
+            if ($oldteacher != $entry->teacher) {
+                $html .=
+             '<tr class="ovp_table_emptyline"></tr>
+              <tr class="ovp_table_teacherline">
+                <td class="ovp_table_teachercell">'.$entry->teacher.'</td>
+              </tr>';
+                $oldteacher = $entry->teacher;
+            }
+            $html .=
+             '<tr class="ovp_table_entryline">
+                <td class="ovp_column_time">'.    $entry->get_time().'</td>
+                <td class="ovp_column_course">'.  $entry->course.    '</td>
+                <td class="ovp_column_subject">'. $entry->subject.   '</td>
+                <td class="ovp_column_duration">'.$entry->duration.  '</td>
+                <td class="ovp_column_sub">'.     $entry->sub.       '</td>
+                <td class="ovp_column_change">'.  $entry->change.    '</td>
+                <td class="ovp_column_oldroom">'. $entry->oldroom.   '</td>
+                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
+              </tr>';
+            if ($olddate != $entry->get_date()) {
+                $html .= '</table>';
+                $olddate = $entry->get_date();
+            }
+        }
+        $html .= '</div>';
+        return $html;
     }
 }
 
