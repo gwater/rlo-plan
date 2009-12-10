@@ -175,24 +175,24 @@ class ovp_page {
     private $source; // the ovp_source object used to generate the page
     private $content; // the whole html page
 
-    public function __construct($source) {
+    public function __construct(ovp_source $source) {
         $this->source = $source;
-        $this->content = generate_html();
+        $this->content = $this->generate_html();
     }
 
     private function generate_html() {
         $html = "<!doctype html>\n"
                 ."<html>\n<head>\n"
-                .$source->get_header()
+                .$this->source->get_header()
                 ."</head>\n<body>\n"
-                .$source->get_view()
+                .$this->source->get_view()
                 ."</body>\n</html>\n";
 
         return $html;
     }
 
     public function get_html() {
-        return $content;
+        return $this->content;
     }
 }
 

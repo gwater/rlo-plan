@@ -14,8 +14,8 @@ class db extends mysqli {
         if (!$this->select_db(DB_BASE)) {
             $this->create_db();
         }
-        if (false) { // TODO: check if tables exist
-            create_tables();
+        if (true) { // TODO: check if tables exist
+            $this->reset_tables();
         }
     }
 
@@ -23,7 +23,7 @@ class db extends mysqli {
      * Adds an entry to the database.
      */
     public function add_entry(entry $entry) {
-        $this->query("INSERT INTO `entry` VALUES(NULL, '".$entry->$time".', '".$entry->$teacher".', '".$entry->$subject".', '".$entry->$duration."', '".$entry->$course."', '".$entry->$oldroom."', '".$entry->$sub."', '".$entry->$change."')");
+        $this->query("INSERT INTO `entry` VALUES(NULL, '".$entry->$time."', '".$entry->$teacher."', '".$entry->$subject."', '".$entry->$duration."', '".$entry->$course."', '".$entry->$oldroom."', '".$entry->$sub."', '".$entry->$change."')");
     }
 
     /**
@@ -44,8 +44,8 @@ class db extends mysqli {
      * Retrieves an array of entries from the database on the given day.
      * Format of $date: unix timestamp of midnight (the beginning) on the requested day.
      */
-    public function get_entries(int $date = 0) {
-        if ($date == 0) {
+    public function get_entries(int $date = NULL) {
+        if ($date == NULL) {
             $result = $this->query("SELECT * FROM `entry` ORDER BY `teacher`, `time`");
         } else {
             $result = $this->query("SELECT * FROM `entry` WHERE `time` >= '".$this->protect($date)."' AND `time` < '".$this->protect($date + 60*60*24)."' ORDER BY `teacher`, `time`");
@@ -57,7 +57,7 @@ class db extends mysqli {
         return $entries;
     }
 
-    private function query(string $query) {
+    public function query($query) {
         if (!($result = parent::query($query))) {
             if (DEBUG) {
                 $this->fail($this->error);
@@ -77,7 +77,7 @@ class db extends mysqli {
         $this->select_db(DB_BASE);
     }
     
-    private function create_tables() {
+    private function reset_tables() {
         /*
         This table holds the user data of all the students who have access.
         id:   unique user id used to identify user during their session
@@ -90,12 +90,13 @@ class db extends mysqli {
                 3 - view all data, and modify entries (Mrs. Lange I)
                 4 - view all data, modify entries, and add new users (root)
          */
+        $this->query("DROP TABLE IF EXISTS `user`");
         $this->query("CREATE TABLE `user` (
-            `id`   INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            `name` VARCHAR(20)  NOT NULL,
-            `pwd`  CHAR(64)     NOT NULL,
-            `priv` INT UNSIGNED NOT NULL DEFAULT 1,
-            `ip`   INT UNSIGNED NULL     DEFAULT NULL
+            `id`   INT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            `name` VARCHAR(20)      NOT NULL,
+            `pwd`  CHAR(64)         NOT NULL,
+            `priv` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+            `ip`   INT UNSIGNED     NULL     DEFAULT NULL
         )");
 
         /*
@@ -110,18 +111,19 @@ class db extends mysqli {
         sub:      name of the substitute teacher (e.g. 'Fr. Musterfrau')
         change:   what class takes place [where] instead (e.g. 'Geschichte H0-2' or 'Ausfall')
         */
+        $this->query("DROP TABLE IF EXISTS `entry`");
         $this->query("CREATE TABLE `entry` (
             `id`       INT UNSIGNED      NOT NULL AUTO_INCREMENT PRIMARY KEY,
             `time`     TIMESTAMP         NULL     DEFAULT NULL,
             `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
             `subject`  VARCHAR(20)       NULL     DEFAULT NULL,
-            `duration` SHORTINT UNSIGNED NULL     DEFAULT NULL,
+            `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
             `course`   VARCHAR(3)        NULL     DEFAULT NULL,
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
             `change`   VARCHAR(50)       NULL     DEFAULT NULL
         )");
-        $this->query("INSERT INTO `user` VALUES (NULL, 'admin', '".ADMIN_PWD."', '4')");
+        $this->query("INSERT INTO `user` (`name`, `pwd`, `priv`) VALUES ('admin', '".ADMIN_PWD."', '4')");
     }
 
     private function fail($msg) {
