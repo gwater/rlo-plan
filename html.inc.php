@@ -13,21 +13,24 @@ abstract class ovp_source {
     private $db;
     private $title;
 
-    public function __construct($type, $db, $title="") {
-        $this->type = $type;
-        $this->db = $db;
+    public function __construct($type, $db, $title = '') {
+        $this->type  = $type;
+        $this->db    = $db;
         $this->title = $title;
     }
 
-    abstract private function generate_html();
+    abstract protected function generate_html();
 
     public function get_header() {
-        $header = "<title>".get_title()."</title>\n";
+        $header = '
+          <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+          <link rel="stylesheet" href="style.css" type="text/css">
+          <title>'.$this->get_title().'</title>';
         return $header;
     }
 
     public function get_view() {
-        $html = generate_html();
+        $html = $this->generate_html();
         return $html;
     }
 
@@ -47,14 +50,17 @@ abstract class ovp_source {
 class ovp_table_public extends ovp_source {
     private $entries;
 
-    public function __construct($db, $time=time()) {
-        parent::__construct("public", $db, "RLO Onlinevertretungsplan");
+    public function __construct($db, $time = -1) {
+        parent::__construct('public', $db, 'RLO Onlinevertretungsplan');
+        if ($time == -1) {
+            $time = time();
+        }
         $this->entries = $db->get_entries($time);
     }
 
-    private function generate_html() {
-        $html =
-         '<div class="ovp_container">
+    protected function generate_html() {
+        $html = '
+          <div class="ovp_container">
             <div class="ovp_table_heading">'.$this->title.'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_table_firstline">
@@ -67,8 +73,8 @@ class ovp_table_public extends ovp_source {
                 <td class="ovp_column_newroom">Neuer Raum</td>
               </tr>';
         foreach ($this->entries as $entry) {
-            $html .=
-             '<tr class="ovp_table_entryline">
+            $html .= '
+              <tr class="ovp_table_entryline">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
                 <td class="ovp_column_course">'.  $entry->course.    '</td>
                 <td class="ovp_column_subject">'. $entry->subject.   '</td>
@@ -78,8 +84,8 @@ class ovp_table_public extends ovp_source {
                 <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
               </tr>';
         }
-        $html .=
-           '</table>
+        $html .= '
+            </table>
           </div>';
         return $html;
     }
@@ -95,13 +101,16 @@ class ovp_table_public extends ovp_source {
 class ovp_table_print extends ovp_source {
     private $entries;
 
-    public function __construct($db, $time=time()) {
-        parent::__construct("print", $db, "Vertretungsplan");
+    public function __construct($db, $time = -1) {
+        parent::__construct('print', $db, 'Vertretungsplan');
+        if ($time == -1) {
+            $time = time();
+        }
         $this->entries = $db->get_entries($time);
 
     }
 
-    private function generate_html() {
+    protected function generate_html() {
         $html =
          '<div class="ovp_container">
             <div class="ovp_table_heading">'.$this->title.'</div>
@@ -116,7 +125,7 @@ class ovp_table_print extends ovp_source {
                 <td class="ovp_column_newroom">Raum</td>
               </tr>';
 
-        $oldteacher = "";
+        $oldteacher = '';
         foreach ($this->entries as $entry) {
             if ($entry->teacher != $oldteacher) {
                 $html .=
@@ -128,12 +137,12 @@ class ovp_table_print extends ovp_source {
             }
 
             /* An ugly hack to properly merge the changes column follows */
-            $changes = "";
-            if (($entry->sub != "") && ($entry->change != "")) {
-                $changes = $entry->sub.", ".$entry->change;
-            } else if ($entry->sub != "") {
+            $changes = '';
+            if (($entry->sub != '') && ($entry->change != '')) {
+                $changes = $entry->sub.', '.$entry->change;
+            } else if ($entry->sub != '') {
                 $changes = $entry->sub;
-            } else if ($entry->change != "") {
+            } else if ($entry->change != '') {
                 $change = $entry->change;
             }
 
@@ -163,18 +172,18 @@ class ovp_lange extends ovp_source {
     private $entries;
 
     public function __construct($db) {
-        parent::__construct("lange", $db, "RLO Onlinevertretungsplan Zentrale");
+        parent::__construct('lange', $db, 'RLO Onlinevertretungsplan Zentrale');
         $this->entries = $db->get_entries();
     }
 
-    private function generate_html() {
+    protected function generate_html() {
         // FIXME: Not yet interactive
         $html =
          '<div class="ovp_container">
             <div class="ovp_table_heading">'.$this->title.'</div>';
 
-        $olddate = "";
-        $oldteacher = "";
+        $olddate = '';
+        $oldteacher = '';
         foreach ($this->entries as $entry) {
             if ($olddate != $entry->get_date()) {
                 $html .=
@@ -227,10 +236,10 @@ class ovp_lange extends ovp_source {
  */
 class ovp_login extends ovp_source {
     public function __construct($db) {
-        parent::__construct("login", $db, "RLO Onlinevertretungsplan Login");
+        parent::__construct('login', $db, 'RLO Onlinevertretungsplan Login');
     }
 
-    private function generate_html() {
+    protected function generate_html() {
         //FIXME: i need implementing ;-)
     }
 }
@@ -242,10 +251,10 @@ class ovp_login extends ovp_source {
  */
 class ovp_admin extends ovp_source {
     public function __construct($db) {
-        parent::__construct("admin", $db, "RLO Onlinevertretungsplan Admin");
+        parent::__construct('admin', $db, 'RLO Onlinevertretungsplan Admin');
     }
 
-    private function generate_html() {
+    protected function generate_html() {
         //FIXME: i need implementing ;-)
     }
 

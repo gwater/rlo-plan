@@ -1,20 +1,9 @@
 <?php
 
 /**
- * I need the following functions in class db:
- * - get_entries():
- *      should return an array of entry_objects which directly map the
- *      entry table from the db, optionally with the possibility to select
- *      special classes/courses or timeframes.
- *
- * - remove_entry($entry):
- *      removes an entry from the db. is given n entry_object as an argument.
- * - add_entry($entry):
- *      adds an entry to the db. is given an entry_object as an argument.
  * - cleanup_entries():
  *      just a maintenance thing. remove all data no longer needed from the db
  *      DATENSCHUTZ!!!
- *
  * - verify_user($name, $pw) //???? no idea how that should work...
  * - remove_user($name)
  * - add_user($name, $pw_hash, $priv=0)
@@ -43,7 +32,7 @@ class db extends mysqli {
      * Adds an entry to the database.
      */
     public function add_entry(entry $entry) {
-        $this->query("INSERT INTO `entry` VALUES(NULL, '".$entry->$time."', '".$entry->$teacher."', '".$entry->$subject."', '".$entry->$duration."', '".$entry->$course."', '".$entry->$oldroom."', '".$entry->$sub."', '".$entry->$change."')");
+        $this->query("INSERT INTO `entry` VALUES(NULL, '".$entry->time."', '".$entry->teacher."', '".$entry->subject."', '".$entry->duration."', '".$entry->course."', '".$entry->oldroom."', '".$entry->newroom."', '".$entry->sub."', '".$entry->change."')");
     }
 
     /**
@@ -54,7 +43,7 @@ class db extends mysqli {
         if (is_numeric($entry)) {
             $id = $entry;
         } else {
-            $id = $entry->$id;
+            $id = $entry->id;
         }
         $this->query("DELETE FROM `entry` WHERE `id` = '".$id."' LIMIT 1");
         return $this->affected_rows == 1;
@@ -64,14 +53,14 @@ class db extends mysqli {
      * Retrieves an array of entries from the database on the given day.
      * Format of $date: unix timestamp of midnight (the beginning) on the requested day.
      */
-    public function get_entries(int $date = NULL) {
-        if ($date == NULL) {
+    public function get_entries($date = -1) {
+        if ($date == -1) {
             $result = $this->query("SELECT * FROM `entry` ORDER BY `teacher`, `time`");
         } else {
             $result = $this->query("SELECT * FROM `entry` WHERE `time` >= '".$this->protect($date)."' AND `time` < '".$this->protect($date + 60*60*24)."' ORDER BY `teacher`, `time`");
         }
         $entries = array();
-        while ($row = $this->fetch_assoc($result)) {
+        while ($row = $result->fetch_assoc()) {
             $entries[] = new entry($row['id'], $row['time'], $row['teacher'], $row['subject'], $row['duration'], $row['course'], $row['oldroom'], $row['sub'], $row['change']);
         }
         return $entries;
@@ -96,7 +85,7 @@ class db extends mysqli {
         $this->query("CREATE DATABASE `".DB_BASE."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->select_db(DB_BASE);
     }
-    
+
     private function reset_tables() {
         /*
         This table holds the user data of all the students who have access.
@@ -140,9 +129,11 @@ class db extends mysqli {
             `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
             `course`   VARCHAR(3)        NULL     DEFAULT NULL,
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
+            `newroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
             `change`   VARCHAR(50)       NULL     DEFAULT NULL
         )");
+
         $this->query("INSERT INTO `user` (`name`, `pwd`, `priv`) VALUES ('admin', '".ADMIN_PWD."', '4')");
     }
 
