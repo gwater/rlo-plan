@@ -25,7 +25,7 @@
   </tr>
   <tr>
     <td>Passwort:</td>
-    <td><input type="password" name="pwd"</td>
+    <td><input type="password" name="pwd"></td>
   </tr>
   <tr>
     <td></td>
