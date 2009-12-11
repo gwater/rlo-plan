@@ -8,6 +8,7 @@
 
 require_once('db.inc.php');
 require_once('misc.inc.php');
+require_once('html.inc.php');
 
 session_start();
 
@@ -20,8 +21,7 @@ case 'login':
             redirect($_GET['continue']);
         }
     }
-    require('login.inc.php');
-    exit;
+    exit(new ovp_page(new ovp_login($db))->get_html());
 case 'logout':
     $db = new db();
     $db->logout(session_id());

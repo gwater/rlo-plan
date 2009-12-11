@@ -168,11 +168,11 @@ class ovp_table_print extends ovp_source {
  * and editing entries of the plan and thus access must be restricted to
  * authorized school personnel.
  */
-class ovp_lange extends ovp_source {
+class ovp_author extends ovp_source {
     private $entries;
 
     public function __construct($db) {
-        parent::__construct('lange', $db, 'RLO Onlinevertretungsplan Zentrale');
+        parent::__construct('author', $db, 'RLO Onlinevertretungsplan Zentrale');
         $this->entries = $db->get_entries();
     }
 
@@ -188,7 +188,7 @@ class ovp_lange extends ovp_source {
             if ($olddate != $entry->get_date()) {
                 $html .=
            '<div class="ovp_date">'.$entry->get_date().'</div>
-            <table class="ovp_table" id="ovp_table_'.$type.'">
+            <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_table_firstline">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
@@ -222,7 +222,7 @@ class ovp_lange extends ovp_source {
               </tr>';
             if ($olddate != $entry->get_date()) {
                 $html .=
-           '  <tr class=ovp_table_emptyline"></tr>
+             '<tr class=ovp_table_emptyline"></tr>
               <tr><a href="">Fehlenden Lehrer eintragen</a></tr>
             </table>';
                 $olddate = $entry->get_date();
@@ -244,7 +244,30 @@ class ovp_login extends ovp_source {
     }
 
     protected function generate_html() {
-        //FIXME: i need implementing ;-)
+        $html =
+         '<h1>Login</h1>
+          <p>Um diese Seite öffnen zu können, benötigen Sie ein entsprechend autorisiertes Benutzerkonto.</p>
+          <form action="account.php?action=login';
+        if (isset($_GET['continue'])) {
+            $html .= '&continue='.$_GET['continue'];
+        }
+        $html .= '" method="POST">
+            <table>
+              <tr>
+                <td>Name:</td>
+                <td><input type="text" name="name"></td>
+              </tr>
+              <tr>
+                <td>Passwort:</td>
+                <td><input type="password" name="pwd"></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="submit" value="Login"></td>
+              </tr>
+            </table>
+          </form>';
+        return $html;
     }
 }
 
@@ -284,11 +307,11 @@ class ovp_page {
             '<!DOCTYPE html>
              <html>
              <head>
-            '.$this->source->get_header().'
+                '.$this->source->get_header().'
              </head>
              <body>
-            '.$this->source->get_view().'
-            '/* TODO: relocate this messy logout link */.'<a href="account.php?action=logout">Logout</a>
+                <a class="ovp_logout_link" href="account.php?action=logout">Logout</a>
+                '.$this->source->get_view().'
              </body>
              </html>';
         return $html;
