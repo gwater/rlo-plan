@@ -205,6 +205,7 @@ class ovp_lange extends ovp_source {
              '<tr class="ovp_table_emptyline"></tr>
               <tr class="ovp_table_teacherline">
                 <td class="ovp_table_teachercell">'.$entry->teacher.'</td>
+                <td><a href="">Vertretungsregelung hinzufügen</a></td>
               </tr>';
                 $oldteacher = $entry->teacher;
             }
@@ -220,7 +221,10 @@ class ovp_lange extends ovp_source {
                 <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
               </tr>';
             if ($olddate != $entry->get_date()) {
-                $html .= '</table>';
+                $html .=
+           '  <tr class=ovp_table_emptyline"></tr>
+              <tr><a href="">Fehlenden Lehrer eintragen</a></tr>
+            </table>';
                 $olddate = $entry->get_date();
             }
         }
