@@ -47,7 +47,7 @@ abstract class ovp_source {
  * This source provides the public view for students
  * Sensitive information like teachers names is not included.
  */
-class ovp_table_public extends ovp_source {
+class ovp_public extends ovp_source {
     private $entries;
 
     public function __construct($db, $time = -1) {
@@ -61,9 +61,9 @@ class ovp_table_public extends ovp_source {
     protected function generate_html() {
         $html = '
           <div class="ovp_container">
-            <div class="ovp_table_heading">'.$this->title.'</div>
+            <div class="ovp_heading">'.$this->title.'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
-              <tr class="ovp_table_firstline">
+              <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
                 <td class="ovp_column_subject">Fach</td>
@@ -74,7 +74,7 @@ class ovp_table_public extends ovp_source {
               </tr>';
         foreach ($this->entries as $entry) {
             $html .= '
-              <tr class="ovp_table_entryline">
+              <tr class="ovp_row_entry">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
                 <td class="ovp_column_course">'.  $entry->course.    '</td>
                 <td class="ovp_column_subject">'. $entry->subject.   '</td>
@@ -98,7 +98,7 @@ class ovp_table_public extends ovp_source {
  * since it contains sensitive information its access must be restricted to
  * school personnel.
  */
-class ovp_table_print extends ovp_source {
+class ovp_print extends ovp_source {
     private $entries;
 
     public function __construct($db, $time = -1) {
@@ -113,10 +113,10 @@ class ovp_table_print extends ovp_source {
     protected function generate_html() {
         $html =
          '<div class="ovp_container">
-            <div class="ovp_table_heading">'.$this->title.'</div>
+            <div class="ovp_heading">'.$this->title.'</div>
             <div class="ovp_date">'.$this->entries[0]->get_date().'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
-              <tr class="ovp_table_firstline">
+              <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
                 <td class="ovp_column_subject">Fach</td>
@@ -129,9 +129,8 @@ class ovp_table_print extends ovp_source {
         foreach ($this->entries as $entry) {
             if ($entry->teacher != $oldteacher) {
                 $html .=
-             '<tr class="ovp_table_emptyline"></tr>
-              <tr class="ovp_table_teacherline">
-                <td class="ovp_table_teachercell">'.$entry->teacher.'</td>
+             '<tr class="ovp_row_teacher">
+                <td class="ovp_cell_teacher">'.$entry->teacher.'</td>
               </tr>';
                 $oldteacher = $entry->teacher;
             }
@@ -147,7 +146,7 @@ class ovp_table_print extends ovp_source {
             }
 
             $html .=
-             '<tr class="ovp_table_entryline">
+             '<tr class="ovp_row_entry">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
                 <td class="ovp_column_course">'.  $entry->course.    '</td>
                 <td class="ovp_column_subject">'. $entry->subject.   '</td>
@@ -180,7 +179,7 @@ class ovp_author extends ovp_source {
         // FIXME: Not yet interactive
         $html =
          '<div class="ovp_container">
-            <div class="ovp_table_heading">'.$this->title.'</div>';
+            <div class="ovp_heading">'.$this->title.'</div>';
 
         $olddate = '';
         $oldteacher = '';
@@ -189,7 +188,7 @@ class ovp_author extends ovp_source {
                 $html .=
            '<div class="ovp_date">'.$entry->get_date().'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
-              <tr class="ovp_table_firstline">
+              <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
                 <td class="ovp_column_subject">Fach</td>
@@ -202,15 +201,14 @@ class ovp_author extends ovp_source {
             }
             if ($oldteacher != $entry->teacher) {
                 $html .=
-             '<tr class="ovp_table_emptyline"></tr>
-              <tr class="ovp_table_teacherline">
-                <td class="ovp_table_teachercell">'.$entry->teacher.'</td>
+             '<tr class="ovp_row_teacher">
+                <td class="ovp_cell_teacher">'.$entry->teacher.'</td>
                 <td><a href="">Vertretungsregelung hinzufügen</a></td>
               </tr>';
                 $oldteacher = $entry->teacher;
             }
             $html .=
-             '<tr class="ovp_table_entryline">
+             '<tr class="ovp_row_entry">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
                 <td class="ovp_column_course">'.  $entry->course.    '</td>
                 <td class="ovp_column_subject">'. $entry->subject.   '</td>
@@ -222,8 +220,7 @@ class ovp_author extends ovp_source {
               </tr>';
             if ($olddate != $entry->get_date()) {
                 $html .=
-             '<tr class=ovp_table_emptyline"></tr>
-              <tr><a href="">Fehlenden Lehrer eintragen</a></tr>
+             '<tr class="ovp_row_newteacher"><a href="">Fehlenden Lehrer eintragen</a></tr>
             </table>';
                 $olddate = $entry->get_date();
             }
