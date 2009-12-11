@@ -14,10 +14,8 @@ session_start();
 $db = new db();
 
 switch ($_GET['view']) {
-case NULL:
-case 'public':
-    authenticate(VIEW_PUBLIC, 'index.php?view=public');
-    $source = new ovp_public($db);
+case 'login':
+    $source = new ovp_login($db);
     break;
 case 'print':
     authenticate(VIEW_PRINT, 'index.php?view=print');
@@ -35,9 +33,10 @@ case 'admin':
     authenticate(VIEW_ADMIN, 'index.php?view=admin');
     $source = new ovp_admin($db);
     break;
-case 'login':
+case 'public':
 default:
-    $source = new ovp_login($db);
+    authenticate(VIEW_PUBLIC, 'index.php?view=public');
+    $source = new ovp_public($db);
 }
 
 $page = new ovp_page($source);
