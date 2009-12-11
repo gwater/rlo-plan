@@ -89,7 +89,6 @@ class ovp_public extends ovp_source {
           </div>';
         return $html;
     }
-
 }
 
 /**
@@ -112,7 +111,7 @@ class ovp_print extends ovp_source {
             $time = strptime($day, "%Y-%m-%d");
         }
         $this->entries = $db->get_entries($time);
-        $this->today = strftime("%d.%m.%y", $time);
+        $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60)
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60)
     }
@@ -292,7 +291,6 @@ class ovp_admin extends ovp_source {
     protected function generate_html() {
         //FIXME: i need implementing ;-)
     }
-
 }
 
 /**
