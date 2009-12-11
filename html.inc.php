@@ -284,6 +284,7 @@ class ovp_page {
              </head>
              <body>
             '.$this->source->get_view().'
+            '/* TODO: relocate this messy logout link */.'<a href="account.php?action=logout">Logout</a>
              </body>
              </html>';
         return $html;

@@ -1,3 +1,8 @@
+<!--
+    TODO: move this code into html.inc.php and
+          replace every "require('login.inc.php'); exit;"
+          with something like "exit(new ovp_login_page()->get_html());"
+-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -23,11 +28,7 @@
     <td><input type="password" name="pwd"</td>
   </tr>
   <tr>
-    <td><?php
-    if (DEBUG) {
-        echo 'IP: '.$_SERVER['REMOTE_ADDR'];
-    }
-?></td>
+    <td></td>
     <td><input type="submit" value="Login"></td>
   </tr>
 </table>

@@ -24,7 +24,7 @@ case 'login':
     exit;
 case 'logout':
     $db = new db();
-    $db->logout($_SERVER['REMOTE_ADDR']);
+    $db->logout(session_id());
     $_SESSION = array();
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);

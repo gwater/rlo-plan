@@ -32,7 +32,20 @@ class db extends mysqli {
      * Adds an entry to the database.
      */
     public function add_entry(entry $entry) {
-        $this->query("INSERT INTO `entry` VALUES(NULL, '".$entry->time."', '".$entry->teacher."', '".$entry->subject."', '".$entry->duration."', '".$entry->course."', '".$entry->oldroom."', '".$entry->newroom."', '".$entry->sub."', '".$entry->change."')");
+        $this->query(
+           "INSERT INTO `entry` VALUES (
+                NULL,
+                '".$entry->time."',
+                '".$entry->teacher."',
+                '".$entry->subject."',
+                '".$entry->duration."',
+                '".$entry->course."',
+                '".$entry->oldroom."',
+                '".$entry->newroom."',
+                '".$entry->sub."',
+                '".$entry->change."'
+            )"
+        );
     }
 
     /**
@@ -55,9 +68,21 @@ class db extends mysqli {
      */
     public function get_entries($date = -1) {
         if ($date == -1) {
-            $result = $this->query("SELECT * FROM `entry` ORDER BY `teacher`, `time`");
+            $result = $this->query(
+               "SELECT * FROM `entry` ORDER BY
+                    `time` - MOD(`time`, 60*60*24),
+                    `teacher`,
+                    `time`"
+            );
         } else {
-            $result = $this->query("SELECT * FROM `entry` WHERE `time` >= '".$this->protect($date)."' AND `time` < '".$this->protect($date + 60*60*24)."' ORDER BY `teacher`, `time`");
+            $result = $this->query(
+               "SELECT * FROM `entry` WHERE
+                    `time` >= '".$this->protect($date)."' AND
+                    `time` <  '".$this->protect($date + 60*60*24)."'
+                ORDER BY
+                    `teacher`,
+                    `time`"
+            );
         }
         $entries = array();
         while ($row = $result->fetch_assoc()) {
@@ -110,8 +135,16 @@ class db extends mysqli {
         return $row['priv']; // privilege is always positive
     }
 
-    public function logout($session) {
-        // TODO
+    public function logout($sid) {
+        $this->query(
+           "UPDATE `user` SET
+                `ip1` = NULL,
+                `ip2` = NULL,
+                `sid` = NULL
+            WHERE
+                `sid` = '".$this->protect($sid)."'"
+        );
+        return $this->affected_rows == 1;
     }
 
     // this function is only public because it was inherited as public! do not use form outside this class!
@@ -158,8 +191,8 @@ class db extends mysqli {
             `priv` TINYINT UNSIGNED NOT NULL DEFAULT 1,
             `ip1`  BIGINT UNSIGNED  NULL     DEFAULT NULL,
             `ip2`  BIGINT UNSIGNED  NULL     DEFAULT NULL,
-            `sid`  INT UNSIGNED     NULL     DEFAULT NULL
-        )");
+            `sid`  INT UNSIGNED     NULL     DEFAULT NULL)"
+        );
 
         /*
         This table holds the timetable changes (including the good stuff such as cancelled classes...)
@@ -184,10 +217,20 @@ class db extends mysqli {
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
-            `change`   VARCHAR(50)       NULL     DEFAULT NULL
-        )");
+            `change`   VARCHAR(50)       NULL     DEFAULT NULL)"
+        );
 
-        $this->query("INSERT INTO `user` (`name`, `pwd`, `priv`) VALUES ('admin', '".ADMIN_PWD."', '4')");
+        $this->query(
+           "INSERT INTO `user` (
+                `name`,
+                `pwd`,
+                `priv`
+            ) VALUES (
+                'admin',
+                '".ADMIN_PWD."',
+                '4'
+            )"
+        );
     }
 
     private function fail($msg) {
