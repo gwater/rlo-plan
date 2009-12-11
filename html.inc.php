@@ -309,17 +309,25 @@ class ovp_page {
     }
 
     private function generate_html() {
+        //FIXME: Don't show the navibar before login
         $html =
-            '<!DOCTYPE html>
-             <html>
-             <head>
+           '<!DOCTYPE html>
+            <html>
+            <head>
                 '.$this->source->get_header().'
-             </head>
-             <body>
-                <a class="ovp_logout_link" href="account.php?action=logout">Logout</a>
-                '.$this->source->get_view().'
-             </body>
-             </html>';
+            </head>
+            <body>
+              <div id="ovp_navi">
+                <a href="index.php?view=public" class="ovp_link_navi">OVP</a>
+                <a href="index.php?view=print" class="ovp_link_navi">Aushang</a>
+                <a href="index.php?view=author" class="ovp_link_navi">Einträge verwalten</a>
+                <a href="index.php?view=admin" class="ovp_link_navi">Benutzer verwalten</a>
+                <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>
+                <!-- more links go here -->
+              </div>
+              '.$this->source->get_view().'
+            </body>
+            </html>';
         return $html;
     }
 
