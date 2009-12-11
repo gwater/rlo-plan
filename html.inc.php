@@ -100,21 +100,28 @@ class ovp_public extends ovp_source {
  */
 class ovp_print extends ovp_source {
     private $entries;
+    private $today;
+    private $yesterday;
+    private $tomorrow;
 
-    public function __construct($db, $time = -1) {
+    public function __construct($db, $day = -1) {
         parent::__construct('print', $db, 'Vertretungsplan');
-        if ($time == -1) {
+        if ($day == -1) {
             $time = time();
+        } else {
+            $time = strptime($day, "%Y-%m-%d");
         }
         $this->entries = $db->get_entries($time);
-
+        $this->today = strftime("%d.%m.%y", $time);
+        $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60)
+        $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60)
     }
 
     protected function generate_html() {
         $html =
          '<div class="ovp_container">
             <div class="ovp_heading">'.$this->title.'</div>
-            <div class="ovp_date">'.$this->entries[0]->get_date().'</div>
+            <div class="ovp_date">'.$this->today.'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
@@ -157,6 +164,10 @@ class ovp_print extends ovp_source {
         }
         $html .=
            '</table>
+            <div class="ovp_day_links">
+              <a href="index.php?date='.$this->yesterday.'&view='.$this->type'" class="ovp_link_yesterday">Einen Tag zurück</a>
+              <a href="index.php?date='.$this->tomorrow.'&view='.$this->type'" class="ovp_link_yesterday">Einen Tag weiter</a>
+            </div>
           </div>';
         return $html;
     }

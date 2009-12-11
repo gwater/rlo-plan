@@ -21,7 +21,8 @@ case 'login':
             redirect($_GET['continue']);
         }
     }
-    exit(new ovp_page(new ovp_login($db))->get_html());
+    redirect('index.php')
+    break;
 case 'logout':
     $db = new db();
     $db->logout(session_id());
@@ -30,6 +31,7 @@ case 'logout':
     setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
     session_destroy();
     redirect('index.php');
+    break;
 default:
     die('ERROR: no action parameter');
 }
