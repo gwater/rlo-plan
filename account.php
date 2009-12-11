@@ -6,39 +6,32 @@
  * An optional GET parameter 'continue' sets the redirect target script.
  */
 
+require_once('db.inc.php');
+require_once('misc.inc.php');
+
 session_start();
 
 switch($_GET['action']) {
 case 'login':
-    // TODO:
-    // - copy session cookie and ip to the user table
-    // - write include with an authenticate() function which retrieves the ip and session cookie from the user table
-    /*
-    $db = new db();
-    $db->save_session(session_id(), $_SERVER['REMOTE_ADDR']);
-    */
-    break;
+    if (isset($_POST['name']) && isset($_POST['pwd'])) {
+        $db = new db();
+        $_SESSION['privilege'] = $db->login($_POST['name'], $_POST['pwd'], ip2long($_SERVER['REMOTE_ADDR']), session_id());
+        if ($_SESSION['privilege'] != -1) {
+            redirect($_GET['continue']);
+        }
+    }
+    require('login.inc.php');
+    exit;
 case 'logout':
-    /*
     $db = new db();
-    $db->delete_session(session_id());
+    $db->logout($_SERVER['REMOTE_ADDR']);
     $_SESSION = array();
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
     session_destroy();
-    */
-    break;
+    redirect('index.php');
 default:
     die('ERROR: no action parameter');
 }
-
-$continue = $_GET['continue'];
-if (!$continue) {
-    $continue = 'index.php';
-}
-
-$server = $_SERVER['SERVER_NAME'];
-$path = dirname($_SERVER['PHP_SELF']);
-header('Location: http://'.$server.$path.'/'.$continue);
 
 ?>

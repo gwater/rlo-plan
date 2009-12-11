@@ -1,3 +1,7 @@
 .ovp_table {
     border: 1px solid black;
 }
+
+input[type="submit"] {
+    width: 100%;
+}

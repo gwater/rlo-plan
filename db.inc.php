@@ -23,7 +23,7 @@ class db extends mysqli {
         if (!$this->select_db(DB_BASE)) {
             $this->create_db();
         }
-        if (true) { // TODO: check if tables exist
+        if (false) { // TODO: check if tables exist
             $this->reset_tables();
         }
     }
@@ -66,6 +66,55 @@ class db extends mysqli {
         return $entries;
     }
 
+    // returns the numerical representation of the ip address of the user with the specified session id
+    public function get_ip($sid) {
+        $result = $this->query(
+           "SELECT
+                `ip1`,
+                `ip2`
+            FROM `user` WHERE
+                `sid`  = '".$this->protect($sid)."'"
+        );
+        if (!($row = $result->fetch_assoc())) {
+            return -1; // session id not found
+        }
+        if ($row['ip2'] != NULL) {
+            return ($row['ip2'] << 64) + $row['ip1'];
+        } else {
+            return $row['ip1'];
+        }
+    }
+
+    public function login($name, $pwd, $ip, $session) {
+        $result = $this->query(
+           "SELECT
+                `id`,
+                `priv`
+            FROM `user` WHERE
+                `name` = '".$this->protect($name)."' AND
+                `pwd`  = '".hash('sha256', $pwd)."'"
+        );
+        if (!($row = $result->fetch_assoc())) {
+            return -1; // user not found or wrong password
+        }
+        $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
+        $ip2 = $ip >> 64;
+        $this->query(
+           "UPDATE `user` SET
+                `ip1` = '".$ip1."',
+                `ip2` = '".$ip2."',
+                `sid` = '".$this->protect($session)."'
+            WHERE
+                `id` = '".$row['id']."'"
+        );
+        return $row['priv']; // privilege is always positive
+    }
+
+    public function logout($session) {
+        // TODO
+    }
+
+    // this function is only public because it was inherited as public! do not use form outside this class!
     public function query($query) {
         if (!($result = parent::query($query))) {
             if (DEBUG) {
@@ -89,15 +138,17 @@ class db extends mysqli {
     private function reset_tables() {
         /*
         This table holds the user data of all the students who have access.
-        id:   unique user id used to identify user during their session
-        name: user name, e.g. 'jdoe'
-        pwd:  sha256-hashed password
-        priv: privilege level
-                0 - no rights whatsoever (useful for suspending accounts)
-                1 - view all data except for teacher names, default (students)
-                2 - view all data (teachers)
-                3 - view all data, and modify entries (Mrs. Lange I)
-                4 - view all data, modify entries, and add new users (root)
+        id:        unique user id used to identify user during their session
+        name:      user name, e.g. 'jdoe'
+        pwd:       sha256-hashed password
+        priv:      privilege level
+                     0 - no rights whatsoever (useful for suspending accounts)
+                     1 - view all data except for teacher names, default (students)
+                     2 - view all data (teachers)
+                     3 - view all data, and modify entries (Mrs. Lange I)
+                     4 - view all data, modify entries, and add new users (root)
+         ip1, ip2: the current IPv6 address if the user is logged in,
+                   ip2 = NULL indicates that ip1 is an IPv4 address
          */
         $this->query("DROP TABLE IF EXISTS `user`");
         $this->query("CREATE TABLE `user` (
@@ -105,7 +156,9 @@ class db extends mysqli {
             `name` VARCHAR(20)      NOT NULL,
             `pwd`  CHAR(64)         NOT NULL,
             `priv` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-            `ip`   INT UNSIGNED     NULL     DEFAULT NULL
+            `ip1`  BIGINT UNSIGNED  NULL     DEFAULT NULL,
+            `ip2`  BIGINT UNSIGNED  NULL     DEFAULT NULL,
+            `sid`  INT UNSIGNED     NULL     DEFAULT NULL
         )");
 
         /*

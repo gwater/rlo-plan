@@ -11,7 +11,7 @@ define('DB_PASS', 'kissingenstrasse'); // database password
 
 define('DELETE_OLDER_THAN', -1);       // positive: entries older than DELETE_PAST days are automatically deleted;
                                        // negative: never delete anything
-define('ADMIN_PWD', hash('sha256', 'lange'));
+define('ADMIN_PWD', hash('sha256', 'nimda'));
 
 // privilege levels required for a specific action:
 define('NO_RIGHTS',     0);
