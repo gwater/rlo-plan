@@ -20,6 +20,7 @@ function authenticate($requiredPrivilege = 1, $continue = 'index.php') {
        ) {
         return;
     } else {
+        $continue = urlencode($continue);
         redirect('account.php?action=login&continue='.$continue);
     }
 }
