@@ -112,8 +112,8 @@ class ovp_print extends ovp_source {
         }
         $this->entries = $db->get_entries($time);
         $this->today = strftime("%A, %d.%m.%y", $time);
-        $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60)
-        $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60)
+        $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
+        $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
     }
 
     protected function generate_html() {
@@ -164,8 +164,8 @@ class ovp_print extends ovp_source {
         $html .=
            '</table>
             <div class="ovp_day_links">
-              <a href="index.php?date='.$this->yesterday.'&view='.$this->type'" class="ovp_link_yesterday">Einen Tag zurück</a>
-              <a href="index.php?date='.$this->tomorrow.'&view='.$this->type'" class="ovp_link_yesterday">Einen Tag weiter</a>
+              <a href="index.php?date='.$this->yesterday.'&view='.$this->type.'" class="ovp_link_yesterday">Einen Tag zurück</a>
+              <a href="index.php?date='.$this->tomorrow.'&view='.$this->type.'" class="ovp_link_yesterday">Einen Tag weiter</a>
             </div>
           </div>';
         return $html;
