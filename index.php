@@ -6,7 +6,7 @@ require_once('db.inc.php');
 require_once('html.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
-setlocale(LC_TIME, 'deu');
+setlocale(LC_TIME, 'de_DE.utf8', 'deu');
 
 session_start();
 
