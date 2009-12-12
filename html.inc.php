@@ -9,9 +9,9 @@
  * html page.
  */
 abstract class ovp_source {
-    private $type;
-    private $db;
-    private $title;
+    protected $type;
+    protected $db;
+    protected $title;
 
     public function __construct($type, $db, $title = '') {
         $this->type  = $type;
@@ -61,7 +61,7 @@ class ovp_public extends ovp_source {
     protected function generate_html() {
         $html = '
           <div class="ovp_container">
-            <div class="ovp_heading">'.$this->title.'</div>
+            <h1 class="ovp_heading">'.$this->title.'</h1>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
@@ -119,7 +119,7 @@ class ovp_print extends ovp_source {
     protected function generate_html() {
         $html =
          '<div class="ovp_container">
-            <div class="ovp_heading">'.$this->title.'</div>
+            <h1 class="ovp_heading">'.$this->title.'</h1>
             <div class="ovp_date">'.$this->today.'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_row_first">
@@ -189,7 +189,7 @@ class ovp_author extends ovp_source {
         // FIXME: Not yet interactive
         $html =
          '<div class="ovp_container">
-            <div class="ovp_heading">'.$this->title.'</div>';
+            <h1 class="ovp_heading">'.$this->title.'</h1>';
 
         $olddate = '';
         $oldteacher = '';
@@ -251,6 +251,7 @@ class ovp_login extends ovp_source {
     }
 
     protected function generate_html() {
+        //FIXME: Add CSS hooks
         $html =
          '<h1>Login</h1>
           <p>Um diese Seite öffnen zu können, benötigen Sie ein entsprechend autorisiertes Benutzerkonto.</p>
