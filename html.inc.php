@@ -123,7 +123,7 @@ class ovp_print extends ovp_source {
         $html =
          '<div class="ovp_container">
             <h1 class="ovp_heading">'.$this->title.'</h1>
-            <div class="ovp_date">'.$this->today.'</div>
+            <h2 class="ovp_date">'.$this->today.'</h2>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
