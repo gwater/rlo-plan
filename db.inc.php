@@ -11,6 +11,7 @@
 
 require_once('config.inc.php');
 require_once('entry.inc.php');
+require_once('user.inc.php');
 
 class db extends mysqli {
 
@@ -91,6 +92,18 @@ class db extends mysqli {
         return $entries;
     }
 
+    public function get_current_user($ip, $sid) {
+        $result = $this->query(
+           "SELECT * FROM `user` WHERE
+                `ip1` = '".($ip & 0xFFFFFFFFFFFFFFFF)."' AND
+                `ip2` = '".($ip >> 64)."'"
+        );
+        if (!($row = $result->fetch_assoc())) {
+            return NULL; // ip or sid not found
+        }
+        return new user($row['id'], $row['name'], $row['priv']);
+    }
+
     // returns the numerical representation of the ip address of the user with the specified session id
     public function get_ip($sid) {
         $result = $this->query(
@@ -110,7 +123,7 @@ class db extends mysqli {
         }
     }
 
-    public function login($name, $pwd, $ip, $session) {
+    public function login($name, $pwd, $ip, $sid) {
         $result = $this->query(
            "SELECT
                 `id`,
@@ -128,7 +141,7 @@ class db extends mysqli {
            "UPDATE `user` SET
                 `ip1` = '".$ip1."',
                 `ip2` = '".$ip2."',
-                `sid` = '".$this->protect($session)."'
+                `sid` = '".$this->protect($sid)."'
             WHERE
                 `id` = '".$row['id']."'"
         );
@@ -180,8 +193,7 @@ class db extends mysqli {
                      2 - view all data (teachers)
                      3 - view all data, and modify entries (Mrs. Lange I)
                      4 - view all data, modify entries, and add new users (root)
-         ip1, ip2: the current IPv6 address if the user is logged in,
-                   ip2 = NULL indicates that ip1 is an IPv4 address
+         ip1, ip2: the current IPv6 address if the user is logged in
          */
         $this->query("DROP TABLE IF EXISTS `user`");
         $this->query("CREATE TABLE `user` (

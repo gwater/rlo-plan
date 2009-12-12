@@ -1,0 +1,3 @@
+<?php
+// TOOLAZY: user class
+?>
