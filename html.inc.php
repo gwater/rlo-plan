@@ -164,8 +164,8 @@ class ovp_print extends ovp_source {
         $html .=
            '</table>
             <div class="ovp_day_links">
-              <a href="index.php?date='.$this->yesterday.'&view='.$this->type.'" class="ovp_link_yesterday">Einen Tag zurück</a>
-              <a href="index.php?date='.$this->tomorrow.'&view='.$this->type.'" class="ovp_link_yesterday">Einen Tag weiter</a>
+              <a href="index.php?view='.$this->type.'&date='.$this->yesterday.'" class="ovp_link_yesterday">Einen Tag zurück</a>
+              <a href="index.php?view='.$this->type.'&date='.$this->tomorrow.'" class="ovp_link_tomorrow">Einen Tag weiter</a>
             </div>
           </div>';
         return $html;
