@@ -108,7 +108,10 @@ class ovp_print extends ovp_source {
         if ($day == -1) {
             $time = time();
         } else {
-            $time = strptime($day, "%Y-%m-%d");
+            if (!preg_match('/(\d{4})-(\d\d)-(\d\d)/', $day, $matches)) {
+                exit('lol wut?');
+            }
+            $time = mktime(0, 0, 0, $matches[2], $matches[3], $matches[1]);
         }
         $this->entries = $db->get_entries($time);
         $this->today = strftime("%A, %d.%m.%y", $time);
