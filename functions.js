@@ -183,6 +183,7 @@ function add_teacher(button) {
     var day = button.parentNode;
     var teacher = newTeacher('Neuer Lehrer', []);
     day.insertBefore(teacher, day.lastChild);
+    teacher.childNodes[1].value = '';
     teacher.firstChild.onclick();
 }
 
@@ -190,6 +191,7 @@ function add_day(button) {
     var ovp = button.parentNode;
     var day = newDay('Neuer Tag', []);
     ovp.insertBefore(day, ovp.lastChild);
+    day.childNodes[1].value = '';
     day.firstChild.onclick();
 }
 
