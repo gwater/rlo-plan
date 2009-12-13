@@ -152,6 +152,7 @@ function add_new_entry(button) {
     var row = newElement('tr');
 
     // data cells:
+    // TODO: enhance for more columns
     row.appendChild(newCell(''));
     row.appendChild(newCell(''));
     row.appendChild(newCell(''));
@@ -202,6 +203,7 @@ function newEntry(id, time, room, change) {
     row.id = 'entry' + id;
 
     // data cells:
+    // TODO: enhance for more columns
     row.appendChild(newCell(time));
     row.appendChild(newCell(room));
     row.appendChild(newCell(change));
@@ -254,6 +256,7 @@ function newTeacher(name, entries) {
     var table = newElement('table');
     table.setAttribute('class', 'ovp_table');
     var header_row = newElement('tr');
+    // TODO: enhance for more columns
     header_row.appendChild(newCell('Uhrzeit'));
     header_row.appendChild(newCell('Raum'));
     header_row.appendChild(newCell('Änderung'));
