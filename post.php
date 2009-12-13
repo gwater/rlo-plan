@@ -14,10 +14,12 @@ if (!is_authorized(VIEW_AUTHOR)) {
 switch ($_POST['action']) {
 case 'add':
     // TODO
-    fail('TODO');
+    fail('TODO: add');
+    break;
 case 'update':
     // TODO
-    fail('TODO');
+    fail('TODO: update');
+    break;
 case 'delete':
     if (!(isset($_POST['id']) && is_numeric($_POST['id']))) {
         fail('invalid id');
