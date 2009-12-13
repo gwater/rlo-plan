@@ -173,6 +173,7 @@ function add_new_entry(button) {
     row.appendChild(button_cell);
 
     button.parentNode.querySelector('.ovp_table').appendChild(row);
+    row.firstChild.firstChild.focus();
 }
 
 function add_teacher(button) {
