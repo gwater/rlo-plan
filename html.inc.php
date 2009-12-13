@@ -256,7 +256,7 @@ class ovp_author extends ovp_source {
                         $entry->get_time().'", "'.
                         $entry->teacher.'", "'.
                         $entry->subject.'", "'.
-                        $entry->.duration'", "'.
+                        $entry->duration.'", "'.
                         $entry->course.'", "'.
                         $entry->oldroom.'", "'.
                         $entry->newroom.'", "'.
