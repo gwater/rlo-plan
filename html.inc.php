@@ -20,7 +20,10 @@ abstract class ovp_source {
     }
 
     abstract protected function generate_view();
-    abstract protected function generate_header();
+
+    protected function generate_header() {
+        return '';
+    }
 
     public function get_header() {
         $header = '
@@ -58,10 +61,6 @@ class ovp_public extends ovp_source {
             $time = time();
         }
         $this->entries = $db->get_entries($time);
-    }
-
-    protected function generate_header() {
-        return '';
     }
 
     protected function generate_view() {
@@ -123,10 +122,6 @@ class ovp_print extends ovp_source {
         $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
-    }
-
-    protected function generate_header() {
-        return '';
     }
 
     protected function generate_view() {
@@ -293,10 +288,6 @@ class ovp_login extends ovp_source {
         parent::__construct('login', $db, 'RLO Onlinevertretungsplan Login');
     }
 
-    protected function generate_header() {
-        return '';
-    }
-
     protected function generate_view() {
         //FIXME: Add CSS hooks
         $html =
@@ -334,10 +325,6 @@ class ovp_login extends ovp_source {
 class ovp_admin extends ovp_source {
     public function __construct($db) {
         parent::__construct('admin', $db, 'RLO Onlinevertretungsplan Admin');
-    }
-
-    protected function generate_header() {
-        return '';
     }
 
     protected function generate_view() {
