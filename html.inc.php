@@ -188,31 +188,156 @@ class ovp_author extends ovp_source {
         $this->entries = $db->get_entries();
     }
 
+    /** a horribly complex algorithm to get from
+     * $entry = $entries[day,teacher,time]
+     * to
+     * $entry = $entries[day][teacher][time]
+     */
+    private function refactor_entries($entries) {
+        if (count($entries) == 0) {
+            // ugly hack
+            $entries[0] = array();
+            return $entries;
+        }
+
+        $oldtime = '';
+        foreach ($entries as $entry) {
+            if($oldtime != $entry-time && $oldtime != '') {
+                $entries_by_date[count($entries_by_date)] = $entries_for_date;
+                unset($entries_for_date);
+            }
+            $entries_for_date[count($entries_for_date)] = $entry;
+        }
+        $entries_by_date[count($entries_by_date)] = $entries_for_date;
+
+        $oldteacher = '';
+        foreach ($entries_by_date as $entries_for_date) {
+            foreach ($entries_for_date as $entry) {
+                if ($oldteacher != $entry->teacher && $oldteacher != '') {
+                    $entries_by_teacher[count($entries_by_teacher)] = $entries_for_teacher;
+                    unset($entries_for_teacher);
+                }
+                $entries_for_teacher[count($entries_for_teacher)] = $entry;
+            }
+            $entries_by_teacher[count($entries_by_teacher)] = $entries_for_teacher;
+            $entries_by_date_new[count($entries_for_date_new)] = $entries_by_teacher;
+        }
+
+        return $entries_by_date_new;
+    }
+
+
     protected function generate_html() {
+        $entries_by_date = $this->refactor_entries($this->entries);
+
         // FIXME: Not yet interactive
         $html =
          '<div class="ovp_container">
             <h1 class="ovp_heading">'.$this->title.'</h1>';
 
-        $olddate = '';
-        $oldteacher = '';
-        foreach ($this->entries as $entry) {
-            if ($olddate != $entry->get_date()) {
+        foreach ($entries_by_date as $entries_by_teacher) {
+                $today = strftime("%A, %d.%m.%y", $entries_by_teacher[0][0]->time);
                 $html .=
-           '<div class="ovp_date">'.$entry->get_date().'</div>
+           '<div class="ovp_date">'.$today.'</div>
             <table class="ovp_table" id="ovp_table_'.$this->type.'">
               <tr class="ovp_row_first">
-                <td class="ovp_column_time">Uhrzeit</td>
-                <td class="ovp_column_course">Klasse</td>
-                <td class="ovp_column_subject">Fach</td>
-                <td class="ovp_column_duration">Dauer</td>
-                <td class="ovp_column_sub">Vertretung durch</td>
-                <td class="ovp_column_change">Weitere Änderungen</td>
-                <td class="ovp_column_oldroom">Alter Raum</td>
-                <td class="ovp_column_newroom">Neuer Raum</td>
+                <th class="ovp_column_time">Uhrzeit</th>
+                <th class="ovp_column_course">Klasse</th>
+                <th class="ovp_column_subject">Fach</th>
+                <th class="ovp_column_duration">Dauer</th>
+                <th class="ovp_column_sub">Vertretung durch</th>
+                <th class="ovp_column_change">Weitere Änderungen</th>
+                <th class="ovp_column_oldroom">Alter Raum</th>
+                <th class="ovp_column_newroom">Neuer Raum</th>
+                <th class="ovp_column_action">Aktion</th>
+              </tr>';
+            foreach ($entries_by_teacher as $entries_for_teacher) {
+                $html .=
+             '<tr class="ovp_row_teacher">
+                <td class="ovp_cell_teacher" colspan="4">'.$entries_for_teacher[0]->teacher.'</td>
+                <td colspan="4"><a href="">Vertretungsregelung hinzufügen</a></td>
+              </tr>';
+                foreach ($entries_for_teacher as $entry) {
+                    $html .=
+             '<tr class="ovp_row_entry">
+                <td class="ovp_column_time">'.    $entry->get_time().'</td>
+                <td class="ovp_column_course">'.  $entry->course.    '</td>
+                <td class="ovp_column_subject">'. $entry->subject.   '</td>
+                <td class="ovp_column_duration">'.$entry->duration.  '</td>
+                <td class="ovp_column_sub">'.     $entry->sub.       '</td>
+                <td class="ovp_column_change">'.  $entry->change.    '</td>
+                <td class="ovp_column_oldroom">'. $entry->oldroom.   '</td>
+                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
+                <td class="ovp_column_action">
+                  <form action="post.php" method="post">
+                    <input type="hidden" name="entry" value="'.$entry.'"></input>
+                    <input type="submit" name="delete" value="Löschen"></input>
+                  </form>
+                </td>
+              </tr>';
+                }
+                $html .=
+             '<form action="post.php" method="post">
+              <tr id="ovp_row_input" class="ovp_row_entry">
+                <input type="hidden" name="teacher" value="'.$entries_for_teacher[0]->teacher.'"></input>
+                <input type="hidden" name="date" value="'.$entries_for_teacher[0]->time.'"></input>
+                <td class="ovp_column_time"><input type="text" name="time" size="5"></input></td>
+                <td class="ovp_column_course"><input type="text" name="course" size="5"></input></td>
+                <td class="ovp_column_subject"><input type="text" name="subject" size="5"></input></td>
+                <td class="ovp_column_duration"><input type="text" name="duration" size="3"></input></td>
+                <td class="ovp_column_sub"><input type="text" name="sub"></input></td>
+                <td class="ovp_column_change"><input type="text" name="change"></input></td>
+                <td class="ovp_column_oldroom"><input type="text" name="oldroom" size="5"></input></td>
+                <td class="ovp_column_newroom"><input type="text" name="newroom" size="5"></input></td>
+                <td class="ovp_column_action"><input type="submit" name="add" value="Hinzufügen"></input></td>
+              </tr>
+              </form>';
+            }
+                $html .=
+             '<tr class="ovp_row_newteacher"><td colspan="9"><a href="">Fehlenden Lehrer eintragen</a></td></tr>
+            </table>';
+        }
+
+        /* replaced by the above, kept out of fear
+        $oldtime = '';
+        $oldteacher = '';
+        foreach ($this->entries as $entry) {
+            if ($oldtime != $entry->time) {
+                $today = strftime("%A, %d.%m.%y", $entry->time);
+                $html .=
+           '<div class="ovp_date">'.$today().'</div>
+            <table class="ovp_table" id="ovp_table_'.$this->type.'">
+              <tr class="ovp_row_first">
+                <th class="ovp_column_time">Uhrzeit</th>
+                <th class="ovp_column_course">Klasse</th>
+                <th class="ovp_column_subject">Fach</th>
+                <th class="ovp_column_duration">Dauer</th>
+                <th class="ovp_column_sub">Vertretung durch</th>
+                <th class="ovp_column_change">Weitere Änderungen</th>
+                <th class="ovp_column_oldroom">Alter Raum</th>
+                <th class="ovp_column_newroom">Neuer Raum</th>
+                <th class="ovp_column_action">Aktion</th>
               </tr>';
             }
             if ($oldteacher != $entry->teacher) {
+                if ($oldteacher != '') {
+                    $html .=
+           '<form action="post.php" method="post">
+              <tr id="ovp_row_input" class="ovp_row_entry">
+                <input type="hidden" name="teacher" value="'.$oldteacher.'"></input>
+                <input type="hidden" name="date" value="'.$oldtime.'"></input>
+                <td class="ovp_column_time"><input type="text" name="time" size="5"></input></td>
+                <td class="ovp_column_course"><input type="text" name="course"></input></td>
+                <td class="ovp_column_subject"><input type="text" name="subject"></input></td>
+                <td class="ovp_column_duration"><input type="text" name="duration" size="3"></input></td>
+                <td class="ovp_column_sub"><input type="text" name="sub"></input></td>
+                <td class="ovp_column_change"><input type="text" name="change"></input></td>
+                <td class="ovp_column_oldroom"><input type="text" name="oldroom"></input></td>
+                <td class="ovp_column_newroom"><input type="text" name="newroom"></input></td>
+                <td class="ovp_column_action"><input type="submit" name="add" value="Hinzufügen"></input></td>
+              </tr>
+            </form>';
+                }
                 $html .=
              '<tr class="ovp_row_teacher">
                 <td class="ovp_cell_teacher">'.$entry->teacher.'</td>
@@ -230,14 +355,20 @@ class ovp_author extends ovp_source {
                 <td class="ovp_column_change">'.  $entry->change.    '</td>
                 <td class="ovp_column_oldroom">'. $entry->oldroom.   '</td>
                 <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
+                <td class="ovp_column_action">
+                  <form action="post.php" method="post">
+                    <input type="hidden" name="entry" value="'.$entry.'"></input>
+                    <input type="submit" name="delete" value="Löschen"></input>
+                  </form>
+                </td>
               </tr>';
-            if ($olddate != $entry->get_date()) {
+            if ($oldtime != $entry->time) {
                 $html .=
              '<tr class="ovp_row_newteacher"><a href="">Fehlenden Lehrer eintragen</a></tr>
             </table>';
-                $olddate = $entry->get_date();
+                $oldtime = $entry->time;
             }
-        }
+        } */
         $html .= '</div>';
         return $html;
     }
