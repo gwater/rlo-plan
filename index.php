@@ -5,6 +5,11 @@ require_once('misc.inc.php');
 require_once('db.inc.php');
 require_once('html.inc.php');
 
+// make sure basename always returns the script name and not the directory
+if (preg_match('/^index.php/i', basename($_SERVER['REQUEST_URI'])) == 0) {
+    redirect('index.php');
+}
+
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
 

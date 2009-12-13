@@ -21,7 +21,7 @@ function is_authorized($requiredPrivilege = 1) {
 
 function authorize($requiredPrivilege = 1) {
     if (!is_authorized($requiredPrivilege)) {
-        $continue = urlencode($_SERVER['REQUEST_URI']);
+        $continue = urlencode(basename($_SERVER['REQUEST_URI']));
         redirect('index.php?view=login&continue='.$continue); // does not return
     }
     return true;

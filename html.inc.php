@@ -320,7 +320,7 @@ class ovp_login extends ovp_source {
           <p>Um diese Seite öffnen zu können, benötigen Sie ein entsprechend autorisiertes Benutzerkonto.</p>
           <form action="account.php?action=login';
         if (isset($_GET['continue'])) {
-            $html .= '&continue='.$_GET['continue'];
+            $html .= '&continue='.urlencode($_GET['continue']);
         }
         $html .= '" method="POST">
             <table>
