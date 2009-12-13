@@ -370,10 +370,10 @@ class ovp_page {
             </head>
             <body>
               <div id="ovp_navi">
-                <a href="index.php?view=public" class="ovp_link_navi">OVP</a>
-                <a href="index.php?view=print" class="ovp_link_navi">Aushang</a>
-                <a href="index.php?view=author" class="ovp_link_navi">Einträge verwalten</a>
-                <a href="index.php?view=admin" class="ovp_link_navi">Benutzer verwalten</a>
+                <a href="index.php?view=public" class="ovp_link_navi">OVP</a> |
+                <a href="index.php?view=print" class="ovp_link_navi">Aushang</a> |
+                <a href="index.php?view=author" class="ovp_link_navi">Einträge verwalten</a> |
+                <a href="index.php?view=admin" class="ovp_link_navi">Benutzer verwalten</a> |
                 <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>
                 <!-- more links go here -->
               </div>
