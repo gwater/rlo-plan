@@ -121,7 +121,6 @@ function save_new_entry(button) {
         var cell = row.childNodes[i];
         cell.textContent = cell.firstChild.value;
     }
-    alert('Imaginärer Uploadvorgang zum Server...');
     // TODO: send row to server + get new id
     button.onclick = function() {
         save_entry(button);
