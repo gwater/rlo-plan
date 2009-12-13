@@ -1,4 +1,4 @@
-// this code is static
+﻿// this code is static
 
 function newElement(type) {
     return document.createElement(type);
@@ -152,17 +152,13 @@ function add_new_entry(button) {
     var row = newElement('tr');
 
     // data cells:
-    // TODO: enhance for more columns
-    row.appendChild(newCell(''));
-    row.appendChild(newCell(''));
-    row.appendChild(newCell(''));
-    for (var i = 0; i < row.childNodes.length; i++) {
-        var cell = row.childNodes[i];
+    var cols = column_names();
+    for (var i = 0; i < cols.length; i++) {
+        var cell = newCell('');
         var textbox = newElement('input');
         textbox.type = 'text';
-        textbox.value = cell.textContent;
-        cell.innerHTML = '';
         cell.appendChild(textbox);
+        row.appendChild(cell);
     }
 
     // button cell:
@@ -198,15 +194,14 @@ function add_day(button) {
 }
 
 // 'id' is from the database
-function newEntry(id, time, room, change) {
+function newEntry(id, cols) {
     var row = newElement('tr');
     row.id = 'entry' + id;
 
     // data cells:
-    // TODO: enhance for more columns
-    row.appendChild(newCell(time));
-    row.appendChild(newCell(room));
-    row.appendChild(newCell(change));
+    for (var i = 0; i < cols.length; i++) {
+        row.appendChild(newCell(cols[i]));
+    }
 
     // button cell:
     var button_cell = newElement('td');
@@ -256,10 +251,10 @@ function newTeacher(name, entries) {
     var table = newElement('table');
     table.setAttribute('class', 'ovp_table');
     var header_row = newElement('tr');
-    // TODO: enhance for more columns
-    header_row.appendChild(newCell('Uhrzeit'));
-    header_row.appendChild(newCell('Raum'));
-    header_row.appendChild(newCell('Änderung'));
+    var cols = column_names();
+    for (var i = 0; i < cols.length; i++) {
+        header_row.appendChild(newCell(cols[i]));
+    }
     header_row.appendChild(newCell('Aktion'));
     table.appendChild(header_row);
     for (var i = 0; i < entries.length; i++) {

@@ -249,6 +249,11 @@ class db extends mysqli {
         );
     }
 
+    public function report_columns() {
+        // TODO: rearrange those columns (+ everywhere else!)
+        return array('Uhrzeit', 'Verhinderter Lehrer', 'Fach', 'Dauer', 'Klasse/Kurs', 'Alter Raum', 'Neuer Raum', 'Vertretender Lehrer', 'Änderung');
+    }
+
     private function fail($msg) {
         die('ERROR: '.$msg);
     }

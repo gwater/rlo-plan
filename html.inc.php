@@ -235,6 +235,9 @@ class ovp_author extends ovp_source {
         $script =
              '<script type="text/javascript" src="functions.js"></script>
               <script type="text/javascript">
+                function column_names() {
+                    return ["'.(implode('", "', $this->db->report_columns())).'"];
+                }
                 function fill_in_data() {
                     var days = [];';
 
@@ -249,7 +252,16 @@ class ovp_author extends ovp_source {
                 $i = 1;
                 foreach ($entries_for_teacher as $entry) {
                     $script .=
-                   'entries.push(newEntry('.$i.', "'.$entry->get_time().'", "'.$entry->newroom.'", "'.$entry->change.'"));';
+                        'entries.push(newEntry('.$i.', ["'.
+                        $entry->get_time().'", "'.
+                        $entry->teacher.'", "'.
+                        $entry->subject.'", "'.
+                        $entry->.duration'", "'.
+                        $entry->course.'", "'.
+                        $entry->oldroom.'", "'.
+                        $entry->newroom.'", "'.
+                        $entry->sub.'", "'.
+                        $entry->change.'"]));';
                     $i++;
                 }
                 $script .=
