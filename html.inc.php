@@ -19,18 +19,20 @@ abstract class ovp_source {
         $this->title = $title;
     }
 
-    abstract protected function generate_html();
+    abstract protected function generate_view();
+    abstract protected function generate_header();
 
     public function get_header() {
         $header = '
           <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
           <link rel="stylesheet" href="style.css" type="text/css">
           <title>'.$this->get_title().'</title>';
+        $header .= $this->generate_header();
         return $header;
     }
 
     public function get_view() {
-        $html = $this->generate_html();
+        $html = $this->generate_view();
         return $html;
     }
 
@@ -58,7 +60,11 @@ class ovp_public extends ovp_source {
         $this->entries = $db->get_entries($time);
     }
 
-    protected function generate_html() {
+    protected function generate_header() {
+        return '';
+    }
+
+    protected function generate_view() {
         $html = '
           <div class="ovp_container">
             <h1 class="ovp_heading">'.$this->title.'</h1>
@@ -119,7 +125,11 @@ class ovp_print extends ovp_source {
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
     }
 
-    protected function generate_html() {
+    protected function generate_header() {
+        return '';
+    }
+
+    protected function generate_view() {
         $html =
          '<div class="ovp_container">
             <h1 class="ovp_heading">'.$this->title.'</h1>
@@ -224,42 +234,49 @@ class ovp_author extends ovp_source {
         return $entries_by_date_new;
     }
 
-
-    protected function generate_html() {
+    protected function generate_header() {
         $entries_by_date = $this->refactor_entries($this->entries);
 
-        $html =
-         '<div class="ovp_container">
-            <h1 class="ovp_heading">'.$this->title.'</h1>
-              <script type="text/javascript" src="functions.js"></script>
+        $script =
+             '<script type="text/javascript" src="functions.js"></script>
               <script type="text/javascript">
                 function fill_in_data() {
                     var days = [];';
 
         foreach ($entries_by_date as $entries_by_teacher) {
                 $today = strftime("%A, %d.%m.%y", $entries_by_teacher[0][0]->time);
-                $html .=
+                $script .=
                    'var teachers = [];
                     var entries = [];';
             foreach ($entries_by_teacher as $entries_for_teacher) {
-                $html .=
+                $script .=
                    'var entries = [];';
                 $i = 1;
                 foreach ($entries_for_teacher as $entry) {
-                    $html .=
+                    $script .=
                    'entries.push(newEntry('.$i.', "'.$entry->get_time().'", "'.$entry->newroom.'", "'.$entry->change.'"));';
                     $i++;
                 }
-                $html .=
+                $script .=
                    'teachers.push(newTeacher("'.$entries_for_teacher[0]->$teacher.'", entries));';
             }
-                $html .=
+                $script .=
                    'days.push(newDay("'.$today.'", teachers));';
         }
 
-        $html .=   'insertDays(days);
+        $script .=   'insertDays(days);
                 }
-              </script>
+              </script>';
+
+        return $script;
+    }
+
+    protected function generate_view() {
+        $entries_by_date = $this->refactor_entries($this->entries);
+
+        $html =
+         '<div class="ovp_container">
+            <h1 class="ovp_heading">'.$this->title.'</h1>
             <div id="ovp" onload="init()"></div>
           </div>';
         return $html;
@@ -276,7 +293,11 @@ class ovp_login extends ovp_source {
         parent::__construct('login', $db, 'RLO Onlinevertretungsplan Login');
     }
 
-    protected function generate_html() {
+    protected function generate_header() {
+        return '';
+    }
+
+    protected function generate_view() {
         //FIXME: Add CSS hooks
         $html =
          '<h1>Login</h1>
@@ -315,7 +336,11 @@ class ovp_admin extends ovp_source {
         parent::__construct('admin', $db, 'RLO Onlinevertretungsplan Admin');
     }
 
-    protected function generate_html() {
+    protected function generate_header() {
+        return '';
+    }
+
+    protected function generate_view() {
         //FIXME: i need implementing ;-)
     }
 }
@@ -332,10 +357,10 @@ class ovp_page {
 
     public function __construct(ovp_source $source) {
         $this->source = $source;
-        $this->content = $this->generate_html();
+        $this->content = $this->generate_view();
     }
 
-    private function generate_html() {
+    private function generate_view() {
         //FIXME: Don't show the navibar before login
         $html =
            '<!DOCTYPE html>
