@@ -12,17 +12,19 @@ function redirect($to = '') {
     exit;
 }
 
-function authenticate($requiredPrivilege = 1, $continue = 'index.php') {
+function is_authorized($requiredPrivilege = 1) {
     global $db;
-    if (isset($_SESSION['privilege']) &&
+    return isset($_SESSION['privilege']) &&
         $_SESSION['privilege'] >= $requiredPrivilege &&
-        ip2long($_SERVER['REMOTE_ADDR']) == $db->get_ip(session_id())
-       ) {
-        return;
-    } else {
-        $continue = urlencode('index.php?view='.$_GET['view']);
-        redirect('index.php?view=login&continue='.$continue);
+        ip2long($_SERVER['REMOTE_ADDR']) == $db->get_ip(session_id());
+}
+
+function authorize($requiredPrivilege = 1) {
+    if (!is_authorized($requiredPrivilege)) {
+        $continue = urlencode($_SERVER['REQUEST_URI']);
+        redirect('index.php?view=login&continue='.$continue); // does not return
     }
+    return true;
 }
 
 ?>
