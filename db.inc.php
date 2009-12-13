@@ -93,7 +93,7 @@ class db extends mysqli {
     }
 
     public function get_current_user() {
-        $ip = $_SERVER['REMOTE_ADDR'];
+        $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $this->query(
            "SELECT * FROM `user` WHERE
                 `ip1` = '".($ip & 0xFFFFFFFFFFFFFFFF)."' AND

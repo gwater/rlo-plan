@@ -12,6 +12,8 @@ if (!is_authorized(VIEW_AUTHOR)) {
 }
 
 switch ($_POST['action']) {
+case 'add':
+    // TODO
 case 'delete':
     if (!(isset($_POST['id']) && is_numeric($_POST['id']))) {
         fail('invalid id');

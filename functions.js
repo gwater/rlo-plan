@@ -52,7 +52,7 @@ function getXMLHttp() {
     if (window.XMLHttpRequest) {
         return new XMLHttpRequest();
     }
-    alert('Ihr Browser unterstützt kein XMLHttpRequest und ich hab keinen Bock auf ActiveX.');
+    alert('Ihr Browser unterstÃ¼tzt kein XMLHttpRequest und ich hab keinen Bock auf ActiveX.');
     return false;
 }
 
@@ -169,12 +169,12 @@ function add_new_entry(button) {
     var mod_button = newButton('Bearbeiten', modify_entry);
     mod_button.style.display = 'none';
     button_cell.appendChild(mod_button);
-    var del_button = newButton('Löschen', delete_entry);
+    var del_button = newButton('LÃ¶schen', delete_entry);
     del_button.style.display = 'none';
     button_cell.appendChild(del_button);
     var save_button = newButton('Speichern', save_new_entry);
     button_cell.appendChild(save_button);
-    var cancel_button = newButton('Löschen', delete_new_entry);
+    var cancel_button = newButton('LÃ¶schen', delete_new_entry);
     button_cell.appendChild(cancel_button);
     row.appendChild(button_cell);
 
@@ -210,7 +210,7 @@ function newEntry(id, time, room, change) {
     var button_cell = newElement('td');
     var mod_button = newButton('Bearbeiten', modify_entry);
     button_cell.appendChild(mod_button);
-    var del_button = newButton('Löschen', delete_entry);
+    var del_button = newButton('LÃ¶schen', delete_entry);
     button_cell.appendChild(del_button);
     var save_button = newButton('Speichern', save_entry);
     save_button.style.display = 'none';
@@ -256,7 +256,7 @@ function newTeacher(name, entries) {
     var header_row = newElement('tr');
     header_row.appendChild(newCell('Uhrzeit'));
     header_row.appendChild(newCell('Raum'));
-    header_row.appendChild(newCell('Änderung'));
+    header_row.appendChild(newCell('Ã„nderung'));
     header_row.appendChild(newCell('Aktion'));
     table.appendChild(header_row);
     for (var i = 0; i < entries.length; i++) {
