@@ -177,12 +177,16 @@ function add_new_entry(button) {
 
 function add_teacher(button) {
     var day = button.parentNode;
-    day.insertBefore(newTeacher('Neuer Lehrer', []), day.lastChild);
+    var teacher = newTeacher('Neuer Lehrer', []);
+    day.insertBefore(teacher, day.lastChild);
+    teacher.firstChild.onclick();
 }
 
 function add_day(button) {
     var ovp = button.parentNode;
-    ovp.insertBefore(addDay('Neuer Tag', []), ovp.lastChild);
+    var day = newDay('Neuer Tag', []);
+    ovp.insertBefore(day, ovp.lastChild);
+    day.firstChild.onclick();
 }
 
 // 'id' is from the database
@@ -258,7 +262,7 @@ function newTeacher(name, entries) {
     return teacher;
 }
 
-function addDay(title, teachers) {
+function newDay(title, teachers) {
     var day = newElement('section');
 
     var header = newElement('h2');
@@ -289,8 +293,15 @@ function addDay(title, teachers) {
         day.appendChild(teachers[i]);
     }
     day.appendChild(newButton('+ Lehrer', add_teacher));
+
+    return day;
+}
+
+function insertDays(days) {
     var ovp = document.getElementById('ovp');
-    ovp.insertBefore(day, ovp.lastChild);
+    for (var i = 0; i < days.length; i++) {
+        ovp.insertBefore(days[i], ovp.lastChild);
+    }
 }
 
 function init() {
