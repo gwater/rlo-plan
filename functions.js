@@ -51,8 +51,10 @@ function modify_entry(button) {
 function getXMLHttp() {
     if (window.XMLHttpRequest) {
         return new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        return new ActiveXObject("Microsoft.XMLHTTP");
     }
-    alert('Ihr Browser unterstützt kein XMLHttpRequest und ich hab keinen Bock auf ActiveX.');
+    alert('Ihr Browser unterstützt kein XMLHttpRequest.');
     return false;
 }
 
@@ -64,6 +66,7 @@ function delete_entry(button) {
         var msg = 'action=delete&id=' + row.id.substr(5); // remove 'entry' from 'entry123'
         request.open('POST', 'post.php', false);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        row.lastChild.innerHTML += 'Deleting...';
         request.send(msg);
         if (request.status == 200) {
             if (row.parentNode.childNodes.length == 2) {
@@ -80,7 +83,7 @@ function delete_entry(button) {
         } else {
             showButtons(button.previousSibling);
             // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
-            button.parentNode.innerHTML += request.status + ' - ' + request.statusText + ': ' + request.responseText;
+            row.lastChild.innerHTML += request.status + ' - ' + request.statusText + ': ' + request.responseText;
         }
     }
 }
@@ -102,9 +105,9 @@ function delete_new_entry(button) {
 
 function save_entry(button) {
     hideButtons(button);
-    showButtons(button.previousSibling.previousSibling);
     var row = button.parentNode.parentNode;
     var contentHasChanged = false;
+    var msg = '';
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         if (cell.firstChild.value != cell.lastChild.textContent) {
@@ -113,21 +116,49 @@ function save_entry(button) {
         } else {
             cell.textContent = cell.lastChild.textContent;
         }
+        msg += '&' + i + '=' + cell.textValue;
     }
     if (contentHasChanged) {
-        // TODO: send row to server
+        var request = getXMLHttp();
+        if (request) {
+            var row = button.parentNode.parentNode;
+            msg = 'action=update&id=' + row.id.substr(5) + msg;
+            request.open('POST', 'post.php', false);
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            row.lastChild.innerHTML += 'Saving...';
+            request.send(msg);
+            if (request.status != 200) {
+                // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
+                row.lastChild.innerHTML += request.status + ' - ' + request.statusText + ': ' + request.responseText;
+            }
+        }
     }
+    showButtons(button.previousSibling.previousSibling);
 }
 
 function save_new_entry(button) {
     hideButtons(button);
-    showButtons(button.previousSibling.previousSibling);
     var row = button.parentNode.parentNode;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         cell.textContent = cell.firstChild.value;
     }
-    // TODO: send row to server + get new id
+    var request = getXMLHttp();
+    if (request) {
+        var row = button.parentNode.parentNode;
+        msg = 'action=update&id=' + row.id.substr(5) + msg;
+        request.open('POST', 'post.php', false);
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        row.lastChild.innerHTML += 'Saving...';
+        request.send(msg);
+        if (request.status == 200) {
+            row.id = 'entry' + responseText;
+        } else {
+            // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
+            row.lastChild.innerHTML += request.status + ' - ' + request.statusText + ': ' + request.responseText;
+        }
+    }
+    showButtons(button.previousSibling.previousSibling);
     button.onclick = function() {
         save_entry(button);
     }
