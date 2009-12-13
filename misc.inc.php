@@ -16,7 +16,7 @@ function is_authorized($requiredPrivilege = 1) {
     global $db;
     return isset($_SESSION['privilege']) &&
         $_SESSION['privilege'] >= $requiredPrivilege &&
-        ip2long($_SERVER['REMOTE_ADDR']) == $db->get_ip(session_id());
+        $db->session_ok();
 }
 
 function authorize($requiredPrivilege = 1) {

@@ -92,11 +92,13 @@ class db extends mysqli {
         return $entries;
     }
 
-    public function get_current_user($ip, $sid) {
+    public function get_current_user() {
+        $ip = $_SERVER['REMOTE_ADDR'];
         $result = $this->query(
            "SELECT * FROM `user` WHERE
                 `ip1` = '".($ip & 0xFFFFFFFFFFFFFFFF)."' AND
-                `ip2` = '".($ip >> 64)."'"
+                `ip2` = '".($ip >> 64)."' AND
+                `sid` = '".session_id()."'"
         );
         if (!($row = $result->fetch_assoc())) {
             return NULL; // ip or sid not found
@@ -104,26 +106,27 @@ class db extends mysqli {
         return new user($row['id'], $row['name'], $row['priv']);
     }
 
-    // returns the numerical representation of the ip address of the user with the specified session id
-    public function get_ip($sid) {
+    // checks if the current user's ip address matches the one in the database
+    public function session_ok() {
         $result = $this->query(
            "SELECT
                 `ip1`,
                 `ip2`
             FROM `user` WHERE
-                `sid`  = '".$this->protect($sid)."'"
+                `sid`  = '".$this->protect(session_id())."'"
         );
         if (!($row = $result->fetch_assoc())) {
-            return -1; // session id not found
+            return false;
         }
         if ($row['ip2'] != NULL) {
-            return ($row['ip2'] << 64) + $row['ip1'];
+            $ip = ($row['ip2'] << 64) + $row['ip1'];
         } else {
-            return $row['ip1'];
+            $ip = $row['ip1'];
         }
+        return $ip == ip2long($_SERVER['REMOTE_ADDR']);
     }
 
-    public function login($name, $pwd, $ip, $sid) {
+    public function login($name, $pwd) {
         $result = $this->query(
            "SELECT
                 `id`,
@@ -135,27 +138,28 @@ class db extends mysqli {
         if (!($row = $result->fetch_assoc())) {
             return -1; // user not found or wrong password
         }
+        $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
         $ip2 = $ip >> 64;
         $this->query(
            "UPDATE `user` SET
                 `ip1` = '".$ip1."',
                 `ip2` = '".$ip2."',
-                `sid` = '".$this->protect($sid)."'
+                `sid` = '".$this->protect(session_id())."'
             WHERE
                 `id` = '".$row['id']."'"
         );
         return $row['priv']; // privilege is always positive
     }
 
-    public function logout($sid) {
+    public function logout() {
         $this->query(
            "UPDATE `user` SET
                 `ip1` = NULL,
                 `ip2` = NULL,
                 `sid` = NULL
             WHERE
-                `sid` = '".$this->protect($sid)."'"
+                `sid` = '".$this->protect(session_id())."'"
         );
         return $this->affected_rows == 1;
     }
