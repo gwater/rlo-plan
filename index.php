@@ -15,7 +15,7 @@ $db = new db();
 
 switch ($_GET['view']) {
 case 'print':
-    authenticate(VIEW_PRINT, 'index.php?view=print');
+    authorize(VIEW_PRINT);
     if (isset($_GET['date'])) {
         $source = new ovp_print($db, $_GET['date']);
     } else {
@@ -23,11 +23,11 @@ case 'print':
     }
     break;
 case 'author':
-    authenticate(VIEW_AUTHOR, 'index.php?view=author');
+    authorize(VIEW_AUTHOR);
     $source = new ovp_author($db);
     break;
 case 'admin':
-    authenticate(VIEW_ADMIN, 'index.php?view=admin');
+    authorize(VIEW_ADMIN);
     $source = new ovp_admin($db);
     break;
 case 'login':
@@ -35,7 +35,7 @@ case 'login':
     break;
 case 'public':
 default:
-    authenticate(VIEW_PUBLIC, 'index.php?view=public');
+    authorize(VIEW_PUBLIC);
     $source = new ovp_public($db);
 }
 

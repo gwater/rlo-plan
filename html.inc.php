@@ -244,7 +244,7 @@ class ovp_author extends ovp_source {
 }
 
 /**
- * This source provides a simple login interface to authenticate any access
+ * This source provides a simple login interface to authorize access
  * to restricted views.
  * Naturally access is not restricted.
  */

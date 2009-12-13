@@ -61,7 +61,7 @@ function delete_entry(button) {
     if (request) {
         hideButtons(button.previousSibling);
         var row = button.parentNode.parentNode;
-        var msg = 'action=delete&id=' + row.id.substr(5);
+        var msg = 'action=delete&id=' + row.id.substr(5); // remove 'entry' from 'entry123'
         request.open('POST', 'post.php', false);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         request.send(msg);
