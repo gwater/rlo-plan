@@ -28,8 +28,7 @@ abstract class ovp_source {
     public function get_header() {
         $header = '
           <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-          <link rel="stylesheet" href="style.css" type="text/css">
-          <title>'.$this->get_title().'</title>';
+          <link rel="stylesheet" href="style.css" type="text/css">';
         $header .= $this->generate_header();
         return $header;
     }
@@ -283,12 +282,34 @@ class ovp_author extends ovp_source {
 
         $html =
          '<div class="ovp_container">
-            <img src="1x1.gif" onload="init()">
             <h1 class="ovp_heading">'.$this->title.'</h1>
             <div id="ovp"></div>
           </div>';
         return $html;
     }
+
+    private function generate_view() {
+        $html =
+           '<!DOCTYPE html>
+            <html>
+            <head>
+                '.$this->get_header().'
+            </head>
+            <body onload="init()">
+              <div id="ovp_navi">
+                <a href="index.php?view=public" class="ovp_link_navi">OVP</a>
+                <a href="index.php?view=print" class="ovp_link_navi">Aushang</a>
+                <a href="index.php?view=author" class="ovp_link_navi">Einträge verwalten</a>
+                <a href="index.php?view=admin" class="ovp_link_navi">Benutzer verwalten</a>
+                <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>
+                <!-- more links go here -->
+              </div>
+              '.$this->get_view().'
+            </body>
+            </html>';
+        return $html;
+    }
+
 }
 
 /**
@@ -357,7 +378,11 @@ class ovp_page {
 
     public function __construct(ovp_source $source) {
         $this->source = $source;
-        $this->content = $this->generate_view();
+        if ($source->get_type() == "author") {
+            $this->content = $source->get_page();
+        } else {
+            $this->content = $this->generate_view();
+        }
     }
 
     private function generate_view() {
@@ -366,6 +391,7 @@ class ovp_page {
            '<!DOCTYPE html>
             <html>
             <head>
+                <title>'.$this->source->get_title().'</title>
                 '.$this->source->get_header().'
             </head>
             <body>
