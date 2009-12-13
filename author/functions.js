@@ -57,24 +57,30 @@ function getXMLHttp() {
 }
 
 function delete_entry(button) {
-    var xmlhttp = getXMLHttp();
-    if (xmlhttp) {
+    var request = getXMLHttp();
+    if (request) {
         hideButtons(button.previousSibling);
         var row = button.parentNode.parentNode;
-        /* TODO
-        xmlhttp.open('POST', 'localhost', false);
-        xmlhttp.send(null);
-        */
-        if (row.parentNode.childNodes.length == 2) {
-            var teacher = row.parentNode.parentNode;
-            var day = teacher.parentNode;
-            if (day.childNodes.length == 4) {
-                day.parentNode.removeChild(day);
+        var msg = 'action=delete&id=' + row.id.substr(5);
+        request.open('POST', 'post.php', false);
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.send(msg);
+        if (request.status == 200) {
+            if (row.parentNode.childNodes.length == 2) {
+                var teacher = row.parentNode.parentNode;
+                var day = teacher.parentNode;
+                if (day.childNodes.length == 4) {
+                    day.parentNode.removeChild(day);
+                } else {
+                    teacher.parentNode.removeChild(teacher);
+                }
             } else {
-                teacher.parentNode.removeChild(teacher);
+                row.parentNode.removeChild(row);
             }
         } else {
-            row.parentNode.removeChild(row);
+            showButtons(button.previousSibling);
+            // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
+            button.parentNode.innerHTML += request.status + ' - ' + request.statusText + ': ' + request.responseText;
         }
     }
 }
@@ -241,6 +247,7 @@ function newTeacher(name, entries) {
             header.innerHTML = this.value;
         }
         header.style.display = 'block';
+        // TODO: tell server about this OR reupload all contained entries to server
     }
     teacher.appendChild(textbox);
 
@@ -287,6 +294,7 @@ function newDay(title, teachers) {
             header.innerHTML = this.value;
         }
         header.style.display = 'block';
+        // TODO: tell server about this OR reupload all contained entries to server
     }
     day.appendChild(textbox);
 
