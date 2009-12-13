@@ -233,72 +233,38 @@ class ovp_author extends ovp_source {
         // FIXME: Not yet interactive
         $html =
          '<div class="ovp_container">
-            <h1 class="ovp_heading">'.$this->title.'</h1>';
+            <h1 class="ovp_heading">'.$this->title.'</h1>
+              <script type="text/javascript" src="functions.js"></script>
+              <script type="text/javascript">
+                function fill_in_data() {
+                    var days = [];';
 
         foreach ($entries_by_date as $entries_by_teacher) {
                 $today = strftime("%A, %d.%m.%y", $entries_by_teacher[0][0]->time);
                 $html .=
-           '<div class="ovp_date">'.$today.'</div>
-            <table class="ovp_table" id="ovp_table_'.$this->type.'">
-              <tr class="ovp_row_first">
-                <th class="ovp_column_time">Uhrzeit</th>
-                <th class="ovp_column_course">Klasse</th>
-                <th class="ovp_column_subject">Fach</th>
-                <th class="ovp_column_duration">Dauer</th>
-                <th class="ovp_column_sub">Vertretung durch</th>
-                <th class="ovp_column_change">Weitere Änderungen</th>
-                <th class="ovp_column_oldroom">Alter Raum</th>
-                <th class="ovp_column_newroom">Neuer Raum</th>
-                <th class="ovp_column_action">Aktion</th>
-              </tr>';
+                   'var teachers = [];
+                    var entries = [];';
             foreach ($entries_by_teacher as $entries_for_teacher) {
                 $html .=
-             '<tr class="ovp_row_teacher">
-                <td class="ovp_cell_teacher" colspan="4">'.$entries_for_teacher[0]->teacher.'</td>
-                <td colspan="4"><a href="">Vertretungsregelung hinzufügen</a></td>
-              </tr>';
+                   'var entries = [];';
+                $i = 1;
                 foreach ($entries_for_teacher as $entry) {
                     $html .=
-             '<tr class="ovp_row_entry">
-                <td class="ovp_column_time">'.    $entry->get_time().'</td>
-                <td class="ovp_column_course">'.  $entry->course.    '</td>
-                <td class="ovp_column_subject">'. $entry->subject.   '</td>
-                <td class="ovp_column_duration">'.$entry->duration.  '</td>
-                <td class="ovp_column_sub">'.     $entry->sub.       '</td>
-                <td class="ovp_column_change">'.  $entry->change.    '</td>
-                <td class="ovp_column_oldroom">'. $entry->oldroom.   '</td>
-                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
-                <td class="ovp_column_action">
-                  <form action="post.php" method="post">
-                    <input type="hidden" name="entry" value="'.$entry.'"></input>
-                    <input type="submit" name="delete" value="Löschen"></input>
-                  </form>
-                </td>
-              </tr>';
+                   'entries.push(newEntry('.$i.', "'.$entry->get_time().'", "'.$entry->newroom.'", "'.$entry->change.'"));';
+                    $i++;
                 }
                 $html .=
-             '<form action="post.php" method="post">
-              <tr id="ovp_row_input" class="ovp_row_entry">
-                <input type="hidden" name="teacher" value="'.$entries_for_teacher[0]->teacher.'"></input>
-                <input type="hidden" name="date" value="'.$entries_for_teacher[0]->time.'"></input>
-                <td class="ovp_column_time"><input type="text" name="time" size="5"></input></td>
-                <td class="ovp_column_course"><input type="text" name="course" size="5"></input></td>
-                <td class="ovp_column_subject"><input type="text" name="subject" size="5"></input></td>
-                <td class="ovp_column_duration"><input type="text" name="duration" size="3"></input></td>
-                <td class="ovp_column_sub"><input type="text" name="sub"></input></td>
-                <td class="ovp_column_change"><input type="text" name="change"></input></td>
-                <td class="ovp_column_oldroom"><input type="text" name="oldroom" size="5"></input></td>
-                <td class="ovp_column_newroom"><input type="text" name="newroom" size="5"></input></td>
-                <td class="ovp_column_action"><input type="submit" name="add" value="Hinzufügen"></input></td>
-              </tr>
-              </form>';
+                   'teachers.push(newTeacher("'.$entries_for_teacher[0]->$teacher.'", entries));';
             }
                 $html .=
-             '<tr class="ovp_row_newteacher"><td colspan="9"><a href="">Fehlenden Lehrer eintragen</a></td></tr>
-            </table>';
+                   'days.push(newDay("'.$today.'", teachers));';
         }
 
-        $html .= '</div>';
+        $html .=   'insertDays(days);
+                }
+              </script>
+            <div id="ovp" onload="init()"></div>
+          </div>';
         return $html;
     }
 }
