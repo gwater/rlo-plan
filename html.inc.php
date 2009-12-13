@@ -195,8 +195,6 @@ class ovp_author extends ovp_source {
      */
     private function refactor_entries($entries) {
         if (count($entries) == 0) {
-            // ugly hack
-            $entries[0] = array();
             return $entries;
         }
 
@@ -230,7 +228,6 @@ class ovp_author extends ovp_source {
     protected function generate_html() {
         $entries_by_date = $this->refactor_entries($this->entries);
 
-        // FIXME: Not yet interactive
         $html =
          '<div class="ovp_container">
             <h1 class="ovp_heading">'.$this->title.'</h1>
