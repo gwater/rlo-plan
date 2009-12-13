@@ -271,7 +271,7 @@ class ovp_author extends ovp_source {
 
         $html =
          '<div class="ovp_container">
-            <img src="1x1.bmp" onload="init()">
+            <img src="1x1.gif" onload="init()">
             <h1 class="ovp_heading">'.$this->title.'</h1>
             <div id="ovp"></div>
           </div>';
