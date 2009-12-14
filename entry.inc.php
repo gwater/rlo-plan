@@ -34,16 +34,18 @@ class entry {
         $this->newroom  = $a['newroom'];
     }
 
+    private function fail($msg) {
+        header('HTTP/1.0 400 Bad Request');
+        exit($msg);
+    }
+
     private function to_time($day, $time) {
-        // example: to_time('Donnerstag, 31.12.2009', '23:59');
-        if (!preg_match('/\w, (\d\d)\.(\d\d)\.(\d{4}) (\d\d):(\d\d)/', $day.' '.$time, $matches)) {
-            header('HTTP/1.0 400 Bad Request');
-            exit('invalid day or time format');
+        if (!preg_match('/\w, (\d{1,2})\.(\d{1,2})\.(\d{4}) (\d{1,2}):(\d{1,2})/', $day.' '.$time, $matches)) {
+            $this->fail('invalid day or time format');
         }
         $unix = mktime($matches[4], $matches[5], 0, $matches[2], $matches[1], $matches[3]);
         if ($unix == false || $unix == -1) {
-            header('HTTP/1.0 400 Bad Request');
-            exit('invalid day or time value');
+            $this->fail('invalid day or time value');
         }
         return $unix;
     }

@@ -21,6 +21,7 @@ class db extends mysqli {
             $this->fail('could not connect to database server');
         }
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
+        $this->query("SET @@time_zone = 'Europe/Berlin'");
         if (!$this->select_db(DB_BASE)) {
             $this->create_db();
         }
@@ -116,7 +117,7 @@ class db extends mysqli {
                     `oldroom`,
                     `newroom`
                 FROM `entry` ORDER BY
-                    `time` - MOD(`time`, 60*60*24),
+                    UNIX_TIMESTAMP(`time`) - MOD(UNIX_TIMESTAMP(`time`), 60*60*24),
                     `teacher`,
                     `time`"
             );
@@ -134,8 +135,8 @@ class db extends mysqli {
                     `oldroom`,
                     `newroom`
                 FROM `entry` WHERE
-                    `time` >= '".$this->protect($date)."' AND
-                    `time` <  '".$this->protect($date + 60*60*24)."'
+                    UNIX_TIMESTAMP(`time`) >= '".$this->protect($date)."' AND
+                    UNIX_TIMESTAMP(`time`) <  '".$this->protect($date + 60*60*24)."'
                 ORDER BY
                     `teacher`,
                     `time`"

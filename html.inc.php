@@ -107,12 +107,13 @@ class ovp_print extends ovp_source {
     private $yesterday;
     private $tomorrow;
 
-    public function __construct($db, $day = -1) {
+    public function __construct($db, $date = -1) {
         parent::__construct('print', $db, 'Vertretungsplan');
-        if ($day == -1) {
+        if ($date == -1) {
             $time = time();
+            $time = $time - $time % 86400;
         } else {
-            if (!preg_match('/(\d{4})-(\d\d)-(\d\d)/', $day, $matches)) {
+            if (!preg_match('/(\d{4})-(\d\d)-(\d\d)/', $date, $matches)) {
                 exit('lol wut?');
             }
             $time = mktime(0, 0, 0, $matches[2], $matches[3], $matches[1]);
@@ -155,7 +156,7 @@ class ovp_print extends ovp_source {
             } else if ($entry->sub != '') {
                 $changes = $entry->sub;
             } else if ($entry->change != '') {
-                $change = $entry->change;
+                $changes = $entry->change;
             }
 
             $html .=
