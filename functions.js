@@ -1,5 +1,18 @@
 ﻿// this code is static
 
+var columns = new Array();
+columns['Uhrzeit']    = 5;
+columns['Klasse']     = 5;
+columns['Fach']       = 5;
+columns['Dauer']      = 3;
+columns['Vertretung'] = 20;
+columns['Änderung']   = 20;
+columns['Alter Raum'] = 4;
+columns['Neuer Raum'] = 4;
+columns.length = 8;
+
+var column_names = ['time', 'course', 'subject', 'duration', 'sub', 'change', 'oldroom', 'newroom'];
+
 function newElement(type) {
     return document.createElement(type);
 }
@@ -34,11 +47,14 @@ function modify_entry(button) {
     hideButtons(button);
     showButtons(button.nextSibling.nextSibling);
     var row = button.parentNode.parentNode;
+    var firstRow = row.parentNode.firstChild;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         var textbox = newElement('input');
         textbox.type = 'text';
         textbox.value = cell.textContent;
+        textbox.maxLength = columns[firstRow.childNodes[i].textContent];
+        textbox.style.width = textbox.maxLength * 9 + 'px';
         cell.innerHTML = '';
         cell.appendChild(textbox);
         var backup = newElement('span');
@@ -84,8 +100,10 @@ function delete_entry(button) {
             }
         } else {
             showButtons(button.previousSibling);
-            // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
+            setTimeout(function() {
+                fadeOut(status);
+            }, 3000);
         }
     }
 }
@@ -108,8 +126,10 @@ function delete_new_entry(button) {
 function save_entry(button) {
     hideButtons(button);
     var row = button.parentNode.parentNode;
+    var teacher = row.parentNode.parentNode;
+    var day = teacher.parentNode;
+    var msg = '&day=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
     var contentHasChanged = false;
-    var msg = '';
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         if (cell.firstChild.value != cell.lastChild.textContent) {
@@ -118,7 +138,7 @@ function save_entry(button) {
         } else {
             cell.textContent = cell.lastChild.textContent;
         }
-        msg += '&' + i + '=' + cell.textValue;
+        msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     if (contentHasChanged) {
         var request = getXMLHttp();
@@ -134,22 +154,40 @@ function save_entry(button) {
             if (request.status == 200) {
                 row.lastChild.removeChild(status);
             } else {
-                // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
                 status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
+                setTimeout(function() {
+                    fadeOut(status);
+                }, 3000);
             }
         }
     }
     showButtons(button.previousSibling.previousSibling);
 }
 
+function fadeOut(e) {
+    if (!e.style.opacity) {
+        e.style.opacity = 1.0;
+    }
+    setTimeout(function() {
+        if (e.style.opacity > 0) {
+            e.style.opacity -= 0.1;
+            fadeOut(e);
+        } else {
+            e.parentNode.removeChild(e);
+        }
+    }, 100);
+}
+
 function save_new_entry(button) {
     hideButtons(button);
     var row = button.parentNode.parentNode;
-    var msg = '';
+    var teacher = row.parentNode.parentNode;
+    var day = teacher.parentNode;
+    var msg = '&day=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         cell.textContent = cell.firstChild.value;
-        msg = '&' + i + '=' + cell.textContent;
+        msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     var request = getXMLHttp();
     if (request) {
@@ -165,8 +203,10 @@ function save_new_entry(button) {
             row.lastChild.removeChild(status);
             row.id = 'entry' + request.responseText;
         } else {
-            // TODO: once most of the errors are fixed alert() the error message instead of adding it to the DOM
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
+            setTimeout(function() {
+                fadeOut(status);
+            }, 3000);
         }
     }
     showButtons(button.previousSibling.previousSibling);
@@ -194,11 +234,12 @@ function add_new_entry(button) {
     var row = newElement('tr');
 
     // data cells:
-    var cols = column_names();
-    for (var i = 0; i < cols.length; i++) {
+    for (i in columns) {
         var cell = newCell('');
         var textbox = newElement('input');
         textbox.type = 'text';
+        textbox.maxLength = columns[i];
+        textbox.style.width = textbox.maxLength * 9 + 'px';
         cell.appendChild(textbox);
         row.appendChild(cell);
     }
@@ -243,7 +284,7 @@ function newEntry(id, cols) {
     row.id = 'entry' + id;
 
     // data cells:
-    for (var i = 0; i < cols.length; i++) {
+    for (i in cols) {
         row.appendChild(newCell(cols[i]));
     }
 
@@ -295,13 +336,12 @@ function newTeacher(name, entries) {
     var table = newElement('table');
     table.setAttribute('class', 'ovp_table');
     var header_row = newElement('tr');
-    var cols = column_names();
-    for (var i = 0; i < cols.length; i++) {
-        header_row.appendChild(newCell(cols[i]));
+    for (column in columns) {
+        header_row.appendChild(newCell(column));
     }
     header_row.appendChild(newCell('Aktion'));
     table.appendChild(header_row);
-    for (var i = 0; i < entries.length; i++) {
+    for (i in entries) {
         table.appendChild(entries[i]);
     }
     teacher.appendChild(table);
@@ -340,7 +380,7 @@ function newDay(title, teachers) {
     }
     day.appendChild(textbox);
 
-    for (var i = 0; i < teachers.length; i++) {
+    for (i in teachers) {
         day.appendChild(teachers[i]);
     }
     day.appendChild(newButton('+ Lehrer', add_teacher));
@@ -350,7 +390,7 @@ function newDay(title, teachers) {
 
 function insertDays(days) {
     var ovp = document.getElementById('ovp');
-    for (var i = 0; i < days.length; i++) {
+    for (i in days) {
         ovp.insertBefore(days[i], ovp.lastChild);
     }
 }

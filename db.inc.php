@@ -31,26 +31,60 @@ class db extends mysqli {
 
     /**
      * Adds an entry to the database.
+     * @return: id of the new entry
      */
     public function add_entry(entry $entry) {
         $this->query(
            "INSERT INTO `entry` VALUES (
                 NULL,
-                '".$entry->time."',
                 '".$entry->teacher."',
+                FROM_UNIXTIME('".$entry->time."'),
+                '".$entry->course."',
                 '".$entry->subject."',
                 '".$entry->duration."',
-                '".$entry->course."',
-                '".$entry->oldroom."',
-                '".$entry->newroom."',
                 '".$entry->sub."',
-                '".$entry->change."'
+                '".$entry->change."',
+                '".$entry->oldroom."',
+                '".$entry->newroom."'
             )"
         );
+        $row = $this->query(
+            "SELECT `id` FROM `entry` WHERE
+                `teacher`  = '".$entry->teacher."'  AND
+                `time`     = FROM_UNIXTIME('".$entry->time."') AND
+                `course`   = '".$entry->course."'   AND
+                `subject`  = '".$entry->subject."'  AND
+                `duration` = '".$entry->duration."' AND
+                `sub`      = '".$entry->sub."'      AND
+                `change`   = '".$entry->change."'   AND
+                `oldroom`  = '".$entry->oldroom."'  AND
+                `newroom`  = '".$entry->newroom."'")->fetch_assoc();
+        return $row['id'];
     }
 
     /**
-     * Deletes the entry reference by the id int $entry or entry $entry->id.
+     * Updates the entry referenced by $entry->id with the data inside $entry.
+     * @return: true if the update was successful
+     */
+    public function update_entry($entry) {
+        $this->query(
+            "UPDATE `entry` SET
+                `teacher`  = '".$entry->teacher."',
+                `time`     = FROM_UNIXTIME('".$entry->time."'),
+                `course`   = '".$entry->course."',
+                `subject`  = '".$entry->subject."',
+                `duration` = '".$entry->duration."',
+                `sub`      = '".$entry->sub."',
+                `change`   = '".$entry->change."',
+                `oldroom`  = '".$entry->oldroom."',
+                `newroom`  = '".$entry->newroom."'
+             WHERE
+                `id` = '".$entry->id."'");
+        return $this->affected_rows == 1;
+    }
+
+    /**
+     * Deletes the entry referenced by the id int $entry or entry $entry->id.
      * @return: true if the entry was found and deleted
      */
     public function remove_entry($entry) {
@@ -70,14 +104,36 @@ class db extends mysqli {
     public function get_entries($date = -1) {
         if ($date == -1) {
             $result = $this->query(
-               "SELECT * FROM `entry` ORDER BY
+               "SELECT
+                    `id`,
+                    `teacher`,
+                    UNIX_TIMESTAMP(`time`) AS 'time',
+                    `course`,
+                    `subject`,
+                    `duration`,
+                    `sub`,
+                    `change`,
+                    `oldroom`,
+                    `newroom`
+                FROM `entry` ORDER BY
                     `time` - MOD(`time`, 60*60*24),
                     `teacher`,
                     `time`"
             );
         } else {
             $result = $this->query(
-               "SELECT * FROM `entry` WHERE
+               "SELECT
+                    `id`,
+                    `teacher`,
+                    UNIX_TIMESTAMP(`time`) AS 'time',
+                    `course`,
+                    `subject`,
+                    `duration`,
+                    `sub`,
+                    `change`,
+                    `oldroom`,
+                    `newroom`
+                FROM `entry` WHERE
                     `time` >= '".$this->protect($date)."' AND
                     `time` <  '".$this->protect($date + 60*60*24)."'
                 ORDER BY
@@ -87,7 +143,7 @@ class db extends mysqli {
         }
         $entries = array();
         while ($row = $result->fetch_assoc()) {
-            $entries[] = new entry($row['id'], $row['time'], $row['teacher'], $row['subject'], $row['duration'], $row['course'], $row['oldroom'], $row['sub'], $row['change']);
+            $entries[] = new entry($row);
         }
         return $entries;
     }
@@ -225,15 +281,15 @@ class db extends mysqli {
         $this->query("DROP TABLE IF EXISTS `entry`");
         $this->query("CREATE TABLE `entry` (
             `id`       INT UNSIGNED      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            `time`     TIMESTAMP         NULL     DEFAULT NULL,
             `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
+            `time`     TIMESTAMP         NULL     DEFAULT NULL,
+            `course`   VARCHAR(3)        NULL     DEFAULT NULL,
             `subject`  VARCHAR(20)       NULL     DEFAULT NULL,
             `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
-            `course`   VARCHAR(3)        NULL     DEFAULT NULL,
-            `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
-            `newroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
-            `change`   VARCHAR(50)       NULL     DEFAULT NULL)"
+            `change`   VARCHAR(50)       NULL     DEFAULT NULL,
+            `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
+            `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
 
         $this->query(
@@ -247,11 +303,6 @@ class db extends mysqli {
                 '4'
             )"
         );
-    }
-
-    public function report_columns() {
-        // TODO: rearrange those columns (+ everywhere else!)
-        return array('Uhrzeit', 'Verhinderter Lehrer', 'Fach', 'Dauer', 'Klasse/Kurs', 'Alter Raum', 'Neuer Raum', 'Vertretender Lehrer', 'Änderung');
     }
 
     private function fail($msg) {

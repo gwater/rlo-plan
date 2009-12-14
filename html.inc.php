@@ -193,7 +193,7 @@ class ovp_author extends ovp_source {
     }
 
     /** a horribly complex algorithm to get from
-     * $entry = $entries[day,teacher,time]
+     * $entry = $entries[day, teacher, time]
      * to
      * $entry = $entries[day][teacher][time]
      */
@@ -230,50 +230,40 @@ class ovp_author extends ovp_source {
 
     protected function generate_header() {
         $entries_by_date = $this->refactor_entries($this->entries);
-
-        $script =
-             '<script type="text/javascript" src="functions.js"></script>
-              <script type="text/javascript">
-                function column_names() {
-                    return ["'.(implode('", "', $this->db->report_columns())).'"];
-                }
-                function fill_in_data() {
-                    var days = [];';
+        $script = '
+            <script type="text/javascript" src="functions.js"></script>
+            <script type="text/javascript">
+            function fill_in_data() {
+                var days = [];';
 
         foreach ($entries_by_date as $entries_by_teacher) {
-                $today = strftime("%A, %d.%m.%y", $entries_by_teacher[0][0]->time);
-                $script .=
-                   'var teachers = [];
-                    var entries = [];';
+            $today = strftime("%A, %d.%m.%Y", $entries_by_teacher[0][0]->time);
+            $script .= '
+                var teachers = [];';
             foreach ($entries_by_teacher as $entries_for_teacher) {
-                $script .=
-                   'var entries = [];';
-                $i = 1;
+                $script .= '
+                    var entries = [];';
                 foreach ($entries_for_teacher as $entry) {
-                    $script .=
-                        'entries.push(newEntry('.$i.', ["'.
+                    $script .= '
+                        entries.push(newEntry('.
+                        $entry->id.', ["'.
                         $entry->get_time().'", "'.
-                        $entry->teacher.'", "'.
+                        $entry->course.'", "'.
                         $entry->subject.'", "'.
                         $entry->duration.'", "'.
-                        $entry->course.'", "'.
-                        $entry->oldroom.'", "'.
-                        $entry->newroom.'", "'.
                         $entry->sub.'", "'.
-                        $entry->change.'"]));';
-                    $i++;
+                        $entry->change.'", "'.
+                        $entry->oldroom.'", "'.
+                        $entry->newroom.'"]));';
                 }
-                $script .=
-                   'teachers.push(newTeacher("'.$entries_for_teacher[0]->$teacher.'", entries));';
+                $script .= '
+                    teachers.push(newTeacher("'.$entries_for_teacher[0]->teacher.'", entries));';
             }
-                $script .=
-                   'days.push(newDay("'.$today.'", teachers));';
+            $script .= '
+                days.push(newDay("'.$today.'", teachers));';
         }
-
-        $script .=   'insertDays(days);
-                }
-              </script>';
-
+        $script .= '
+            insertDays(days);}</script>';
         return $script;
     }
 
