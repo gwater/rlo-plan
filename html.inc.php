@@ -202,31 +202,28 @@ class ovp_author extends ovp_source {
         if (count($entries) == 0) {
             return $entries;
         }
-
-        $oldtime = '';
+        $old_date    = $entries[0]->get_date();
+        $old_teacher = $entries[0]->teacher;
         foreach ($entries as $entry) {
-            if($oldtime != $entry->time && $oldtime != '') {
-                $entries_by_date[count($entries_by_date)] = $entries_for_date;
-                unset($entries_for_date);
-            }
-            $entries_for_date[count($entries_for_date)] = $entry;
-        }
-        $entries_by_date[count($entries_by_date)] = $entries_for_date;
-
-        $oldteacher = '';
-        foreach ($entries_by_date as $entries_for_date) {
-            foreach ($entries_for_date as $entry) {
-                if ($oldteacher != $entry->teacher && $oldteacher != '') {
-                    $entries_by_teacher[count($entries_by_teacher)] = $entries_for_teacher;
-                    unset($entries_for_teacher);
+            if ($old_teacher != $entry->teacher) {
+                if (is_array($entries_for_teacher)) {
+                    $teachers_for_date[] = $entries_for_teacher;
                 }
-                $entries_for_teacher[count($entries_for_teacher)] = $entry;
+                unset($entries_for_teacher);
+                $old_teacher = $entry->teacher;
             }
-            $entries_by_teacher[count($entries_by_teacher)] = $entries_for_teacher;
-            $entries_by_date_new[count($entries_for_date_new)] = $entries_by_teacher;
+            if($old_date != $entry->get_date()) {
+                if (is_array($teachers_for_date)) {
+                    $new_entries[] = $teachers_for_date;
+                }
+                unset($teachers_for_date);
+                $old_date = $entry->get_date();
+            }
+            $entries_for_teacher[] = $entry;
         }
-
-        return $entries_by_date_new;
+        $teachers_for_date[] = $entries_for_teacher;
+        $new_entries[] = $teachers_for_date;
+        return $new_entries;
     }
 
     protected function generate_header() {
