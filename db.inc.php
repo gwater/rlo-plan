@@ -25,8 +25,11 @@ class db extends mysqli {
         if (!$this->select_db(DB_BASE)) {
             $this->create_db();
         }
-        if (false) { // TODO: check if tables exist
+        if (FIRST_RUN) {
             $this->reset_tables();
+            $config = file_get_contents('config.inc.php');
+            $config = preg_replace('/(?<=define\(\'FIRST_RUN\', )true(?=\);)/i', 'false', $config, 1);
+            file_put_contents('config.inc.php', $config);
         }
     }
 
@@ -284,11 +287,11 @@ class db extends mysqli {
             `id`       INT UNSIGNED      NOT NULL AUTO_INCREMENT PRIMARY KEY,
             `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
             `time`     TIMESTAMP         NULL     DEFAULT NULL,
-            `course`   VARCHAR(3)        NULL     DEFAULT NULL,
-            `subject`  VARCHAR(20)       NULL     DEFAULT NULL,
+            `course`   VARCHAR(5)        NULL     DEFAULT NULL,
+            `subject`  VARCHAR(5)        NULL     DEFAULT NULL,
             `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
             `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
-            `change`   VARCHAR(50)       NULL     DEFAULT NULL,
+            `change`   VARCHAR(40)       NULL     DEFAULT NULL,
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );

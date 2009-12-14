@@ -1,5 +1,6 @@
 <?php
 
+define('FIRST_RUN', false);            // this value is automatically set to false on first run
 define('DEBUG', true);                 // true:  detailed error messages are shown
                                        // false: only very short or no error messages are shown
                                        // set this to false when uploading to IRL server!

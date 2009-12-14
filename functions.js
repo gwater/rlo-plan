@@ -1,17 +1,9 @@
 ﻿// this code is static
 
-var columns = new Array();
-columns['Uhrzeit']    = 5;
-columns['Klasse']     = 5;
-columns['Fach']       = 5;
-columns['Dauer']      = 3;
-columns['Vertretung'] = 20;
-columns['Änderung']   = 20;
-columns['Alter Raum'] = 4;
-columns['Neuer Raum'] = 4;
-columns.length = 8;
-
-var column_names = ['time', 'course', 'subject', 'duration', 'sub', 'change', 'oldroom', 'newroom'];
+var column_titles     = ['Uhrzeit', 'Klasse', 'Fach',    'Dauer',    'Vertretung', 'Änderung', 'Alter Raum', 'Neuer Raum'];
+var column_names      = ['time',    'course', 'subject', 'duration', 'sub',        'change',   'oldroom',    'newroom'];
+var column_widths     = ['40px',    '40px',   '40px',    '25px',     '150px',      '245px',    '40px',       '40px'];
+var column_maxLengths = [ 5,         5,        5,         3,          30,           40,         5,            5];
 
 function newElement(type) {
     return document.createElement(type);
@@ -53,8 +45,8 @@ function modify_entry(button) {
         var textbox = newElement('input');
         textbox.type = 'text';
         textbox.value = cell.textContent;
-        textbox.maxLength = columns[firstRow.childNodes[i].textContent];
-        textbox.style.width = textbox.maxLength * 9 + 'px';
+        textbox.maxLength = column_maxLengths[i];
+        textbox.style.width = column_widths[i];
         cell.innerHTML = '';
         cell.appendChild(textbox);
         var backup = newElement('span');
@@ -234,12 +226,12 @@ function add_new_entry(button) {
     var row = newElement('tr');
 
     // data cells:
-    for (i in columns) {
+    for (var i = 0; i < column_widths.length; i++) {
         var cell = newCell('');
         var textbox = newElement('input');
         textbox.type = 'text';
-        textbox.maxLength = columns[i];
-        textbox.style.width = textbox.maxLength * 9 + 'px';
+        textbox.maxLength = column_maxLengths[i];
+        textbox.style.width = column_widths[i];
         cell.appendChild(textbox);
         row.appendChild(cell);
     }
@@ -336,8 +328,8 @@ function newTeacher(name, entries) {
     var table = newElement('table');
     table.setAttribute('class', 'ovp_table');
     var header_row = newElement('tr');
-    for (column in columns) {
-        header_row.appendChild(newCell(column));
+    for (var i = 0; i < column_titles.length; i++) {
+        header_row.appendChild(newCell(column_titles[i]));
     }
     header_row.appendChild(newCell('Aktion'));
     table.appendChild(header_row);
