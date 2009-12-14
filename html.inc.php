@@ -204,7 +204,7 @@ class ovp_author extends ovp_source {
 
         $oldtime = '';
         foreach ($entries as $entry) {
-            if($oldtime != $entry-time && $oldtime != '') {
+            if($oldtime != $entry->time && $oldtime != '') {
                 $entries_by_date[count($entries_by_date)] = $entries_for_date;
                 unset($entries_for_date);
             }
