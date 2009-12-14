@@ -202,28 +202,32 @@ class ovp_author extends ovp_source {
         if (count($entries) == 0) {
             return $entries;
         }
-        $old_date    = $entries[0]->get_date();
-        $old_teacher = $entries[0]->teacher;
+        $old_date = $entries[0]->get_date();
         foreach ($entries as $entry) {
-            if ($old_teacher != $entry->teacher) {
-                if (is_array($entries_for_teacher)) {
-                    $teachers_for_date[] = $entries_for_teacher;
-                }
-                unset($entries_for_teacher);
-                $old_teacher = $entry->teacher;
-            }
-            if($old_date != $entry->get_date()) {
-                if (is_array($teachers_for_date)) {
-                    $new_entries[] = $teachers_for_date;
-                }
-                unset($teachers_for_date);
+            if ($old_date != $entry->get_date()) {
                 $old_date = $entry->get_date();
+                $days[] = $day;
+                unset($day);
             }
-            $entries_for_teacher[] = $entry;
+            $day[] = $entry;
         }
-        $teachers_for_date[] = $entries_for_teacher;
-        $new_entries[] = $teachers_for_date;
-        return $new_entries;
+        $days[] = $day;
+        foreach ($days as $i => $day) {
+            $old_teacher = $day[0]->teacher;
+            unset($teacher);
+            unset($teachers);
+            foreach ($day as $entry) {
+                if ($old_teacher != $entry->teacher) {
+                    $old_teacher = $entry->teacher;
+                    $teachers[] = $teacher;
+                    unset($teacher);
+                }
+                $teacher[] = $entry;
+            }
+            $teachers[] = $teacher;
+            $days[$i] = $teachers;
+        }
+        return $days;
     }
 
     protected function generate_header() {
