@@ -18,7 +18,7 @@ session_start();
 // Actual content generation:
 $db = new db();
 
-switch ($_GET['view']) {
+switch ($_GET['source']) {
 case 'print':
     authorize(VIEW_PRINT);
     if (isset($_GET['date'])) {
