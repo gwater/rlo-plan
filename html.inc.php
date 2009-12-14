@@ -9,7 +9,7 @@
  * html page.
  */
 abstract class ovp_source {
-    public $db;
+    protected $db;
 
     public function __construct($db) {
         $this->db = $db;
@@ -349,9 +349,16 @@ class ovp_admin extends ovp_source {
  */
 class ovp_page {
     private $source; // the ovp_source object used to generate the page
+    private $title;
+    private $type;
+    private $db;
 
-    public function __construct(ovp_source $source) {
+    public function __construct(ovp_source $source, $db) {
         $this->source = $source;
+        $this->db = $db;
+        $source_vars = get_class_vars(get_class($source));
+        $this->title = $source_vars['title'];
+        $this->type = $source_vars['type'];
     }
 
     private function generate_view() {
@@ -361,7 +368,7 @@ class ovp_page {
            '<!DOCTYPE html>
             <html>
             <head>
-              <title>RLO Onlinevertretungsplan - '.$source_vars['title'].'</title>
+              <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
               '.$this->source->get_header().'
             </head>
             <body>
@@ -373,26 +380,24 @@ class ovp_page {
     }
 
     private function generate_navi() {
-        $priv = $this->source->db->get_current_user()->priv;
-        $views = array();
-        $views[] = get_class_vars('ovp_public');
-        $views[] = get_class_vars('ovp_print');
-        $views[] = get_class_vars('ovp_author');
-        $views[] = get_class_vars('ovp_admin');
-
-        $source_vars = get_class_vars(get_class($this->source));
+        $priv = $this->db->get_current_user()->priv;
+        $sources = array();
+        $sources[] = get_class_vars('ovp_public');
+        $sources[] = get_class_vars('ovp_print');
+        $sources[] = get_class_vars('ovp_author');
+        $sources[] = get_class_vars('ovp_admin');
 
         $html =
              '<div id="ovp_navi">';
-        foreach ($views as $view) {
-            if ($priv >= $view['priv_req']) {
-                if ($view['type'] != $source_vars['type']) {
+        foreach ($sources as $source) {
+            if ($priv >= $source['priv_req']) {
+                if ($source['type'] != $this->type) {
                     $html .= '
-                <a href="index.php?view='.$view['type'].
-                        '" class="ovp_link_navi">'.$view['title'].'</a> |';
+                <a href="index.php?source='.$source['type'].
+                        '" class="ovp_link_navi">'.$source['title'].'</a> |';
                 } else {
                     $html .= '
-                <span id="ovp_navi_selected">'.$view['title'].'</span> |';
+                <span id="ovp_navi_selected">'.$source['title'].'</span> |';
                 }
             }
         }
