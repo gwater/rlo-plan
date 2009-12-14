@@ -9,14 +9,10 @@
  * html page.
  */
 abstract class ovp_source {
-    protected $type;
-    protected $db;
-    protected $title;
+    public $db;
 
-    public function __construct($type, $db, $title = '') {
-        $this->type  = $type;
-        $this->db    = $db;
-        $this->title = $title;
+    public function __construct($db) {
+        $this->db = $db;
     }
 
     abstract protected function generate_view();
@@ -37,14 +33,6 @@ abstract class ovp_source {
         $html = $this->generate_view();
         return $html;
     }
-
-    public function get_type() {
-        return $this->type;
-    }
-
-    public function get_title() {
-        return $this->title;
-    }
 }
 
 /**
@@ -52,10 +40,13 @@ abstract class ovp_source {
  * Sensitive information like teachers names is not included.
  */
 class ovp_public extends ovp_source {
+    public static $type = 'public';
+    public static $title ='Standardansicht';
+    public static $priv_req = VIEW_PUBLIC;
     private $entries;
 
     public function __construct($db, $time = -1) {
-        parent::__construct('public', $db, 'RLO Onlinevertretungsplan');
+        parent::__construct($db);
         if ($time == -1) {
             $time = time();
         }
@@ -65,8 +56,8 @@ class ovp_public extends ovp_source {
     protected function generate_view() {
         $html = '
           <div class="ovp_container">
-            <h1 class="ovp_heading">'.$this->title.'</h1>
-            <table class="ovp_table" id="ovp_table_'.$this->type.'">
+            <h1 class="ovp_heading">'.self::$title.'</h1>
+            <table class="ovp_table" id="ovp_table_'.self::$type.'">
               <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
@@ -102,13 +93,16 @@ class ovp_public extends ovp_source {
  * school personnel.
  */
 class ovp_print extends ovp_source {
+    public static $type = 'print';
+    public static $title ='Aushang';
+    public static $priv_req = VIEW_PRINT;
     private $entries;
     private $today;
     private $yesterday;
     private $tomorrow;
 
     public function __construct($db, $date = -1) {
-        parent::__construct('print', $db, 'Vertretungsplan');
+        parent::__construct($db);
         if ($date == -1) {
             $time = time();
             $time = $time - $time % 86400;
@@ -127,9 +121,9 @@ class ovp_print extends ovp_source {
     protected function generate_view() {
         $html =
          '<div class="ovp_container">
-            <h1 class="ovp_heading">'.$this->title.'</h1>
+            <h1 class="ovp_heading">'.self::$title.'</h1>
             <h2 class="ovp_date">'.$this->today.'</h2>
-            <table class="ovp_table" id="ovp_table_'.$this->type.'">
+            <table class="ovp_table" id="ovp_table_'.self::$type.'">
               <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
                 <td class="ovp_column_course">Klasse</td>
@@ -172,8 +166,8 @@ class ovp_print extends ovp_source {
         $html .=
            '</table>
             <div class="ovp_day_links">
-              <a href="index.php?view='.$this->type.'&date='.$this->yesterday.'" class="ovp_link_yesterday">Einen Tag zurück</a>
-              <a href="index.php?view='.$this->type.'&date='.$this->tomorrow.'" class="ovp_link_tomorrow">Einen Tag weiter</a>
+              <a href="index.php?view='.self::$type.'&date='.$this->yesterday.'" class="ovp_link_yesterday">Einen Tag zurück</a>
+              <a href="index.php?view='.self::$type.'&date='.$this->tomorrow.'" class="ovp_link_tomorrow">Einen Tag weiter</a>
             </div>
           </div>';
         return $html;
@@ -186,10 +180,13 @@ class ovp_print extends ovp_source {
  * authorized school personnel.
  */
 class ovp_author extends ovp_source {
+    public static $type = 'author';
+    public static $title ='Einträge verwalten';
+    public static $priv_req = VIEW_AUTHOR;
     private $entries;
 
     public function __construct($db) {
-        parent::__construct('author', $db, 'RLO Onlinevertretungsplan Zentrale');
+        parent::__construct($db);
         $this->entries = $db->get_entries();
     }
 
@@ -275,7 +272,7 @@ class ovp_author extends ovp_source {
         $html =
          '<div class="ovp_container">
             <img src="1x1.gif" onload="init()">
-            <h1 class="ovp_heading">'.$this->title.'</h1>
+            <h1 class="ovp_heading">'.self::$title.'</h1>
             <div id="ovp"></div>
           </div>';
         return $html;
@@ -288,8 +285,12 @@ class ovp_author extends ovp_source {
  * Naturally access is not restricted.
  */
 class ovp_login extends ovp_source {
+    public static $type = 'login';
+    public static $title ='Login';
+    public static $priv_req = VIEW_NONE;
+
     public function __construct($db) {
-        parent::__construct('login', $db, 'RLO Onlinevertretungsplan Login');
+        parent::__construct($db);
     }
 
     protected function generate_view() {
@@ -327,8 +328,12 @@ class ovp_login extends ovp_source {
  * Access msut thus be seriously restricted.
  */
 class ovp_admin extends ovp_source {
+    public static $type = 'admin';
+    public static $title ='Benutzer verwalten';
+    public static $priv_req = VIEW_ADMIN;
+
     public function __construct($db) {
-        parent::__construct('admin', $db, 'RLO Onlinevertretungsplan Admin');
+        parent::__construct($db);
     }
 
     protected function generate_view() {
@@ -344,39 +349,64 @@ class ovp_admin extends ovp_source {
  */
 class ovp_page {
     private $source; // the ovp_source object used to generate the page
-    private $content; // the whole html page
 
     public function __construct(ovp_source $source) {
         $this->source = $source;
-        $this->content = $this->generate_view();
     }
 
     private function generate_view() {
-        //FIXME: Don't show the navibar before login
+        $source_vars = get_class_vars(get_class($this->source));
+
         $html =
            '<!DOCTYPE html>
             <html>
             <head>
-                <title>'.$this->source->get_title().'</title>
-                '.$this->source->get_header().'
+              <title>RLO Onlinevertretungsplan - '.$source_vars['title'].'</title>
+              '.$this->source->get_header().'
             </head>
             <body>
-              <div id="ovp_navi">
-                <a href="index.php?view=public" class="ovp_link_navi">OVP</a> |
-                <a href="index.php?view=print" class="ovp_link_navi">Aushang</a> |
-                <a href="index.php?view=author" class="ovp_link_navi">Einträge verwalten</a> |
-                <a href="index.php?view=admin" class="ovp_link_navi">Benutzer verwalten</a> |
-                <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>
-                <!-- more links go here -->
-              </div>
+              '.$this->generate_navi().'
               '.$this->source->get_view().'
             </body>
             </html>';
         return $html;
     }
 
+    private function generate_navi() {
+        $priv = $this->source->db->get_current_user()->priv;
+        $views = array();
+        $views[] = get_class_vars('ovp_public');
+        $views[] = get_class_vars('ovp_print');
+        $views[] = get_class_vars('ovp_author');
+        $views[] = get_class_vars('ovp_admin');
+
+        $source_vars = get_class_vars(get_class($this->source));
+
+        $html =
+             '<div id="ovp_navi">';
+        foreach ($views as $view) {
+            if ($priv >= $view['priv_req']) {
+                if ($view['type'] != $source_vars['type']) {
+                    $html .= '
+                <a href="index.php?view='.$view['type'].
+                        '" class="ovp_link_navi">'.$view['title'].'</a> |';
+                } else {
+                    $html .= '
+                <span id="ovp_navi_selected">'.$view['title'].'</span> |';
+                }
+            }
+        }
+        if ($priv > PRIV_DEFAULT) {
+            $html .= '
+                <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>';
+        }
+        $html .= '
+              </div>';
+        return $html;
+    }
+
     public function get_html() {
-        return $this->content;
+        return $this->generate_view();
     }
 }
 
