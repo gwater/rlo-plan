@@ -118,6 +118,10 @@ class ovp_print extends ovp_source {
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
     }
 
+    protected function generate_header() {
+        return '<link rel="stylesheet" type="text/css" href="print.css" media="print">';
+    }
+
     protected function generate_view() {
         $html =
          '<div class="ovp_container">
