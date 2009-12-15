@@ -355,11 +355,9 @@ class ovp_page {
     private $source; // the ovp_source object used to generate the page
     private $title;
     private $type;
-    private $db;
 
-    public function __construct(ovp_source $source, $db) {
+    public function __construct(ovp_source $source) {
         $this->source = $source;
-        $this->db = $db;
         $source_vars = get_class_vars(get_class($source));
         $this->title = $source_vars['title'];
         $this->type = $source_vars['type'];
@@ -384,7 +382,6 @@ class ovp_page {
     }
 
     private function generate_navi() {
-        $priv = $this->db->get_current_user()->priv;
         $sources = array();
         $sources[] = get_class_vars('ovp_public');
         $sources[] = get_class_vars('ovp_print');
@@ -394,7 +391,7 @@ class ovp_page {
         $html =
              '<div id="ovp_navi">';
         foreach ($sources as $source) {
-            if ($priv >= $source['priv_req']) {
+            if (is_authorized($source['priv_req'])) {
                 if ($source['type'] != $this->type) {
                     $html .= '
                 <a href="index.php?source='.$source['type'].
@@ -405,7 +402,8 @@ class ovp_page {
                 }
             }
         }
-        if ($priv > PRIV_DEFAULT) {
+        /* FIXME: Is the user logged in? */
+        if (is_authorized(PRIV_DEFAULT + 1)){
             $html .= '
                 <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>';
         }

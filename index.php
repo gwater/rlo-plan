@@ -44,7 +44,7 @@ default:
     $source = new ovp_public($db);
 }
 
-$page = new ovp_page($source, $db);
+$page = new ovp_page($source);
 exit($page->get_html());
 
 ?>
