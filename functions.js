@@ -18,7 +18,7 @@ function newCell(value) {
 
 function newButton(caption, action) {
     var button = newElement('button');
-    button.type = 'button';
+    //button.type = 'button'; // not supported by IE8
     button.innerHTML = caption;
     button.onclick = function() {
         action(this);

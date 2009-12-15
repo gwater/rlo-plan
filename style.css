@@ -5,6 +5,14 @@
     border: 1px solid black;
 }
 
+.ovp_table tr.ovp_row_teacher td {
+    border: none;
+}
+
+.ovp_table tr.ovp_row_teacher td:first-child {
+    border: 1px solid black;
+}
+
 input[type="submit"] {
     width: 100%;
 }

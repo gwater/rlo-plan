@@ -143,6 +143,7 @@ class ovp_print extends ovp_source {
                 $html .=
              '<tr class="ovp_row_teacher">
                 <td class="ovp_cell_teacher">'.$entry->teacher.'</td>
+                <td><td><td><td><td>
               </tr>';
                 $oldteacher = $entry->teacher;
             }
