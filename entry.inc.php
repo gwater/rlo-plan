@@ -40,10 +40,10 @@ class entry {
     }
 
     private function to_time($day, $time) {
-        if (!preg_match('/\w, (\d{1,2})\.(\d{1,2})\.(\d{4}) (\d{1,2}):(\d{1,2})/', $day.' '.$time, $matches)) {
+        if (!preg_match('/(\d\d?).(\d\d?).((\d\d)?\d\d) (\d\d?).(\d\d?)/', $day.' '.$time, $matches)) {
             $this->fail('invalid day or time format');
         }
-        $unix = mktime($matches[4], $matches[5], 0, $matches[2], $matches[1], $matches[3]);
+        $unix = mktime($matches[5], $matches[6], 0, $matches[2], $matches[1], $matches[3]);
         if ($unix == false || $unix == -1) {
             $this->fail('invalid day or time value');
         }
