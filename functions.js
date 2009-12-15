@@ -1,9 +1,10 @@
-﻿// this code is static
-
-var column_titles     = ['Uhrzeit', 'Klasse', 'Fach',    'Dauer',    'Vertretung', 'Änderung', 'Alter Raum', 'Neuer Raum'];
+﻿var column_titles     = ['Uhrzeit', 'Klasse', 'Fach',    'Dauer',    'Vertretung', 'Änderung', 'Alter Raum', 'Neuer Raum'];
 var column_names      = ['time',    'course', 'subject', 'duration', 'sub',        'change',   'oldroom',    'newroom'];
 var column_widths     = ['40px',    '40px',   '40px',    '25px',     '150px',      '245px',    '40px',       '40px'];
 var column_maxLengths = [ 5,         5,        5,         3,          30,           40,         5,            5];
+
+var day_names = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+var relative_day_names = ['heute', 'morgen', 'übermorgen']; // array index corresponds to distance from today
 
 function newElement(type) {
     return document.createElement(type);
@@ -25,19 +26,19 @@ function newButton(caption, action) {
     return button;
 }
 
-function hideButtons(button) {
+function hide_buttons(button) {
     button.style.display = 'none';
     button.nextSibling.style.display = 'none';
 }
 
-function showButtons(button) {
+function show_buttons(button) {
     button.style.display = 'inline-block';
     button.nextSibling.style.display = 'inline-block';
 }
 
 function modify_entry(button) {
-    hideButtons(button);
-    showButtons(button.nextSibling.nextSibling);
+    hide_buttons(button);
+    show_buttons(button.nextSibling.nextSibling);
     var row = button.parentNode.parentNode;
     var firstRow = row.parentNode.firstChild;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
@@ -69,7 +70,7 @@ function getXMLHttp() {
 function delete_entry(button) {
     var request = getXMLHttp();
     if (request) {
-        hideButtons(button.previousSibling);
+        hide_buttons(button.previousSibling);
         var row = button.parentNode.parentNode;
         var msg = 'action=delete&id=' + row.id.substr(5); // remove 'entry' from 'entry123'
         request.open('POST', 'post.php', false);
@@ -91,7 +92,7 @@ function delete_entry(button) {
                 row.parentNode.removeChild(row);
             }
         } else {
-            showButtons(button.previousSibling);
+            show_buttons(button.previousSibling);
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
                 fadeOut(status);
@@ -116,7 +117,7 @@ function delete_new_entry(button) {
 }
 
 function save_entry(button) {
-    hideButtons(button);
+    hide_buttons(button);
     var row = button.parentNode.parentNode;
     var teacher = row.parentNode.parentNode;
     var day = teacher.parentNode;
@@ -153,7 +154,7 @@ function save_entry(button) {
             }
         }
     }
-    showButtons(button.previousSibling.previousSibling);
+    show_buttons(button.previousSibling.previousSibling);
 }
 
 function fadeOut(e) {
@@ -171,7 +172,7 @@ function fadeOut(e) {
 }
 
 function save_new_entry(button) {
-    hideButtons(button);
+    hide_buttons(button);
     var row = button.parentNode.parentNode;
     var teacher = row.parentNode.parentNode;
     var day = teacher.parentNode;
@@ -199,9 +200,11 @@ function save_new_entry(button) {
             setTimeout(function() {
                 fadeOut(status);
             }, 3000);
+            row.lastChild.firstChild.onclick();
+            return;
         }
     }
-    showButtons(button.previousSibling.previousSibling);
+    show_buttons(button.previousSibling.previousSibling);
     button.onclick = function() {
         save_entry(button);
     }
@@ -213,8 +216,8 @@ function save_new_entry(button) {
 
 function cancel_editing_entry(button) {
     var saveButton = button.previousSibling;
-    hideButtons(saveButton);
-    showButtons(saveButton.previousSibling.previousSibling);
+    hide_buttons(saveButton);
+    show_buttons(saveButton.previousSibling.previousSibling);
     var row = button.parentNode.parentNode;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
@@ -262,12 +265,70 @@ function add_teacher(button) {
     teacher.firstChild.onclick();
 }
 
+function try_parse(date) {
+    var matches = date.match(/(\d\d?).(\d\d?).((\d\d)?\d\d)$/);
+    if (matches !== null) {
+        var year = matches[3];
+        if (year.length == 2) {
+            year = '20' + year;
+        }
+        return new Date(year, matches[2] - 1, matches[1], 0, 0, 0, 0);
+    }
+    var lower_date = date.toLowerCase();
+    for (var i = 0; i < relative_day_names.length; i++) {
+        if (lower_date == relative_day_names[i]) {
+            var result = new Date();
+            result.setDate(result.getDate() + i);
+            return result;
+        }
+    }
+    if (date.length <= 10) { // length of 'Donnerstag'
+        var next_day_of_week = lower_date.substr(0, 2);
+        for (var i = 0; i < day_names.length; i++) {
+            if (next_day_of_week == day_names[i].substr(0, 2).toLowerCase()) {
+                var result = new Date();
+                var today = result.getDay();
+                if (i < today) {
+                    i += 7;
+                }
+                result.setDate(result.getDate() + i - today);
+                return result;
+            }
+        }
+    }
+    return null;
+}
+
+function format_date(d) {
+    return day_names[d.getDay()] + ', ' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+}
+
+function get_default_date() {
+    var last_date = try_parse(document.querySelector('#ovp').lastChild.previousSibling.firstChild.textContent);
+    var d;
+    if (last_date) {
+        d = new Date();
+        last_date.setDate(last_date.getDate() + 1);
+        if (last_date > d) {
+            d = last_date;
+        }
+    } else {
+        d = new Date();
+    }
+    return format_date(d);
+}
+
 function add_day(button) {
     var ovp = button.parentNode;
-    var day = newDay('Neuer Tag', []);
+    var date = get_default_date();
+    var day = newDay(date, []);
     ovp.insertBefore(day, ovp.lastChild);
-    day.childNodes[1].value = '';
     day.firstChild.onclick();
+}
+
+function del_empty_day(button) {
+    var day = button.parentNode;
+    day.parentNode.removeChild(day);
 }
 
 // 'id' is from the database
@@ -321,7 +382,12 @@ function newTeacher(name, entries) {
             header.innerHTML = this.value;
         }
         header.style.display = 'block';
-        // TODO: tell server about this OR reupload all contained entries to server
+        var table = this.parentNode.querySelector('.ovp_table');
+        if (table.childNodes.length == 1) {
+            this.parentNode.lastChild.onclick();
+        } else {
+            // TODO: update all contained entries to server
+        }
     }
     teacher.appendChild(textbox);
 
@@ -365,10 +431,20 @@ function newDay(title, teachers) {
         this.style.display = 'none';
         var header = this.previousSibling;
         if (this.value != '') {
-            header.innerHTML = this.value;
+            var new_date = try_parse(this.value);
+            if (new_date) {
+                header.textContent = format_date(new_date);
+            } else {
+                header.innerHTML = '<span class="ovp_error">' + this.value + '</span>';
+            }
         }
         header.style.display = 'block';
-        // TODO: tell server about this OR reupload all contained entries to server
+        var table = this.parentNode.querySelector('.ovp_table');
+        if (table == null) {
+            this.parentNode.lastChild.onclick();
+        } else {
+            // TODO: update all contained entries to server
+        }
     }
     day.appendChild(textbox);
 
@@ -380,7 +456,7 @@ function newDay(title, teachers) {
     return day;
 }
 
-function insertDays(days) {
+function insert_days(days) {
     var ovp = document.getElementById('ovp');
     for (i in days) {
         ovp.insertBefore(days[i], ovp.lastChild);

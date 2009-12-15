@@ -266,7 +266,7 @@ class ovp_author extends ovp_source {
                 days.push(newDay("'.$today.'", teachers));';
         }
         $script .= '
-            insertDays(days);}</script>';
+            insert_days(days);}</script>';
         return $script;
     }
 

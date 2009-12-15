@@ -1,0 +1,5 @@
+Tage können auch als 'heute', 'morgen', oder 'übermorgen' eingegeben werden.
+Es reicht, wenn Sie die ersten zwei Buchstaben eines Wochentages eingeben.
+Bei Daten und Uhrzeiten brauchen Sie keine führende Null eingeben.
+Mit der Tastatur ist man häufig viel schneller als mit der Maus.
+Sie können den Cursor zwischen den einzelnen Feldern mit [Tab] und [Umschalt]+[Tab] vor- und zurück bewegen.
