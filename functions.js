@@ -265,7 +265,7 @@ function add_teacher(button) {
     teacher.firstChild.onclick();
 }
 
-function try_parse(date) {
+function parse_date(date) {
     var matches = date.match(/(\d\d?).(\d\d?).((\d\d)?\d\d)$/);
     if (matches !== null) {
         var year = matches[3];
@@ -304,16 +304,16 @@ function format_date(d) {
 }
 
 function get_default_date() {
-    var last_date = try_parse(document.querySelector('#ovp').lastChild.previousSibling.firstChild.textContent);
-    var d;
-    if (last_date) {
-        d = new Date();
-        last_date.setDate(last_date.getDate() + 1);
-        if (last_date > d) {
-            d = last_date;
+    var d = new Date();
+    var last_day = document.querySelector('#ovp').lastChild.previousSibling;
+    if (last_day) {
+        var last_date = parse_date(last_day.firstChild.textContent);
+        if (last_date) {
+            last_date.setDate(last_date.getDate() + 1);
+            if (last_date > d) {
+                d = last_date;
+            }
         }
-    } else {
-        d = new Date();
     }
     return format_date(d);
 }
@@ -466,7 +466,7 @@ function newDay(title, teachers) {
         this.style.display = 'none';
         var header = this.previousSibling;
         if (this.value != '') {
-            var new_date = try_parse(this.value);
+            var new_date = parse_date(this.value);
             if (new_date) {
                 header.textContent = format_date(new_date);
             } else {
