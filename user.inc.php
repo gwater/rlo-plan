@@ -1,14 +1,21 @@
 <?php
 
 class user {
-    public $priv;
+
     public $id;
     public $name;
+    public $pwd_hash;
+    public $privilege;
 
-    public function __construct($id, $name, $priv) {
-        $this->name = $name;
-        $this->id = $id;
-        $this->priv = $priv;
+    public function __construct($a) {
+        if (isset($a['id'])) {
+            $this->id = $a['id'];
+        }
+        $this->name = $a['name'];
+        if (isset($a['pwd'])) {
+            $this->pwd_hash = hash('sha256', $a['pwd']);
+        }
+        $this->privilege = $a['privilege'];
     }
 }
 

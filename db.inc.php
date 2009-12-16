@@ -1,14 +1,5 @@
 <?php
 
-/**
- * - cleanup_entries():
- *      just a maintenance thing. remove all data no longer needed from the db
- *      DATENSCHUTZ!!!
- * - verify_user($name, $pw) //???? no idea how that should work...
- * - remove_user($name)
- * - add_user($name, $pw_hash, $priv=0)
- */
-
 require_once('config.inc.php');
 require_once('entry.inc.php');
 require_once('user.inc.php');
@@ -41,28 +32,28 @@ class db extends mysqli {
         $this->query(
            "INSERT INTO `entry` VALUES (
                 NULL,
-                '".$entry->teacher."',
-                FROM_UNIXTIME('".$entry->time."'),
-                '".$entry->course."',
-                '".$entry->subject."',
-                '".$entry->duration."',
-                '".$entry->sub."',
-                '".$entry->change."',
-                '".$entry->oldroom."',
-                '".$entry->newroom."'
+                '".$this->protect($entry->teacher)."',
+                FROM_UNIXTIME('".$this->protect($entry->time)."'),
+                '".$this->protect($entry->course)."',
+                '".$this->protect($entry->subject)."',
+                '".$this->protect($entry->duration)."',
+                '".$this->protect($entry->sub)."',
+                '".$this->protect($entry->change)."',
+                '".$this->protect($entry->oldroom)."',
+                '".$this->protect($entry->newroom)."'
             )"
         );
         $row = $this->query(
             "SELECT `id` FROM `entry` WHERE
-                `teacher`  = '".$entry->teacher."'  AND
-                `time`     = FROM_UNIXTIME('".$entry->time."') AND
-                `course`   = '".$entry->course."'   AND
-                `subject`  = '".$entry->subject."'  AND
-                `duration` = '".$entry->duration."' AND
-                `sub`      = '".$entry->sub."'      AND
-                `change`   = '".$entry->change."'   AND
-                `oldroom`  = '".$entry->oldroom."'  AND
-                `newroom`  = '".$entry->newroom."'")->fetch_assoc();
+                `teacher`  = '".$this->protect($entry->teacher)."'  AND
+                `time`     = FROM_UNIXTIME('".$this->protect($entry->time)."') AND
+                `course`   = '".$this->protect($entry->course)."'   AND
+                `subject`  = '".$this->protect($entry->subject)."'  AND
+                `duration` = '".$this->protect($entry->duration)."' AND
+                `sub`      = '".$this->protect($entry->sub)."'      AND
+                `change`   = '".$this->protect($entry->change)."'   AND
+                `oldroom`  = '".$this->protect($entry->oldroom)."'  AND
+                `newroom`  = '".$this->protect($entry->newroom)."'")->fetch_assoc();
         return $row['id'];
     }
 
@@ -70,34 +61,29 @@ class db extends mysqli {
      * Updates the entry referenced by $entry->id with the data inside $entry.
      * @return: true if the update was successful
      */
-    public function update_entry($entry) {
+    public function update_entry(entry $entry) {
         $this->query(
             "UPDATE `entry` SET
-                `teacher`  = '".$entry->teacher."',
-                `time`     = FROM_UNIXTIME('".$entry->time."'),
-                `course`   = '".$entry->course."',
-                `subject`  = '".$entry->subject."',
-                `duration` = '".$entry->duration."',
-                `sub`      = '".$entry->sub."',
-                `change`   = '".$entry->change."',
-                `oldroom`  = '".$entry->oldroom."',
-                `newroom`  = '".$entry->newroom."'
+                `teacher`  = '".$this->protect($entry->teacher)."',
+                `time`     = FROM_UNIXTIME('".$this->protect($entry->time)."'),
+                `course`   = '".$this->protect($entry->course)."',
+                `subject`  = '".$this->protect($entry->subject)."',
+                `duration` = '".$this->protect($entry->duration)."',
+                `sub`      = '".$this->protect($entry->sub)."',
+                `change`   = '".$this->protect($entry->change)."',
+                `oldroom`  = '".$this->protect($entry->oldroom)."',
+                `newroom`  = '".$this->protect($entry->newroom)."'
              WHERE
-                `id` = '".$entry->id."'");
+                `id` = '".$this->protect($entry->id)."'");
         return $this->affected_rows == 1;
     }
 
     /**
-     * Deletes the entry referenced by the id int $entry or entry $entry->id.
+     * Deletes the entry referenced by the id $entry_id.
      * @return: true if the entry was found and deleted
      */
-    public function remove_entry($entry) {
-        if (is_numeric($entry)) {
-            $id = $entry;
-        } else {
-            $id = $entry->id;
-        }
-        $this->query("DELETE FROM `entry` WHERE `id` = '".$id."' LIMIT 1");
+    public function remove_entry($entry_id) {
+        $this->query("DELETE FROM `entry` WHERE `id` = '".$this->protect($entry_id)."' LIMIT 1");
         return $this->affected_rows == 1;
     }
 
@@ -160,7 +146,7 @@ class db extends mysqli {
         if (DELETE_OLDER_THAN >= 0) {
             $this->query(
                "DELETE FROM `entry` WHERE
-                    DATEDIFF(CURDATE(), `time`) > '".DELETE_OLDER_THAN."'"
+                    DATEDIFF(CURDATE(), `time`) > '".$this->protect(DELETE_OLDER_THAN)."'"
             );
             return $this->affected_rows;
         } else {
@@ -168,18 +154,55 @@ class db extends mysqli {
         }
     }
 
+    /**
+     * Adds a user to the database.
+     * @return: the id of the new user
+     */
+    public function add_user(user $user) {
+        $this->query(
+           "INSERT INTO `user` (
+                `name`,
+                `pwd_hash`,
+                `privilege`
+            ) VALUES (
+                '".$this->protect($user->name)."',
+                '".$this->protect($user->pwd_hash)."',
+                '".$this->protect($user->privilege)."'
+            )"
+        );
+        $row = $this->query(
+            "SELECT `id` FROM `user` WHERE
+                `name`      = '".$this->protect($user->name)."'  AND
+                `pwd_hash`  = '".$this->protect($user->pwd_hash)."' AND
+                `privilege` = '".$this->protect($user->privilege)."'")->fetch_assoc();
+        return $row['id'];
+    }
+
+    /**
+     * Deletes the user referenced by the id $user_id.
+     * @return: true if the user was found and deleted
+     */
+    public function remove_user($user_id) {
+        $this->query("DELETE FROM `user` WHERE `id` = '".$this->protect($user_id)."' LIMIT 1");
+        return $this->affected_rows == 1;
+    }
+
     public function get_current_user() {
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $this->query(
-           "SELECT * FROM `user` WHERE
-                `ip1` = '".($ip & 0xFFFFFFFFFFFFFFFF)."' AND
-                `ip2` = '".($ip >> 64)."' AND
-                `sid` = '".session_id()."'"
+           "SELECT
+                `id`,
+                `name`,
+                `privilege`
+            FROM `user` WHERE
+                `ip1` = '".$this->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
+                `ip2` = '".$this->protect($ip >> 64)."' AND
+                `sid` = '".$this->protect(session_id())."'"
         );
         if (!($row = $result->fetch_assoc())) {
             return NULL; // ip or sid not found
         }
-        return new user($row['id'], $row['name'], $row['priv']);
+        return new user($row);
     }
 
     // checks if the current user's ip address matches the one in the database
@@ -206,10 +229,10 @@ class db extends mysqli {
         $result = $this->query(
            "SELECT
                 `id`,
-                `priv`
+                `privilege`
             FROM `user` WHERE
-                `name` = '".$this->protect($name)."' AND
-                `pwd`  = '".hash('sha256', $pwd)."'"
+                `name`      = '".$this->protect($name)."' AND
+                `pwd_hash`  = '".$this->protect(hash('sha256', $pwd))."'"
         );
         if (!($row = $result->fetch_assoc())) {
             return -1; // user not found or wrong password
@@ -219,13 +242,13 @@ class db extends mysqli {
         $ip2 = $ip >> 64;
         $this->query(
            "UPDATE `user` SET
-                `ip1` = '".$ip1."',
-                `ip2` = '".$ip2."',
+                `ip1` = '".$this->protect($ip1)."',
+                `ip2` = '".$this->protect($ip2)."',
                 `sid` = '".$this->protect(session_id())."'
             WHERE
-                `id` = '".$row['id']."'"
+                `id` = '".$this->protect($row['id'])."'"
         );
-        return $row['priv']; // privilege is always positive
+        return $row['privilege']; // privilege is always positive
     }
 
     public function logout() {
@@ -257,7 +280,7 @@ class db extends mysqli {
     }
 
     private function create_db() {
-        $this->query("CREATE DATABASE `".DB_BASE."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'");
+        $this->query("CREATE DATABASE `".$this->protect(DB_BASE)."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->select_db(DB_BASE);
     }
 
@@ -266,24 +289,24 @@ class db extends mysqli {
         This table holds the user data of all the students who have access.
         id:        unique user id used to identify user during their session
         name:      user name, e.g. 'jdoe'
-        pwd:       sha256-hashed password
-        priv:      privilege level
+        pwd_hash:  sha256-hashed password
+        privilege: privilege level
                      0 - no rights whatsoever (useful for suspending accounts)
                      1 - view all data except for teacher names, default (students)
                      2 - view all data (teachers)
                      3 - view all data, and modify entries (Mrs. Lange I)
                      4 - view all data, modify entries, and add new users (root)
-         ip1, ip2: the current IPv6 address if the user is logged in
-         */
+        ip1, ip2: the current IPv6 address if the user is logged in
+        */
         $this->query("DROP TABLE IF EXISTS `user`");
         $this->query("CREATE TABLE `user` (
-            `id`   INT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            `name` VARCHAR(20)      NOT NULL,
-            `pwd`  CHAR(64)         NOT NULL,
-            `priv` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-            `ip1`  BIGINT UNSIGNED  NULL     DEFAULT NULL,
-            `ip2`  BIGINT UNSIGNED  NULL     DEFAULT NULL,
-            `sid`  INT UNSIGNED     NULL     DEFAULT NULL)"
+            `id`        INT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            `name`      VARCHAR(20)      NOT NULL,
+            `pwd_hash`  CHAR(64)         NOT NULL,
+            `privilege` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+            `ip1`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
+            `ip2`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
+            `sid`       INT UNSIGNED     NULL     DEFAULT NULL)"
         );
 
         /*
@@ -312,17 +335,8 @@ class db extends mysqli {
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
 
-        $this->query(
-           "INSERT INTO `user` (
-                `name`,
-                `pwd`,
-                `priv`
-            ) VALUES (
-                'admin',
-                '".ADMIN_PWD."',
-                '4'
-            )"
-        );
+        $admin = new user(array('name'=>'admin', 'pwd'=>ADMIN_PWD, 'privilege'=>4));
+        $this->add_user($admin);
     }
 
     private function fail($msg) {

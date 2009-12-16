@@ -16,7 +16,7 @@ define('SKIP_WEEKENDS', true);         // true: weekends are skipped when calcul
                                        //       e.g. it's Monday, entry is from Friday, DELETE_OLDER_THAN = 1 --> entry is _not_ deleted;
                                        // false: weekends are just like every other day (this would suck for obvious reasons)
 
-define('ADMIN_PWD', hash('sha256', 'nimda'));
+define('ADMIN_PWD', 'nimda');
 
 // privilege levels required to view a particular page:
 define('VIEW_NONE',    0);
