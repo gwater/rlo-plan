@@ -50,13 +50,35 @@ class ovp_public extends ovp_source {
         if ($time == -1) {
             $time = time();
         }
-        $this->entries = $db->get_entries($time);
+        $this->entries = $db->get_entries();
+    }
+
+    private function refactor_entries($entries) {
+        if (count($entries) == 0) {
+            return $entries;
+        }
+        $old_date = $entries[0]->get_date();
+        foreach ($entries as $entry) {
+            if ($old_date != $entry->get_date()) {
+                $old_date = $entry->get_date();
+                $days[] = $day;
+                unset($day);
+            }
+            $day[] = $entry;
+        }
+        $days[] = $day;
+        return $days;
     }
 
     protected function generate_view() {
+        $entries_by_date = $this->refactor_entries($this->entries);
+
         $html = '
           <div class="ovp_container">
-            <h1 class="ovp_heading">'.self::$title.'</h1>
+            <h1 class="ovp_heading">'.self::$title.'</h1>';
+        foreach($entries_by_date as $entries_today) {
+            $html .= '
+            <h2 class="ovp_heading">'.$entries_today[0]->get_date().'</h2>
             <table class="ovp_table" id="ovp_table_'.self::$type.'">
               <tr class="ovp_row_first">
                 <td class="ovp_column_time">Uhrzeit</td>
@@ -67,8 +89,8 @@ class ovp_public extends ovp_source {
                 <td class="ovp_column_change">Änderung</td>
                 <td class="ovp_column_newroom">Neuer Raum</td>
               </tr>';
-        foreach ($this->entries as $entry) {
-            $html .= '
+            foreach ($entries_today as $entry) {
+                $html .= '
               <tr class="ovp_row_entry">
                 <td class="ovp_column_time">'.    $entry->get_time().'</td>
                 <td class="ovp_column_course">'.  $entry->course.    '</td>
@@ -78,9 +100,11 @@ class ovp_public extends ovp_source {
                 <td class="ovp_column_change">'.  $entry->change.    '</td>
                 <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
               </tr>';
+            }
+            $html .= '
+            </table>';
         }
         $html .= '
-            </table>
           </div>';
         return $html;
     }
@@ -142,8 +166,7 @@ class ovp_print extends ovp_source {
             if ($entry->teacher != $oldteacher) {
                 $html .=
              '<tr class="ovp_row_teacher">
-                <td class="ovp_cell_teacher">'.$entry->teacher.'</td>
-                <td><td><td><td><td>
+                <td class="ovp_cell_teacher" colspan="6">'.$entry->teacher.'</td>
               </tr>';
                 $oldteacher = $entry->teacher;
             }
