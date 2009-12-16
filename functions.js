@@ -375,6 +375,23 @@ function newTeacher(name, entries) {
     textbox.type = 'text';
     textbox.style.display = 'none';
     textbox.value = name;
+    textbox['last_key'] = 0;
+    textbox.onkeydown = function(e) {
+        var key;
+        if (window.event) {
+            key = event.keyCode;
+        } else if (e) {
+            key = e.which;
+        }
+        if (key == 9 && this['last_key'] == 0) {
+            this['create_entry_on_first_blur'] = true;
+        }
+        this['last_key'] = key - 9;
+        return true;
+    }
+    textbox.onkeyup = function() {
+        this['last_key'] = 0;
+    }
     textbox.onblur = function() {
         this.style.display = 'none';
         var header = this.previousSibling;
@@ -383,7 +400,7 @@ function newTeacher(name, entries) {
         }
         header.style.display = 'block';
         var table = this.parentNode.querySelector('.ovp_table');
-        if (table.childNodes.length == 1) {
+        if (table.childNodes.length == 1 && this['create_entry_on_first_blur']) {
             this.parentNode.lastChild.onclick();
         } else {
             // TODO: update all contained entries to server
@@ -420,6 +437,7 @@ function newDay(title, teachers) {
         var textbox = this.nextSibling;
         textbox.style.display = 'block';
         textbox.focus();
+        textbox.select();
     }
     day.appendChild(header);
 
@@ -427,6 +445,23 @@ function newDay(title, teachers) {
     textbox.type = 'text';
     textbox.style.display = 'none';
     textbox.value = title;
+    textbox['last_key'] = 0;
+    textbox.onkeydown = function(e) {
+        var key;
+        if (window.event) {
+            key = event.keyCode;
+        } else if (e) {
+            key = e.which;
+        }
+        if (key == 9 && this['last_key'] == 0) {
+            this['create_teacher_on_first_blur'] = true;
+        }
+        this['last_key'] = key - 9;
+        return true;
+    }
+    textbox.onkeyup = function() {
+        this['last_key'] = 0;
+    }
     textbox.onblur = function() {
         this.style.display = 'none';
         var header = this.previousSibling;
@@ -440,7 +475,7 @@ function newDay(title, teachers) {
         }
         header.style.display = 'block';
         var table = this.parentNode.querySelector('.ovp_table');
-        if (table == null) {
+        if (table == null && this['create_teacher_on_first_blur']) {
             this.parentNode.lastChild.onclick();
         } else {
             // TODO: update all contained entries to server
