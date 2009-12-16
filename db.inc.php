@@ -152,6 +152,22 @@ class db extends mysqli {
         return $entries;
     }
 
+    /**
+     * Deletes entries older than DELETE_OLDER_THAN days.
+     * @return: the number of deleted entries
+     */
+    public function cleanup_entries() {
+        if (DELETE_OLDER_THAN >= 0) {
+            $this->query(
+               "DELETE FROM `entry` WHERE
+                    DATEDIFF(CURDATE(), `time`) > '".DELETE_OLDER_THAN."'"
+            );
+            return $this->affected_rows;
+        } else {
+            return 0;
+        }
+    }
+
     public function get_current_user() {
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $this->query(
