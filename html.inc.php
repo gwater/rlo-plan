@@ -75,30 +75,30 @@ class ovp_public extends ovp_source {
 
         $html = '
           <div class="ovp_container">
-            <h1 class="ovp_heading">'.self::$title.'</h1>';
+            <h1>'.self::$title.'</h1>';
         foreach($entries_by_date as $entries_today) {
             $html .= '
-            <h2 class="ovp_heading">'.$entries_today[0]->get_date().'</h2>
+            <h2>'.$entries_today[0]->get_date().'</h2>
             <table class="ovp_table" id="ovp_table_'.self::$type.'">
-              <tr class="ovp_row_first">
-                <td class="ovp_column_time">Uhrzeit</td>
-                <td class="ovp_column_course">Klasse</td>
-                <td class="ovp_column_subject">Fach</td>
-                <td class="ovp_column_oldroom">Originalraum</td>
-                <td class="ovp_column_duration">Dauer</td>
-                <td class="ovp_column_change">Änderung</td>
-                <td class="ovp_column_newroom">Neuer Raum</td>
+              <tr>
+                <th>Uhrzeit</th>
+                <th>Klasse</th>
+                <th>Fach</th>
+                <th>Originalraum</th>
+                <th>Dauer</th>
+                <th>Änderung</th>
+                <thNeuer Raum</th>
               </tr>';
             foreach ($entries_today as $entry) {
                 $html .= '
-              <tr class="ovp_row_entry">
-                <td class="ovp_column_time">'.    $entry->get_time().'</td>
-                <td class="ovp_column_course">'.  $entry->course.    '</td>
-                <td class="ovp_column_subject">'. $entry->subject.   '</td>
-                <td class="ovp_column_oldroom">'. $entry->oldroom.   '</td>
-                <td class="ovp_column_duration">'.$entry->duration.  '</td>
-                <td class="ovp_column_change">'.  $entry->change.    '</td>
-                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
+              <tr>
+                <td>'.$entry->get_time().'</td>
+                <td>'.$entry->course.    '</td>
+                <td>'.$entry->subject.   '</td>
+                <td>'.$entry->oldroom.   '</td>
+                <td>'.$entry->duration.  '</td>
+                <td>'.$entry->change.    '</td>
+                <td>'.$entry->newroom.   '</td>
               </tr>';
             }
             $html .= '
@@ -149,23 +149,23 @@ class ovp_print extends ovp_source {
     protected function generate_view() {
         $html =
          '<div class="ovp_container">
-            <h1 class="ovp_heading">'.self::$title.'</h1>
-            <h2 class="ovp_date">'.$this->today.'</h2>
-            <table class="ovp_table" id="ovp_table_'.self::$type.'">
-              <tr class="ovp_row_first">
-                <td class="ovp_column_time">Uhrzeit</td>
-                <td class="ovp_column_course">Klasse</td>
-                <td class="ovp_column_subject">Fach</td>
-                <td class="ovp_column_duration">Dauer</td>
-                <td class="ovp_column_sub">Vertretung durch</td>
-                <td class="ovp_column_newroom">Raum</td>
+            <h1>'.self::$title.'</h1>
+            <h2>'.$this->today.'</h2>
+            <table  class="ovp_table" id="ovp_table_'.self::$type.'">
+              <tr>
+                <th>Uhrzeit</th>
+                <th>Klasse</th>
+                <th>Fach</th>
+                <th>Dauer</th>
+                <th>Vertretung durch</th>
+                <th>Raum</th>
               </tr>';
 
         $oldteacher = '';
         foreach ($this->entries as $entry) {
             if ($entry->teacher != $oldteacher) {
                 $html .=
-             '<tr class="ovp_row_teacher">
+             '<tr>
                 <td class="ovp_cell_teacher" colspan="6">'.$entry->teacher.'</td>
               </tr>';
                 $oldteacher = $entry->teacher;
@@ -182,20 +182,20 @@ class ovp_print extends ovp_source {
             }
 
             $html .=
-             '<tr class="ovp_row_entry">
-                <td class="ovp_column_time">'.    $entry->get_time().'</td>
-                <td class="ovp_column_course">'.  $entry->course.    '</td>
-                <td class="ovp_column_subject">'. $entry->subject.   '</td>
-                <td class="ovp_column_duration">'.$entry->duration.  '</td>
-                <td class="ovp_column_sub">'.     $changes.          '</td>
-                <td class="ovp_column_newroom">'. $entry->newroom.   '</td>
+             '<tr>
+                <td>'.$entry->get_time().'</td>
+                <td>'.$entry->course.    '</td>
+                <td>'.$entry->subject.   '</td>
+                <td>'.$entry->duration.  '</td>
+                <td>'.$changes.          '</td>
+                <td>'.$entry->newroom.   '</td>
               </tr>';
         }
         $html .=
            '</table>
             <div class="ovp_day_links">
-              <a href="index.php?source='.self::$type.'&date='.$this->yesterday.'" class="ovp_link_yesterday">Einen Tag zurück</a>
-              <a href="index.php?source='.self::$type.'&date='.$this->tomorrow.'" class="ovp_link_tomorrow">Einen Tag weiter</a>
+              <a href="index.php?source='.self::$type.'&date='.$this->yesterday.'">Einen Tag zurück</a>
+              <a href="index.php?source='.self::$type.'&date='.$this->tomorrow.'">Einen Tag weiter</a>
             </div>
           </div>';
         return $html;
@@ -300,7 +300,7 @@ class ovp_author extends ovp_source {
         $html =
          '<div class="ovp_container">
             <img src="1x1.gif" onload="init()">
-            <h1 class="ovp_heading">'.self::$title.'</h1>
+            <h1>'.self::$title.'</h1>
             <div id="ovp"></div>
           </div>';
         return $html;
@@ -324,14 +324,15 @@ class ovp_login extends ovp_source {
     protected function generate_view() {
         //FIXME: Add CSS hooks
         $html =
-         '<h1>Login</h1>
+         '<div class="ovp_container">
+          <h1>Login</h1>
           <p>Um diese Seite öffnen zu können, benötigen Sie ein entsprechend autorisiertes Benutzerkonto.</p>
           <form action="account.php?action=login';
         if (isset($_GET['continue'])) {
             $html .= '&continue='.urlencode($_GET['continue']);
         }
         $html .= '" method="POST">
-            <table>
+            <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
                 <td><input type="text" name="name"></td>
@@ -345,7 +346,8 @@ class ovp_login extends ovp_source {
                 <td><input type="submit" value="Login"></td>
               </tr>
             </table>
-          </form>';
+          </form>
+          </div>';
         return $html;
     }
 }
@@ -418,18 +420,17 @@ class ovp_page {
             if (is_authorized($source['priv_req'])) {
                 if ($source['type'] != $this->type) {
                     $html .= '
-                <a href="index.php?source='.$source['type'].
-                        '" class="ovp_link_navi">'.$source['title'].'</a> |';
+                <a href="index.php?source='.$source['type'].'">'.$source['title'].'</a> |';
                 } else {
                     $html .= '
-                <span id="ovp_navi_selected">'.$source['title'].'</span> |';
+                <span>'.$source['title'].'</span> |';
                 }
             }
         }
         /* FIXME: Is the user logged in? */
         if (is_authorized(PRIV_DEFAULT + 1)){
             $html .= '
-                <a href="account.php?action=logout" class="ovp_link_navi">Logout</a>';
+                <a href="account.php?action=logout">Logout</a>';
         }
         $html .= '
               </div>';
