@@ -57,28 +57,30 @@ function modify_entry(button) {
     }
 }
 
-function getXMLHttp() {
+function send_msg(msg) {
+    var request = null;
     if (window.XMLHttpRequest) {
-        return new XMLHttpRequest();
+        request = new XMLHttpRequest();
     } else if (window.ActiveXObject) {
-        return new ActiveXObject("Microsoft.XMLHTTP");
+        request = new ActiveXObject("Microsoft.XMLHTTP");
     }
-    alert('Ihr Browser unterstützt kein XMLHttpRequest.');
-    return false;
+    if (request) {
+        request.open('POST', 'post.php', false);
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.send(msg);
+    }
+    return request;
 }
 
 function delete_entry(button) {
-    var request = getXMLHttp();
+    hide_buttons(button.previousSibling);
+    var row = button.parentNode.parentNode;
+    var msg = 'action=delete&id=' + row.id.substr(5); // remove 'entry' from 'entry123'
+    var status = newElement('span');
+    status.textContent = 'Löschen...';
+    row.lastChild.appendChild(status);
+    var request = send_msg(msg);
     if (request) {
-        hide_buttons(button.previousSibling);
-        var row = button.parentNode.parentNode;
-        var msg = 'action=delete&id=' + row.id.substr(5); // remove 'entry' from 'entry123'
-        request.open('POST', 'post.php', false);
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        var status = newElement('span');
-        status.textContent = 'Löschen...';
-        row.lastChild.appendChild(status);
-        request.send(msg);
         if (request.status == 200) {
             if (row.parentNode.childNodes.length == 2) {
                 var teacher = row.parentNode.parentNode;
@@ -134,16 +136,13 @@ function save_entry(button) {
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     if (contentHasChanged) {
-        var request = getXMLHttp();
+        var row = button.parentNode.parentNode;
+        msg = 'action=update&id=' + row.id.substr(5) + msg;
+        var status = newElement('span');
+        status.textContent = 'Speichern...';
+        row.lastChild.appendChild(status);
+        var request = send_msg(msg);
         if (request) {
-            var row = button.parentNode.parentNode;
-            msg = 'action=update&id=' + row.id.substr(5) + msg;
-            request.open('POST', 'post.php', false);
-            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            var status = newElement('span');
-            status.textContent = 'Speichern...';
-            row.lastChild.appendChild(status);
-            request.send(msg);
             if (request.status == 200) {
                 row.lastChild.removeChild(status);
             } else {
@@ -182,16 +181,13 @@ function save_new_entry(button) {
         cell.textContent = cell.firstChild.value;
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
-    var request = getXMLHttp();
+    var row = button.parentNode.parentNode;
+    msg = 'action=add' + msg;
+    var status = newElement('span');
+    status.textContent = 'Speichern...';
+    row.lastChild.appendChild(status);
+    var request = send_msg(msg);
     if (request) {
-        var row = button.parentNode.parentNode;
-        msg = 'action=add' + msg;
-        request.open('POST', 'post.php', false);
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        var status = newElement('span');
-        status.textContent = 'Speichern...';
-        row.lastChild.appendChild(status);
-        request.send(msg);
         if (request.status == 200) {
             row.lastChild.removeChild(status);
             row.id = 'entry' + request.responseText;
