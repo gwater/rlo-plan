@@ -187,6 +187,28 @@ class db extends mysqli {
         return $this->affected_rows == 1;
     }
 
+    /**
+     * Retrieves an array of user accounts from the database.
+     * The array will contain at most USERS_PER_PAGE user objects
+     * ordered by their field $sortby (id, name, or privilege).
+     * @params: $page   - the page to retrieve
+     *          $sortby - the field name by which the array is to be sorted
+     * @return: array of user objects or null if the parameters are invalid
+     */
+    public function get_users($page, $sortby) {
+        $result = $this->query(
+           "SELECT
+                `id`,
+                `name`,
+                `privilege`
+            FROM `user` LIMIT ".(($page - 1) * USERS_PER_PAGE).", ".USERS_PER_PAGE);
+        $users = array();
+        while ($row = $result->fetch_assoc()) {
+            $users[] = new user($row);
+        }
+        return $users;
+    }
+
     public function get_current_user() {
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $this->query(
