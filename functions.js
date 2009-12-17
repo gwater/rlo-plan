@@ -304,12 +304,15 @@ function get_default_date() {
     var last_day = document.querySelector('#ovp').lastChild.previousSibling;
     if (last_day) {
         var last_date = parse_date(last_day.firstChild.textContent);
-        if (last_date) {
-            last_date.setDate(last_date.getDate() + 1);
-            if (last_date > d) {
-                d = last_date;
-            }
+        if (last_date && last_date.getDate() >= d.getDate()) {
+            d = last_date;
+            d.setDate(d.getDate() + 1);
         }
+    }
+    if (d.getDay() == 0) { // skip Sunday
+        d.setDate(d.getDate() + 1);
+    } else if (d.getDay() == 6) { // skip Saturday
+        d.setDate(d.getDate() + 2);
     }
     return format_date(d);
 }
