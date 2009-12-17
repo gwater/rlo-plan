@@ -419,16 +419,17 @@ function newTeacher(name, entries) {
     textbox.onblur = function() {
         this.style.display = 'none';
         var header = this.previousSibling;
-        if (this.value != '') {
-            header.textContent = this.value;
-        }
-        header.style.display = 'block';
         var table = this.parentNode.querySelector('.ovp_table');
+        if (this.value != header.textContent && this.value != '') {
+            header.textContent = this.value;
+            if (table.childNodes.length > 1) {
+                save_teacher(this.parentNode);
+            }
+        }
         if (table.childNodes.length == 1 && this['create_entry_on_first_blur']) {
             this.parentNode.lastChild.onclick();
-        } else {
-            save_teacher(this.parentNode);
         }
+        header.style.display = 'block';
     }
     teacher.appendChild(textbox);
 
