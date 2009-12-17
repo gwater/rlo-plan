@@ -269,10 +269,10 @@ class ovp_author extends ovp_source {
                 var teachers = [];';
             foreach ($entries_by_teacher as $entries_for_teacher) {
                 $script .= '
-                    var entries = [];';
+                var entries = [];';
                 foreach ($entries_for_teacher as $entry) {
                     $script .= '
-                        entries.push(newEntry('.
+                entries.push(newEntry('.
                         $entry->id.', ["'.
                         $entry->get_time().'", "'.
                         $entry->course.'", "'.
@@ -284,13 +284,13 @@ class ovp_author extends ovp_source {
                         $entry->newroom.'"]));';
                 }
                 $script .= '
-                    teachers.push(newTeacher("'.$entries_for_teacher[0]->teacher.'", entries));';
+                teachers.push(newTeacher("'.$entries_for_teacher[0]->teacher.'", entries));';
             }
             $script .= '
                 days.push(newDay("'.$today.'", teachers));';
         }
         $script .= '
-            insert_days(days);}</script>';
+                insert_days(days);}</script>';
         return $script;
     }
 
@@ -364,13 +364,57 @@ class ovp_admin extends ovp_source {
     public static $type = 'admin';
     public static $title ='Benutzer verwalten';
     public static $priv_req = VIEW_ADMIN;
+    protected $roles_type;
+    protected $roles_title;
+    protected $users;
+
 
     public function __construct($db) {
         parent::__construct($db);
+        //FIXME: Check whether it actually works like this
+        $this->users = $db->get_users(1, 'name');
+        // FIXME: Where can we move this? see user.inc.php...
+        $this->roles = array(VIEW_NONE   => 'none',
+                             VIEW_PUBLIC => 'public',
+                             VIEW_PRINT  => 'print',
+                             VIEW_AUTHOR => 'author',
+                             VIEW_ADMIN  => 'admin');
     }
 
+
+    protected function generate_header() {
+        $script = '
+            <script type="text/javascript" src="admin.js"></script>
+            <script type="text/javascript" src="functions.js"></script>
+            <script type="text/javascript">
+            function fill_in_data() {
+                var users = [];';
+
+        foreach ($this->users as $user) {
+            $role_type = $this->roles_type[$user->privilege];
+            $script .= '
+                users.push(newUser("'.$user->id.'", "'.$user->name.'", "***", "'.$this->roles[$user->privilege].'"));';
+        }
+        $script .= '
+                insertUsers(users);
+            }</script>';
+        return $script;
+    }
+
+
     protected function generate_view() {
-        //FIXME: i need implementing ;-)
+        $html =
+         '<div class="ovp_container">
+            <h1>'.self::$title.'</h1>
+            <table id="ovp_table_users" class="ovp_table">
+            <th>Name</th>
+            <th>Passwort</th>
+            <th>Rolle</th>
+            <th>Aktion</th>
+            </table>
+            <img src="1x1.gif" onload="init_admin()">
+          </div>';
+        return $html;
     }
 }
 
@@ -383,6 +427,7 @@ class ovp_password extends ovp_source {
 
 
     public function __construct($db) {
+   // FIXME
         $this->priv_req = PRIV_DEFAULT + 1;
         $this->user = $db->get_current_user();
     }

@@ -1,7 +1,7 @@
 .ovp_table {
     border-collapse: collapse;
 }
-.ovp_table tr td {
+.ovp_table, tr, td, th {
     border: 1px solid black;
 }
 

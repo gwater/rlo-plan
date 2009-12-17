@@ -205,6 +205,7 @@ class db extends mysqli {
      * @return: array of user objects or null if the parameters are invalid
      */
     public function get_users($page, $sortby) {
+        // FIXME: Don't return root/admin
         $result = $this->query(
            "SELECT
                 `id`,
@@ -386,7 +387,7 @@ class db extends mysqli {
         time:     timestamp of the day and time the class would normally start (e.g. Friday, July 13th)
         teacher:  name of the absent teacher (e.g. Mr. Doe)
         subject:  name and type of the course or subject (e.g. Ma-LK)
-        duration: duration of this class in minutes (e.g. 75) (TODO: old or new duration?)
+        duration: duration of this class in minutes (e.g. 75) (TODO: old or new duration? new!)
         course:   name of the course (e.g. '9.3')
         oldroom:  room the class was supposed to take place in originally (e.g. H2-3)
         sub:      name of the substitute teacher (e.g. 'Fr. Musterfrau')
@@ -406,7 +407,7 @@ class db extends mysqli {
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
 
-        $admin = new user(array('name'=>'admin', 'pwd'=>ADMIN_PWD, 'privilege'=>4));
+        $admin = new user(array('name'=>'admin', 'password'=>ADMIN_PWD, 'privilege'=>4));
         $this->add_user($admin);
     }
 

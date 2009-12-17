@@ -2,6 +2,7 @@
 
 require_once('db.inc.php');
 require_once('misc.inc.php');
+require_once('admin.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
@@ -11,6 +12,12 @@ $db = new db();
 if (!is_authorized(VIEW_AUTHOR)) {
     header('HTTP/1.0 401 Unauthorized');
     exit('you need to log in first');
+}
+
+// FIXME hack because this file is such an unexpandable mess - lets talk about namespace pollution again
+if ($_POST['asset'] == 'user') {
+    evaluate_admin_request($db);
+    exit();
 }
 
 switch ($_POST['action']) {
