@@ -87,7 +87,7 @@ class ovp_public extends ovp_source {
                 <th>Originalraum</th>
                 <th>Dauer</th>
                 <th>Änderung</th>
-                <thNeuer Raum</th>
+                <th>Neuer Raum</th>
               </tr>';
             foreach ($entries_today as $entry) {
                 $html .= '
