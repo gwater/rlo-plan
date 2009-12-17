@@ -322,11 +322,6 @@ function add_day(button) {
     day.firstChild.onclick();
 }
 
-function del_empty_day(button) {
-    var day = button.parentNode;
-    day.parentNode.removeChild(day);
-}
-
 // 'id' is from the database
 function newEntry(id, cols) {
     var row = newElement('tr');
@@ -352,6 +347,36 @@ function newEntry(id, cols) {
     row.appendChild(button_cell);
 
     return row;
+}
+
+function save_teacher(teacher) {
+    var day = teacher.parentNode.firstChild.textContent;
+    var rows = teacher.querySelector('.ovp_table').childNodes;
+    for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        if (row.id) {
+            var cells = row.childNodes;
+            var msg = 'action=update&id=' + row.id.substr(5) + '&day=' + day + '&teacher=' + teacher.firstChild.textContent;
+            for (var j = 0; j < cells.length - 1; j++) {
+                msg += '&' + column_names[j] + '=' + cells[j].textContent;
+            }
+            var status = newElement('span');
+            status.textContent = 'Speichern...';
+            row.lastChild.appendChild(status);
+            var request = send_msg(msg);
+            if (request) {
+                if (request.status == 200) {
+                    status.textContent = 'OK';
+                    status.style.background = 'lightgreen';
+                    fadeOut(status);
+                } else {
+                    status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
+                    status.style.background = 'lightred';
+                    fadeOut(status);
+                }
+            }
+        }
+    }
 }
 
 function newTeacher(name, entries) {
@@ -392,14 +417,14 @@ function newTeacher(name, entries) {
         this.style.display = 'none';
         var header = this.previousSibling;
         if (this.value != '') {
-            header.innerHTML = this.value;
+            header.textContent = this.value;
         }
         header.style.display = 'block';
         var table = this.parentNode.querySelector('.ovp_table');
         if (table.childNodes.length == 1 && this['create_entry_on_first_blur']) {
             this.parentNode.lastChild.onclick();
         } else {
-            // TODO: update all contained entries to server
+            save_teacher(this.parentNode);
         }
     }
     teacher.appendChild(textbox);
@@ -459,22 +484,29 @@ function newDay(title, teachers) {
         this['last_key'] = 0;
     }
     textbox.onblur = function() {
-        this.style.display = 'none';
         var header = this.previousSibling;
+        var table = this.parentNode.querySelector('.ovp_table');
         if (this.value != '') {
             var new_date = parse_date(this.value);
             if (new_date) {
-                header.textContent = format_date(new_date);
+                var new_header = format_date(new_date);
+                if (header.textContent != new_header) {
+                    header.textContent = new_header;
+                    if (table) {
+                        var teachers = this.parentNode.getElementsByTagName('section');
+                        for (var i = 0; i < teachers.length; i++) {
+                            save_teacher(teachers[i]);
+                        }
+                    }
+                }
             } else {
                 header.innerHTML = '<span class="ovp_error">' + this.value + '</span>';
             }
         }
+        this.style.display = 'none';
         header.style.display = 'block';
-        var table = this.parentNode.querySelector('.ovp_table');
         if (table == null && this['create_teacher_on_first_blur']) {
             this.parentNode.lastChild.onclick();
-        } else {
-            // TODO: update all contained entries to server
         }
     }
     day.appendChild(textbox);
