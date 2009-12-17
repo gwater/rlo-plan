@@ -279,9 +279,8 @@ function parse_date(date) {
         }
     }
     if (date.length <= 10) { // length of 'Donnerstag'
-        var next_day_of_week = lower_date.substr(0, 2);
         for (var i = 0; i < day_names.length; i++) {
-            if (next_day_of_week == day_names[i].substr(0, 2).toLowerCase()) {
+            if (lower_date == day_names[i].substr(0, lower_date.length).toLowerCase()) {
                 var result = new Date();
                 var today = result.getDay();
                 if (i < today) {
