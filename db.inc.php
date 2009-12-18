@@ -285,6 +285,40 @@ class db extends mysqli {
         return $this->affected_rows == 1;
     }
 
+    /**
+     * Changes the password of the user specified by $userid to $newpwd
+     * (set $oldpwd to anything you like, preferrably NULL).
+     * --- OR ---
+     * Changes the password of the current user from $oldpwd to $newpwd
+     * (leave out $userid).
+     */
+    public function change_pwd($newpwd, $oldpwd, $userid = -1) {
+        if ($userid > 0) {
+            $this->query(
+               "UPDATE `user` SET
+                    `pwd_hash` = '".$this->protect(hash('sha256', $newpwd))."'
+                WHERE
+                    `id` = '".$this->protect($userid)."'
+                LIMIT 1");
+            return $this->affected_rows == 1;
+        } elseif ($oldpwd) {
+            $ip = ip2long($_SERVER['REMOTE_ADDR']);
+            $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
+            $ip2 = $ip >> 64;
+            $this->query(
+               "UPDATE `user` SET
+                    `pwd_hash` = '".$this->protect(hash('sha256', $newpwd))."'
+                WHERE
+                    `pwd_hash` = '".$this->protect(hash('sha256', $oldpwd))."' AND
+                    `sid` = '".$this->protect(session_id())."' AND
+                    `ip1` = '".$this->protect($ip1)."' AND
+                    `ip2` = '".$this->protect($ip2)."'
+                LIMIT 1");
+            return $this->affected_rows == 1;
+        }
+        die('urnotdoinitrite');
+    }
+
     // this function is only public because it was inherited as public! do not use form outside this class!
     public function query($query) {
         if (!($result = parent::query($query))) {
