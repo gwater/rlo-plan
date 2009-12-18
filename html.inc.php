@@ -371,6 +371,48 @@ class ovp_admin extends ovp_source {
     }
 }
 
+class ovp_password extends ovp_source {
+    public static $type = 'password';
+    public static $title ='Passwort ändern';
+    // FIXME: get a real way to check for login
+    public static $priv_req = PRIV_DEFAULT + 1;
+    private $user;
+
+
+    public function __construct($db) {
+        $this->user = $db->get_current_user();
+    }
+
+    protected function generate_view() {
+        // TODO: new password two times?
+        $html =
+         '<div class="ovp_container">
+          <h1>'.self::$title.'</h1>
+          <form action="passwd.php" method="POST">
+            <table id="ovp_table_'.self::$type.'">
+              <tr>
+                <td>Name:</td>
+                <td>'.$this->user->name.'</td>
+              </tr>
+              <tr>
+                <td>Altes Passwort:</td>
+                <td><input type="password" name="oldpwd"></td>
+              </tr>
+              <tr>
+                <td>Neues Passwort:</td>
+                <td><input type="password" name="newpwd"></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><input type="submit" value="Bestätigen"></td>
+              </tr>
+            </table>
+          </form>
+          </div>';
+        return $html;
+    }
+}
+
 /**
  * This class acts as a wrapper around any ovp_source object and provides
  * complete html pages based on the content provided by the source.
@@ -430,6 +472,7 @@ class ovp_page {
         /* FIXME: Is the user logged in? */
         if (is_authorized(PRIV_DEFAULT + 1)){
             $html .= '
+                <a href="index.php?source='.ovp_password::$type.'">'.ovp_password::$title.'</a> |
                 <a href="account.php?action=logout">Logout</a>';
         }
         $html .= '
