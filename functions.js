@@ -98,7 +98,7 @@ function delete_entry(button) {
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
                 fadeOut(status);
-            }, 3000);
+            }, 3000, "JavaScript");
         }
     }
 }
@@ -136,7 +136,6 @@ function save_entry(button) {
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     if (contentHasChanged) {
-        var row = button.parentNode.parentNode;
         msg = 'action=update&id=' + row.id.substr(5) + msg;
         var status = newElement('span');
         status.textContent = 'Speichern...';
@@ -149,7 +148,7 @@ function save_entry(button) {
                 status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
                 setTimeout(function() {
                     fadeOut(status);
-                }, 3000);
+                }, 3000, "JavaScript");
             }
         }
     }
@@ -167,7 +166,7 @@ function fadeOut(e) {
         } else {
             e.parentNode.removeChild(e);
         }
-    }, 100);
+    }, 100, "JavaScript");
 }
 
 function save_new_entry(button) {
@@ -181,7 +180,6 @@ function save_new_entry(button) {
         cell.textContent = cell.firstChild.value;
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
-    var row = button.parentNode.parentNode;
     msg = 'action=add' + msg;
     var status = newElement('span');
     status.textContent = 'Speichern...';
@@ -195,7 +193,7 @@ function save_new_entry(button) {
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
                 fadeOut(status);
-            }, 3000);
+            }, 3000, "JavaScript");
             row.lastChild.firstChild.onclick();
             return;
         }
@@ -387,7 +385,7 @@ function newTeacher(name, entries) {
     var header = newElement('h3');
     header.innerHTML = name;
     header.onclick = function() {
-        this.style.display = 'none';
+        header.style.display = 'none';
         var textbox = this.nextSibling;
         textbox.style.display = 'block';
         textbox.focus();
@@ -407,16 +405,16 @@ function newTeacher(name, entries) {
             key = e.which;
         }
         if (key == 9 && this['last_key'] == 0) {
-            this['create_entry_on_first_blur'] = true;
+            textbox['create_entry_on_first_blur'] = true;
         }
-        this['last_key'] = key - 9;
+        textbox['last_key'] = key - 9;
         return true;
     }
     textbox.onkeyup = function() {
-        this['last_key'] = 0;
+        textbox['last_key'] = 0;
     }
     textbox.onblur = function() {
-        this.style.display = 'none';
+        textbox.style.display = 'none';
         var header = this.previousSibling;
         var table = this.parentNode.querySelector('.ovp_table');
         if (this.value != header.textContent && this.value != '') {
@@ -457,7 +455,7 @@ function newDay(title, teachers) {
     var header = newElement('h2');
     header.innerHTML = title;
     header.onclick = function() {
-        this.style.display = 'none';
+        header.style.display = 'none';
         var textbox = this.nextSibling;
         textbox.style.display = 'block';
         textbox.focus();
@@ -478,13 +476,13 @@ function newDay(title, teachers) {
             key = e.which;
         }
         if (key == 9 && this['last_key'] == 0) {
-            this['create_teacher_on_first_blur'] = true;
+            textbox['create_teacher_on_first_blur'] = true;
         }
-        this['last_key'] = key - 9;
+        textbox['last_key'] = key - 9;
         return true;
     }
     textbox.onkeyup = function() {
-        this['last_key'] = 0;
+        textbox['last_key'] = 0;
     }
     textbox.onblur = function() {
         var header = this.previousSibling;
@@ -506,7 +504,7 @@ function newDay(title, teachers) {
                 header.innerHTML = '<span class="ovp_error">' + this.value + '</span>';
             }
         }
-        this.style.display = 'none';
+        textbox.style.display = 'none';
         header.style.display = 'block';
         if (table == null && this['create_teacher_on_first_blur']) {
             this.parentNode.lastChild.onclick();
