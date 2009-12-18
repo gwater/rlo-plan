@@ -346,8 +346,11 @@ class ovp_login extends ovp_source {
                 <td><input type="submit" value="Login"></td>
               </tr>
             </table>
-          </form>
-          </div>';
+          </form>';
+        if ($_GET['attempt'] == 'failed') {
+            $html .= '<p><span class="ovp_error">Benutzername nicht gefunden oder falsches Passwort</span></p>';
+        }
+        $html .= '</div>';
         return $html;
     }
 }
@@ -375,11 +378,12 @@ class ovp_password extends ovp_source {
     public static $type = 'password';
     public static $title ='Passwort ändern';
     // FIXME: get a real way to check for login
-    public static $priv_req = PRIV_DEFAULT + 1;
+    public static $priv_req;
     private $user;
 
 
     public function __construct($db) {
+        $this->priv_req = PRIV_DEFAULT + 1;
         $this->user = $db->get_current_user();
     }
 

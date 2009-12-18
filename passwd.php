@@ -1,6 +1,9 @@
 <?php
 
+// TODO: integrate into post.php
+
 require_once('db.inc.php');
+require_once('misc.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
@@ -12,7 +15,7 @@ if (!is_authorized(PRIV_DEFAULT + 1)) {
     exit('you need to log in first');
 }
 
-if (isset($_POST['pwd'])) {
+if (isset($_POST['newpwd']) && isset($_POST['oldpwd'])) {
     $db->change_pwd($_POST['newpwd'], $_POST['oldpwd']);
     exit('updated');
 }

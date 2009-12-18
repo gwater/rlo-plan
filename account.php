@@ -21,7 +21,7 @@ case 'login':
             redirect($_GET['continue']);
         }
     }
-    redirect('index.php?source=login&continue='.urlencode($_GET['continue']));
+    redirect('index.php?source=login&attempt=failed&continue='.urlencode($_GET['continue']));
     break;
 case 'logout':
     $db = new db();

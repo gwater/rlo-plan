@@ -38,6 +38,9 @@ case 'admin':
 case 'login':
     $source = new ovp_login($db);
     break;
+case 'password':
+    $source = new ovp_password($db);
+    break;
 case 'public':
 default:
     authorize(VIEW_PUBLIC);
