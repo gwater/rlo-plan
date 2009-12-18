@@ -53,7 +53,8 @@ class db extends mysqli {
                 `sub`      = '".$this->protect($entry->sub)."'      AND
                 `change`   = '".$this->protect($entry->change)."'   AND
                 `oldroom`  = '".$this->protect($entry->oldroom)."'  AND
-                `newroom`  = '".$this->protect($entry->newroom)."'")->fetch_assoc();
+                `newroom`  = '".$this->protect($entry->newroom)."'
+            LIMIT 1")->fetch_assoc();
         return $row['id'];
     }
 
@@ -73,8 +74,9 @@ class db extends mysqli {
                 `change`   = '".$this->protect($entry->change)."',
                 `oldroom`  = '".$this->protect($entry->oldroom)."',
                 `newroom`  = '".$this->protect($entry->newroom)."'
-             WHERE
-                `id` = '".$this->protect($entry->id)."'");
+            WHERE
+                `id` = '".$this->protect($entry->id)."'
+            LIMIT 1");
         return $this->affected_rows == 1;
     }
 
@@ -83,7 +85,10 @@ class db extends mysqli {
      * @return: true if the entry was found and deleted
      */
     public function remove_entry($entry_id) {
-        $this->query("DELETE FROM `entry` WHERE `id` = '".$this->protect($entry_id)."' LIMIT 1");
+        $this->query(
+           "DELETE FROM `entry` WHERE
+                `id` = '".$this->protect($entry_id)."'
+            LIMIT 1");
         return $this->affected_rows == 1;
     }
 
@@ -171,10 +176,11 @@ class db extends mysqli {
             )"
         );
         $row = $this->query(
-            "SELECT `id` FROM `user` WHERE
-                `name`      = '".$this->protect($user->name)."'  AND
+           "SELECT `id` FROM `user` WHERE
+                `name`      = '".$this->protect($user->name)."'     AND
                 `pwd_hash`  = '".$this->protect($user->pwd_hash)."' AND
-                `privilege` = '".$this->protect($user->privilege)."'")->fetch_assoc();
+                `privilege` = '".$this->protect($user->privilege)."'
+            LIMIT 1")->fetch_assoc();
         return $row['id'];
     }
 
@@ -183,7 +189,10 @@ class db extends mysqli {
      * @return: true if the user was found and deleted
      */
     public function remove_user($user_id) {
-        $this->query("DELETE FROM `user` WHERE `id` = '".$this->protect($user_id)."' LIMIT 1");
+        $this->query(
+           "DELETE FROM `user` WHERE
+                `id` = '".$this->protect($user_id)."'
+            LIMIT 1");
         return $this->affected_rows == 1;
     }
 
@@ -201,7 +210,9 @@ class db extends mysqli {
                 `id`,
                 `name`,
                 `privilege`
-            FROM `user` LIMIT ".(($page - 1) * USERS_PER_PAGE).", ".USERS_PER_PAGE);
+            FROM `user` LIMIT
+                ".$this->protect(($page - 1) * USERS_PER_PAGE).",
+                ".$this->protect(USERS_PER_PAGE));
         $users = array();
         while ($row = $result->fetch_assoc()) {
             $users[] = new user($row);
@@ -219,7 +230,8 @@ class db extends mysqli {
             FROM `user` WHERE
                 `ip1` = '".$this->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
                 `ip2` = '".$this->protect($ip >> 64)."' AND
-                `sid` = '".$this->protect(session_id())."'"
+                `sid` = '".$this->protect(session_id())."'
+            LIMIT 1"
         );
         if (!($row = $result->fetch_assoc())) {
             return NULL; // ip or sid not found
@@ -234,7 +246,8 @@ class db extends mysqli {
                 `ip1`,
                 `ip2`
             FROM `user` WHERE
-                `sid`  = '".$this->protect(session_id())."'"
+                `sid`  = '".$this->protect(session_id())."'
+            LIMIT 1"
         );
         if (!($row = $result->fetch_assoc())) {
             return false;
@@ -268,7 +281,8 @@ class db extends mysqli {
                 `ip2` = '".$this->protect($ip2)."',
                 `sid` = '".$this->protect(session_id())."'
             WHERE
-                `id` = '".$this->protect($row['id'])."'"
+                `id` = '".$this->protect($row['id'])."'
+            LIMIT 1"
         );
         return $row['privilege']; // privilege is always positive
     }
@@ -280,7 +294,8 @@ class db extends mysqli {
                 `ip2` = NULL,
                 `sid` = NULL
             WHERE
-                `sid` = '".$this->protect(session_id())."'"
+                `sid` = '".$this->protect(session_id())."'
+            LIMIT 1"
         );
         return $this->affected_rows == 1;
     }
