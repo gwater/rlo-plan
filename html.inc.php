@@ -328,7 +328,6 @@ class ovp_login extends ovp_source {
     }
 
     protected function generate_view() {
-        //FIXME: Add CSS hooks
         $html =
          '<div class="ovp_container">
           <h1>Login</h1>
