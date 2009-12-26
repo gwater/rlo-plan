@@ -316,12 +316,12 @@ class ovp_author extends ovp_source {
 /**
  * This source provides a simple login interface to authorize access
  * to restricted views.
- * Naturally access is not restricted.
+ * Naturally access is restricted to all users not logged in yet.
  */
 class ovp_login extends ovp_source {
     public static $type = 'login';
     public static $title ='Login';
-    public static $priv_req = VIEW_NONE;
+    public static $priv_req = PRIV_LOGOUT;
 
     public function __construct($db) {
         parent::__construct($db);
@@ -506,6 +506,7 @@ class ovp_page {
         $sources[] = get_class_vars('ovp_author');
         $sources[] = get_class_vars('ovp_admin');
         $sources[] = get_class_vars('ovp_password');
+        $sources[] = get_class_vars('ovp_login');
 
         $html =
              '<div id="ovp_navi">';

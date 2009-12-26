@@ -18,9 +18,9 @@ function evaluate_admin_request($db) {
         }
         fail('parameter missing');
     case 'update':
-        if (!(isset($_POST['id']))) {
+        if (!isset($_POST['id'])) {
             fail('parameter missing');
-        } else if (!(is_numeric($_POST['id']))) {
+        } else if (!is_numeric($_POST['id'])) {
             fail('invalid id');
         }
         $user = new ovp_user($db, $_POST['id']);
@@ -49,9 +49,9 @@ function evaluate_admin_request($db) {
         }
         exit('updated');
     case 'delete':
-        if (!(isset($_POST['id']))) {
+        if (!isset($_POST['id'])) {
             fail('parameter missing');
-        } else if (!(is_numeric($_POST['id']))) {
+        } else if (!is_numeric($_POST['id'])) {
             fail('invalid id');
         } else if (ovp_user::remove($db, $_POST['id'])) {
             exit('deleted');

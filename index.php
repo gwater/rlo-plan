@@ -20,7 +20,6 @@ $db = new db();
 
 switch ($_GET['source']) {
 case 'print':
-    authorize(VIEW_PRINT);
     if (isset($_GET['date'])) {
         $source = new ovp_print($db, $_GET['date']);
     } else {
@@ -28,11 +27,9 @@ case 'print':
     }
     break;
 case 'author':
-    authorize(VIEW_AUTHOR);
     $source = new ovp_author($db);
     break;
 case 'admin':
-    authorize(VIEW_ADMIN);
     $source = new ovp_admin($db);
     break;
 case 'login':
@@ -43,10 +40,11 @@ case 'password':
     break;
 case 'public':
 default:
-    authorize(VIEW_PUBLIC);
     $source = new ovp_public($db);
 }
 
+$source_vars = get_class_vars(get_class($source));
+authorize($source_vars['priv_req']);
 $page = new ovp_page($source);
 exit($page->get_html());
 

@@ -1,6 +1,6 @@
 <?php
 
-class ovp_asset {
+abstract class ovp_asset {
     public $id;
     protected $db;
 

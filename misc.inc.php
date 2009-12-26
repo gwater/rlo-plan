@@ -18,6 +18,12 @@ function is_authorized($requiredPrivilege = 1) {
     if ($requiredPrivilege == PRIV_LOGIN) {
         $logged_user = ovp_user::get_current_user($db);
         return isset($logged_user);
+    } else if ($requiredPrivilege == PRIV_LOGOUT) {
+        $logged_user = ovp_user::get_current_user($db);
+        return !isset($logged_user);
+    }
+    if ($requiredPrivilege <= PRIV_DEFAULT) {
+        return true;
     }
     return isset($_SESSION['privilege']) &&
         $_SESSION['privilege'] >= $requiredPrivilege &&
