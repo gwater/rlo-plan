@@ -258,6 +258,7 @@ class ovp_author extends ovp_source {
     protected function generate_header() {
         $entries_by_date = $this->refactor_entries($this->entries);
         $script = '
+            <script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
             function fill_in_data() {
