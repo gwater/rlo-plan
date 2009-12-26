@@ -67,10 +67,3 @@ function make_textbox(cell, i) {
     cell.innerHTML = '';
     cell.appendChild(textbox);
 }
-
-function make_backup(cell) {
-    var backup = newElement('span');
-    backup.style.display = 'none';
-    backup.textContent = cell.lastChild.value;
-    cell.appendChild(backup);
-}

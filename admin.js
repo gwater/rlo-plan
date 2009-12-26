@@ -2,7 +2,12 @@ var column_names      = ['name',  'password', 'role'];
 var column_widths     = ['100px', '100px',    '40px'];
 var column_maxLengths = [ 20,      20,         5];
 
-/*var roles = ['none', 'public', 'print', 'author', 'admin'];*/
+function make_backup(cell, value) {
+    var backup = newElement('span');
+    backup.style.display = 'none';
+    backup.textContent = value;
+    cell.appendChild(backup);
+}
 
 function newUser(id, name, password, role) {
     var row = newElement('tr');
@@ -44,6 +49,9 @@ function make_selector(cell) {
         option.setAttribute('value', roles[i]);
         option.innerHTML = roles[i];
         selector.appendChild(option);
+        if (roles[i] == cell.innerHTML) {
+            selector.selectedIndex = i;
+        }
     }
     cell.innerHTML = '';
     cell.appendChild(selector);
@@ -56,11 +64,13 @@ function modify_user(button) {
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         if (column_names[i] == 'role') {
+            value = cell.innerHTML;
             make_selector(cell);
         } else {
             make_textbox(cell, i);
+            value = cell.lastChild.value;
         }
-        make_backup(cell);
+        make_backup(cell, value);
     }
 }
 
@@ -93,18 +103,16 @@ function save_user(button) {
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         if (column_names[i] == 'role') {
-            //FIXME: backup is much too complicated...
-            contentHasChanged = true;
-            cell.textContent = roles[cell.firstChild.selectedIndex];
-            msg += '&role=' + cell.textContent;
+            var newvalue = roles[cell.firstChild.selectedIndex];
         } else {
-            if (cell.firstChild.value != cell.lastChild.textContent) {
-                cell.textContent = cell.firstChild.value;
-                contentHasChanged = true;
-                msg += '&' + column_names[i] + '=' + cell.textContent;
-            } else {
-                cell.textContent = cell.lastChild.textContent;
-            }
+            var newvalue = cell.firstChild.value;
+        }
+        if (newvalue != cell.lastChild.textContent) {
+            cell.textContent = newvalue;
+            contentHasChanged = true;
+            msg += '&' + column_names[i] + '=' + cell.textContent;
+        } else {
+            cell.textContent = cell.lastChild.textContent;
         }
     }
     if (contentHasChanged) {
