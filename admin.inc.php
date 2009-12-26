@@ -1,6 +1,5 @@
 <?php
 
-
 /* FIXME: The user might use their ID
  * This will obviously manufactor problems at a rapid speed
  * we must get rid of ID -> name is a much better identifier.

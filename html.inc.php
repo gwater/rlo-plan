@@ -422,13 +422,11 @@ class ovp_password extends ovp_source {
     public static $type = 'password';
     public static $title ='Passwort ändern';
     // FIXME: get a real way to check for login
-    public static $priv_req;
+    public static $priv_req = PRIV_LOGIN;
     private $user;
 
 
     public function __construct($db) {
-   // FIXME
-        $this->priv_req = PRIV_DEFAULT + 1;
         $this->user = $db->get_current_user();
     }
 
@@ -481,20 +479,18 @@ class ovp_page {
     }
 
     private function generate_view() {
-        $source_vars = get_class_vars(get_class($this->source));
-
         $html =
-           '<!DOCTYPE html>
-            <html>
-            <head>
-              <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
-              '.$this->source->get_header().'
-            </head>
-            <body>
-              '.$this->generate_navi().'
-              '.$this->source->get_view().'
-            </body>
-            </html>';
+'<!DOCTYPE html>
+<html>
+  <head>
+    <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
+    '.$this->source->get_header().'
+  </head>
+  <body>
+    '.$this->generate_navi().'
+    '.$this->source->get_view().'
+  </body>
+</html>';
         return $html;
     }
 
@@ -519,7 +515,7 @@ class ovp_page {
             }
         }
         /* FIXME: Is the user logged in? */
-        if (is_authorized(PRIV_DEFAULT + 1)){
+        if (is_authorized(PRIV_LOGIN)){
             $html .= '
                 <a href="index.php?source='.ovp_password::$type.'">'.ovp_password::$title.'</a> |
                 <a href="account.php?action=logout">Logout</a>';

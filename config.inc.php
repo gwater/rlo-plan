@@ -25,6 +25,7 @@ define('VIEW_PUBLIC',  1);
 define('VIEW_PRINT',   2);
 define('VIEW_AUTHOR',  3);
 define('VIEW_ADMIN',   4);
-define('PRIV_DEFAULT', 0); // default privilege level for logged out visitors
+define('PRIV_DEFAULT', VIEW_NONE); // default privilege level for logged out visitors
+define('PRIV_LOGIN', PRIV_DEFAULT + 1);
 
 ?>
