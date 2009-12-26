@@ -1,5 +1,10 @@
 <?php
 
+require_once('db.inc.php');
+require_once('config.inc.php');
+require_once('user_new.inc.php');
+
+
 /**
  * This is the basic API for all content provided by rlo-plan
  *
@@ -359,42 +364,42 @@ class ovp_login extends ovp_source {
 /**
  * This source provides a simple administration interface which most
  * importantly allows setting the passwords of any user.
- * Access msut thus be seriously restricted.
+ * Access must thus be seriously restricted.
  */
 class ovp_admin extends ovp_source {
     public static $type = 'admin';
     public static $title ='Benutzer verwalten';
     public static $priv_req = VIEW_ADMIN;
-    protected $roles_type;
-    protected $roles_title;
     protected $users;
 
 
     public function __construct($db) {
         parent::__construct($db);
-        //FIXME: Check whether it actually works like this
-        $this->users = $db->get_users(1, 'name');
-        // FIXME: Where can we move this? see user.inc.php...
-        $this->roles = array(VIEW_NONE   => 'none',
-                             VIEW_PUBLIC => 'public',
-                             VIEW_PRINT  => 'print',
-                             VIEW_AUTHOR => 'author',
-                             VIEW_ADMIN  => 'admin');
+        $this->users = ovp_user::get_all_users($db);
     }
 
 
     protected function generate_header() {
+        $roles = ovp_user::get_roles();
         $script = '
             <script type="text/javascript" src="admin.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
+            var roles = [';
+        foreach ($roles as $i => $role) {
+            $script .= '"'.$role.'"';
+            //FIXME: Better way to remove last comma?
+            if ($i != VIEW_ADMIN) {
+                $script .= ', ';
+            }
+        }
+        $script .= '];
             function fill_in_data() {
                 var users = [];';
-
         foreach ($this->users as $user) {
-            $role_type = $this->roles_type[$user->privilege];
+            $role = $roles[$user->get_privilege()];
             $script .= '
-                users.push(newUser("'.$user->id.'", "'.$user->name.'", "***", "'.$this->roles[$user->privilege].'"));';
+                users.push(newUser("'.$user->id.'", "'.$user->get_name().'", "***", "'.$role.'"));';
         }
         $script .= '
                 insertUsers(users);
@@ -422,13 +427,12 @@ class ovp_admin extends ovp_source {
 class ovp_password extends ovp_source {
     public static $type = 'password';
     public static $title ='Passwort ändern';
-    // FIXME: get a real way to check for login
     public static $priv_req = PRIV_LOGIN;
     private $user;
 
 
     public function __construct($db) {
-        $this->user = $db->get_current_user();
+        $this->user = ovp_user::get_current_user($db);
     }
 
     protected function generate_view() {
@@ -440,7 +444,7 @@ class ovp_password extends ovp_source {
             <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
-                <td>'.$this->user->name.'</td>
+                <td>'.$this->user->get_name().'</td>
               </tr>
               <tr>
                 <td>Altes Passwort:</td>
@@ -501,6 +505,7 @@ class ovp_page {
         $sources[] = get_class_vars('ovp_print');
         $sources[] = get_class_vars('ovp_author');
         $sources[] = get_class_vars('ovp_admin');
+        $sources[] = get_class_vars('ovp_password');
 
         $html =
              '<div id="ovp_navi">';
@@ -515,10 +520,8 @@ class ovp_page {
                 }
             }
         }
-        /* FIXME: Is the user logged in? */
         if (is_authorized(PRIV_LOGIN)){
             $html .= '
-                <a href="index.php?source='.ovp_password::$type.'">'.ovp_password::$title.'</a> |
                 <a href="account.php?action=logout">Logout</a>';
         }
         $html .= '

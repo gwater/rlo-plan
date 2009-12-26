@@ -205,7 +205,6 @@ class db extends mysqli {
      * @return: array of user objects or null if the parameters are invalid
      */
     public function get_users($page, $sortby) {
-        // FIXME: Don't return root/admin
         $result = $this->query(
            "SELECT
                 `id`,
@@ -335,7 +334,7 @@ class db extends mysqli {
         die('urnotdoinitrite');
     }
 
-    // this function is only public because it was inherited as public! do not use form outside this class!
+    // FIXME: return assoc_array if applicable
     public function query($query) {
         if (!($result = parent::query($query))) {
             if (DEBUG) {
@@ -347,7 +346,7 @@ class db extends mysqli {
         return $result;
     }
 
-    private function protect($str) {
+    public function protect($str) {
         return $this->escape_string(htmlspecialchars($str));
     }
 
@@ -387,7 +386,7 @@ class db extends mysqli {
         time:     timestamp of the day and time the class would normally start (e.g. Friday, July 13th)
         teacher:  name of the absent teacher (e.g. Mr. Doe)
         subject:  name and type of the course or subject (e.g. Ma-LK)
-        duration: duration of this class in minutes (e.g. 75) (TODO: old or new duration? new!)
+        duration: new duration of this class in minutes (e.g. 75)
         course:   name of the course (e.g. '9.3')
         oldroom:  room the class was supposed to take place in originally (e.g. H2-3)
         sub:      name of the substitute teacher (e.g. 'Fr. Musterfrau')

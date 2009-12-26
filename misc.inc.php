@@ -1,6 +1,7 @@
 <?php
 
 require_once('db.inc.php');
+require_once('user_new.inc.php');
 
 function redirect($to = '') {
     if (!$to) {
@@ -14,6 +15,10 @@ function redirect($to = '') {
 
 function is_authorized($requiredPrivilege = 1) {
     global $db;
+    if ($requiredPrivilege == PRIV_LOGIN) {
+        $logged_user = ovp_user::get_current_user($db);
+        return isset($logged_user);
+    }
     return isset($_SESSION['privilege']) &&
         $_SESSION['privilege'] >= $requiredPrivilege &&
         $db->session_ok();

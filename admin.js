@@ -2,7 +2,7 @@ var column_names      = ['name',  'password', 'role'];
 var column_widths     = ['100px', '100px',    '40px'];
 var column_maxLengths = [ 20,      20,         5];
 
-var roles = ['none', 'public', 'print', 'author', 'admin'];
+/*var roles = ['none', 'public', 'print', 'author', 'admin'];*/
 
 function newUser(id, name, password, role) {
     var row = newElement('tr');
@@ -85,8 +85,6 @@ function delete_user(button) {
     }
 }
 
-
-// FIXME don't change password to '***'
 function save_user(button) {
     hide_buttons(button);
     var row = button.parentNode.parentNode;
@@ -98,15 +96,16 @@ function save_user(button) {
             //FIXME: backup is much too complicated...
             contentHasChanged = true;
             cell.textContent = roles[cell.firstChild.selectedIndex];
+            msg += '&role=' + cell.textContent;
         } else {
             if (cell.firstChild.value != cell.lastChild.textContent) {
                 cell.textContent = cell.firstChild.value;
                 contentHasChanged = true;
+                msg += '&' + column_names[i] + '=' + cell.textContent;
             } else {
                 cell.textContent = cell.lastChild.textContent;
             }
         }
-        msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     if (contentHasChanged) {
         var row = button.parentNode.parentNode;
