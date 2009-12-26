@@ -386,12 +386,14 @@ class ovp_admin extends ovp_source {
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
             var roles = [';
+        $first = true;
         foreach ($roles as $i => $role) {
-            $script .= '"'.$role.'"';
-            //FIXME: Better way to remove last comma?
-            if ($i != VIEW_ADMIN) {
+            if ($first) {
+                $first = false;
+            } else {
                 $script .= ', ';
             }
+            $script .= '"'.$role.'"';
         }
         $script .= '];
             function fill_in_data() {
@@ -510,19 +512,25 @@ class ovp_page {
 
         $html =
              '<div id="ovp_navi">';
+        $first = true;
         foreach ($sources as $source) {
             if (is_authorized($source['priv_req'])) {
+                if($first) {
+                    $first = false;
+                } else {
+                    $html .= ' |';
+                }
                 if ($source['type'] != $this->type) {
                     $html .= '
-                <a href="index.php?source='.$source['type'].'">'.$source['title'].'</a> |';
+                <a href="index.php?source='.$source['type'].'">'.$source['title'].'</a>';
                 } else {
                     $html .= '
-                <span>'.$source['title'].'</span> |';
+                <span>'.$source['title'].'</span>';
                 }
             }
         }
         if (is_authorized(PRIV_LOGIN)){
-            $html .= '
+            $html .= ' |
                 <a href="account.php?action=logout">Logout</a>';
         }
         $html .= '
