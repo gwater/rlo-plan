@@ -159,85 +159,6 @@ class db extends mysqli {
         }
     }
 
-    /**
-     * Adds a user to the database.
-     * @return: the id of the new user
-     */
-    public function add_user(user $user) {
-        $this->query(
-           "INSERT INTO `user` (
-                `name`,
-                `pwd_hash`,
-                `privilege`
-            ) VALUES (
-                '".$this->protect($user->name)."',
-                '".$this->protect($user->pwd_hash)."',
-                '".$this->protect($user->privilege)."'
-            )"
-        );
-        $row = $this->query(
-           "SELECT `id` FROM `user` WHERE
-                `name`      = '".$this->protect($user->name)."'     AND
-                `pwd_hash`  = '".$this->protect($user->pwd_hash)."' AND
-                `privilege` = '".$this->protect($user->privilege)."'
-            LIMIT 1")->fetch_assoc();
-        return $row['id'];
-    }
-
-    /**
-     * Deletes the user referenced by the id $user_id.
-     * @return: true if the user was found and deleted
-     */
-    public function remove_user($user_id) {
-        $this->query(
-           "DELETE FROM `user` WHERE
-                `id` = '".$this->protect($user_id)."'
-            LIMIT 1");
-        return $this->affected_rows == 1;
-    }
-
-    /**
-     * Retrieves an array of user accounts from the database.
-     * The array will contain at most USERS_PER_PAGE user objects
-     * ordered by their field $sortby (id, name, or privilege).
-     * @params: $page   - the page to retrieve
-     *          $sortby - the field name by which the array is to be sorted
-     * @return: array of user objects or null if the parameters are invalid
-     */
-    public function get_users($page, $sortby) {
-        $result = $this->query(
-           "SELECT
-                `id`,
-                `name`,
-                `privilege`
-            FROM `user` LIMIT
-                ".$this->protect(($page - 1) * USERS_PER_PAGE).",
-                ".$this->protect(USERS_PER_PAGE));
-        $users = array();
-        while ($row = $result->fetch_assoc()) {
-            $users[] = new user($row);
-        }
-        return $users;
-    }
-
-    public function get_current_user() {
-        $ip = ip2long($_SERVER['REMOTE_ADDR']);
-        $result = $this->query(
-           "SELECT
-                `id`,
-                `name`,
-                `privilege`
-            FROM `user` WHERE
-                `ip1` = '".$this->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
-                `ip2` = '".$this->protect($ip >> 64)."' AND
-                `sid` = '".$this->protect(session_id())."'
-            LIMIT 1"
-        );
-        if (!($row = $result->fetch_assoc())) {
-            return NULL; // ip or sid not found
-        }
-        return new user($row);
-    }
 
     // checks if the current user's ip address matches the one in the database
     public function session_ok() {
@@ -298,40 +219,6 @@ class db extends mysqli {
             LIMIT 1"
         );
         return $this->affected_rows == 1;
-    }
-
-    /**
-     * Changes the password of the user specified by $userid to $newpwd
-     * (set $oldpwd to anything you like, preferrably NULL).
-     * --- OR ---
-     * Changes the password of the current user from $oldpwd to $newpwd
-     * (leave out $userid).
-     */
-    public function change_pwd($newpwd, $oldpwd, $userid = -1) {
-        if ($userid > 0) {
-            $this->query(
-               "UPDATE `user` SET
-                    `pwd_hash` = '".$this->protect(hash('sha256', $newpwd))."'
-                WHERE
-                    `id` = '".$this->protect($userid)."'
-                LIMIT 1");
-            return $this->affected_rows == 1;
-        } elseif ($oldpwd) {
-            $ip = ip2long($_SERVER['REMOTE_ADDR']);
-            $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
-            $ip2 = $ip >> 64;
-            $this->query(
-               "UPDATE `user` SET
-                    `pwd_hash` = '".$this->protect(hash('sha256', $newpwd))."'
-                WHERE
-                    `pwd_hash` = '".$this->protect(hash('sha256', $oldpwd))."' AND
-                    `sid` = '".$this->protect(session_id())."' AND
-                    `ip1` = '".$this->protect($ip1)."' AND
-                    `ip2` = '".$this->protect($ip2)."'
-                LIMIT 1");
-            return $this->affected_rows == 1;
-        }
-        die('urnotdoinitrite');
     }
 
     // FIXME: return assoc_array if applicable
@@ -405,9 +292,7 @@ class db extends mysqli {
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
-
-        $admin = new user(array('name'=>'admin', 'password'=>ADMIN_PWD, 'privilege'=>4));
-        $this->add_user($admin);
+        ovp_user::add($this, 'admin', ADMIN_PWD, VIEW_ADMIN);
     }
 
     private function fail($msg) {

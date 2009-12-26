@@ -1,7 +1,7 @@
 <?php
 
 require_once('db.inc.php');
-require_once('user_new.inc.php');
+require_once('user.inc.php');
 
 function evaluate_admin_request($db) {
 
