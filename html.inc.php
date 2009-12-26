@@ -22,8 +22,8 @@ abstract class ovp_source {
     }
 
     public function get_header() {
-        $header = '
-          <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        $header =
+         '<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
           <link rel="stylesheet" href="style.css" type="text/css">';
         $header .= $this->generate_header();
         return $header;
@@ -257,8 +257,8 @@ class ovp_author extends ovp_source {
 
     protected function generate_header() {
         $entries_by_date = $this->refactor_entries($this->entries);
-        $script = '
-            <script type="text/javascript" src="entry.js"></script>
+        $script =
+           '<script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
             function fill_in_data() {

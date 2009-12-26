@@ -1,9 +1,8 @@
+var column_names      = ['name',  'password', 'role'];
+var column_widths     = ['100px', '100px',    '40px'];
+var column_maxLengths = [ 20,      20,         5];
 
-var column_names_user      = ['name',  'password', 'role'];
-var column_widths_user     = ['100px', '100px',    '40px'];
-var column_maxLengths_user = [ 20,      20,         5];
-
-
+var roles = ['none', 'public', 'print', 'author', 'admin'];
 
 function newUser(id, name, password, role) {
     var row = newElement('tr');
@@ -38,23 +37,30 @@ function insertUsers(users) {
     }
 }
 
+function make_selector(cell) {
+    var selector = newElement('select');
+    for (var i in roles){
+        var option = newElement('option');
+        option.setAttribute('value', roles[i]);
+        option.innerHTML = roles[i];
+        selector.appendChild(option);
+    }
+    cell.innerHTML = '';
+    cell.appendChild(selector);
+}
+
 function modify_user(button) {
     hide_buttons(button);
     show_buttons(button.nextSibling.nextSibling);
     var row = button.parentNode.parentNode;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
-        var textbox = newElement('input');
-        textbox.type = 'text';
-        textbox.value = cell.textContent;
-        textbox.maxLength = column_maxLengths_user[i];
-        textbox.style.width = column_widths_user[i];
-        cell.innerHTML = '';
-        cell.appendChild(textbox);
-        var backup = newElement('span');
-        backup.style.display = 'none';
-        backup.textContent = textbox.value;
-        cell.appendChild(backup);
+        if (column_names[i] == 'role') {
+            make_selector(cell);
+        } else {
+            make_textbox(cell, i);
+        }
+        make_backup(cell);
     }
 }
 
@@ -88,13 +94,19 @@ function save_user(button) {
     var contentHasChanged = false;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
-        if (cell.firstChild.value != cell.lastChild.textContent) {
-            cell.textContent = cell.firstChild.value;
+        if (column_names[i] == 'role') {
+            //FIXME: backup is much too complicated...
             contentHasChanged = true;
+            cell.textContent = roles[cell.firstChild.selectedIndex];
         } else {
-            cell.textContent = cell.lastChild.textContent;
+            if (cell.firstChild.value != cell.lastChild.textContent) {
+                cell.textContent = cell.firstChild.value;
+                contentHasChanged = true;
+            } else {
+                cell.textContent = cell.lastChild.textContent;
+            }
         }
-        msg += '&' + column_names_user[i] + '=' + cell.textContent;
+        msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     if (contentHasChanged) {
         var row = button.parentNode.parentNode;
@@ -131,15 +143,14 @@ function cancel_editing_user(button) {
 function add_new_user(button) {
     var row = newElement('tr');
 
-    // FIXME: make role <select>...
     // data cells:
-    for (var i = 0; i < column_widths_user.length; i++) {
+    for (var i = 0; i < column_widths.length; i++) {
         var cell = newCell('');
-        var textbox = newElement('input');
-        textbox.type = 'text';
-        textbox.maxLength = column_maxLengths_user[i];
-        textbox.style.width = column_widths_user[i];
-        cell.appendChild(textbox);
+        if (column_names[i] == 'role') {
+            make_selector(cell);
+        } else {
+            make_textbox(cell, i);
+        }
         row.appendChild(cell);
     }
 
@@ -167,8 +178,12 @@ function save_new_user(button) {
     var msg = '';
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
-        cell.textContent = cell.firstChild.value;
-        msg += '&' + column_names_user[i] + '=' + cell.textContent;
+        if (column_names[i] == 'role') {
+            cell.textContent = roles[cell.firstChild.selectedIndex];
+        } else {
+            cell.textContent = cell.firstChild.value;
+        }
+        msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     msg = 'asset=user&action=add' + msg;
     var status = newElement('span');

@@ -57,3 +57,20 @@ function fadeOut(e) {
         }
     }, 100, "JavaScript");
 }
+
+function make_textbox(cell, i) {
+    var textbox = newElement('input');
+    textbox.type = 'text';
+    textbox.value = cell.textContent;
+    textbox.maxLength = column_maxLengths[i];
+    textbox.style.width = column_widths[i];
+    cell.innerHTML = '';
+    cell.appendChild(textbox);
+}
+
+function make_backup(cell) {
+    var backup = newElement('span');
+    backup.style.display = 'none';
+    backup.textContent = cell.lastChild.value;
+    cell.appendChild(backup);
+}

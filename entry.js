@@ -13,17 +13,8 @@ function modify_entry(button) {
     var firstRow = row.parentNode.firstChild;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
-        var textbox = newElement('input');
-        textbox.type = 'text';
-        textbox.value = cell.textContent;
-        textbox.maxLength = column_maxLengths[i];
-        textbox.style.width = column_widths[i];
-        cell.innerHTML = '';
-        cell.appendChild(textbox);
-        var backup = newElement('span');
-        backup.style.display = 'none';
-        backup.textContent = textbox.value;
-        cell.appendChild(backup);
+        make_textbox(cell, i);
+        make_backup(cell);
     }
 }
 
