@@ -6,6 +6,8 @@ var column_maxLengths = [ 5,         5,        5,         3,          30,       
 var day_names = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 var relative_day_names = ['heute', 'morgen', 'übermorgen']; // array index corresponds to distance from today
 
+var url = 'post_new.php?poster=entry';
+
 function make_backup(cell) {
     var backup = newElement('span');
     backup.style.display = 'none';

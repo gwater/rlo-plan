@@ -37,7 +37,8 @@ function send_msg(msg) {
         request = new ActiveXObject("Microsoft.XMLHTTP");
     }
     if (request) {
-        request.open('POST', 'post.php', false);
+        // url is defined in entry.js and admin.js
+        request.open('POST', url, false);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         request.send(msg);
     }

@@ -48,8 +48,18 @@ class ovp_user extends ovp_asset {
 
     }
 
-    public static function add($db, $name, $password, $privilege) {
+    public static function role_to_privilege($newrole) {
+        foreach (self::$roles as $priv => $role) {
+            if ($newrole == $role) {
+                return $priv;
+            }
+        }
+        return VIEW_NONE; // FIXME: Maybe PRIV_DEFAULT ?
+    }
+
+    public static function add($db, $name, $password, $role) {
         $hash = hash('sha256', $password);
+        $privilege = self::role_to_privilege($role);
         $db->query(
            "INSERT INTO `user` (
                 `name`,
@@ -63,7 +73,7 @@ class ovp_user extends ovp_asset {
         );
         $row = $db->query(
            "SELECT `id` FROM `user` WHERE
-                `name`      = '".$db->protect($name)."'     AND
+                `name`      = '".$db->protect($name)."' AND
                 `pwd_hash`  = '".$db->protect($hash)."' AND
                 `privilege` = '".$db->protect($privilege)."'
             LIMIT 1")->fetch_assoc();
@@ -122,13 +132,9 @@ class ovp_user extends ovp_asset {
         return false;
     }
 
-    public function set_role($newrole) {
-        foreach (self::$roles as $priv => $role) {
-            if ($newrole == $role) {
-                return $this->set_privilege($priv);
-            }
-        }
-        return false;
+    public function set_role($role) {
+        $priv = self::role_to_privilege($role);
+        return $this->set_privilege($priv);
     }
 
     public function set_name($name) {

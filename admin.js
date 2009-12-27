@@ -2,6 +2,8 @@ var column_names      = ['name',  'password', 'role'];
 var column_widths     = ['100px', '100px',    '40px'];
 var column_maxLengths = [ 20,      20,         5];
 
+var url = 'post_new.php?poster=user';
+
 function make_backup(cell, value) {
     var backup = newElement('span');
     backup.style.display = 'none';
@@ -77,7 +79,7 @@ function modify_user(button) {
 function delete_user(button) {
     hide_buttons(button.previousSibling);
     var row = button.parentNode.parentNode;
-    var msg = '&asset=user&action=delete&id=' + row.id.substr(4); // remove 'user' from 'user123'
+    var msg = '&action=delete&id=' + row.id.substr(4); // remove 'user' from 'user123'
     var status = newElement('span');
     status.textContent = 'Löschen...';
     row.lastChild.appendChild(status);
@@ -117,7 +119,7 @@ function save_user(button) {
     }
     if (contentHasChanged) {
         var row = button.parentNode.parentNode;
-        msg = 'asset=user&action=update&id=' + row.id.substr(4) + msg;
+        msg = 'action=update&id=' + row.id.substr(4) + msg;
         var status = newElement('span');
         status.textContent = 'Speichern...';
         row.lastChild.appendChild(status);
@@ -192,7 +194,7 @@ function save_new_user(button) {
         }
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
-    msg = 'asset=user&action=add' + msg;
+    msg = 'action=add' + msg;
     var status = newElement('span');
     status.textContent = 'Speichern...';
     row.lastChild.appendChild(status);
