@@ -16,7 +16,7 @@ require_once('user.inc.php');
 abstract class ovp_source {
     protected $db;
 
-    public function __construct($db) {
+    public function __construct(db $db) {
         $this->db = $db;
     }
 

@@ -1,10 +1,12 @@
 <?php
 
+require_once('misc.inc.php');
+
 abstract class ovp_asset {
     public $id;
     protected $db;
 
-    public function __construct($db, $id) {
+    public function __construct(db $db, $id) {
         $this->db = $db;
         $this->id = $id;
     }
@@ -21,7 +23,7 @@ class ovp_user extends ovp_asset {
         return self::$roles;
     }
 
-    public static function get_current_user($db) {
+    public static function get_current_user(db $db) {
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $db->query(
            "SELECT `id` FROM `user`
@@ -36,7 +38,7 @@ class ovp_user extends ovp_asset {
         return null;
     }
 
-    public static function get_all_users($db) {
+    public static function get_all_users(db $db) {
         $result = $db->query("SELECT `id`, `name` FROM `user`");
         $users = array();
         while ($row = $result->fetch_assoc()) {
@@ -57,7 +59,7 @@ class ovp_user extends ovp_asset {
         return VIEW_NONE; // FIXME: Maybe PRIV_DEFAULT ?
     }
 
-    public static function add($db, $name, $password, $role) {
+    public static function add(db $db, $name, $password, $role) {
         $hash = hash('sha256', $password);
         $privilege = self::role_to_privilege($role);
         $db->query(
@@ -80,7 +82,7 @@ class ovp_user extends ovp_asset {
         return $row['id'];
     }
 
-    public static function remove($db, $id) {
+    public static function remove(db $db, $id) {
         $db->query(
            "DELETE FROM `user` WHERE
                 `id` = '".$db->protect($id)."'
@@ -88,7 +90,14 @@ class ovp_user extends ovp_asset {
         return $db->affected_rows == 1;
     }
 
-    public function __construct($db, $id) {
+    public function __construct(db $db, $id) {
+        $result = $db->query(
+           "SELECT `id` FROM `user`
+            WHERE `id` = '".$db->protect($id)."'
+            LIMIT 1");
+        if ($result->num_rows != 1) {
+            fail('invalid user id');
+        }
         parent::__construct($db, $id);
     }
 
