@@ -12,3 +12,8 @@ input[type="submit"] {
 .ovp_error {
     background: #FF8888;
 }
+
+#ovp_tip {
+    font-size: small;
+    font-style: italic;
+}

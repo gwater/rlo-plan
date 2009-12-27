@@ -56,7 +56,7 @@ class ovp_user extends ovp_asset {
                 return $priv;
             }
         }
-        return VIEW_NONE; // FIXME: Maybe PRIV_DEFAULT ?
+        return VIEW_NONE;
     }
 
     public static function add(db $db, $name, $password, $role) {

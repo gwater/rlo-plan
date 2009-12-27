@@ -306,10 +306,20 @@ class ovp_author extends ovp_source {
         $html =
          '<div class="ovp_container">
             <img src="1x1.gif" onload="init()">
+            '.$this->get_tip().'
             <h1>'.self::$title.'</h1>
             <div id="ovp"></div>
           </div>';
         return $html;
+    }
+
+    private function get_tip() {
+        $tips = file('tips.txt');
+        if (!$tips) {
+            return '';
+        }
+        $rand = rand(0, count($tips) - 1);
+        return '<p id="ovp_tip">Tipp: '.$tips[$rand].'</p>';
     }
 }
 
