@@ -8,7 +8,6 @@
 
 .ovp_table th {
     background-color: #999;
-    white-space: nowrap;
 }
 
 .ovp_table, .ovp_table tr, .ovp_table td, .ovp_table th {
@@ -16,6 +15,7 @@
     padding-left: 3pt;
     padding-right: 3pt;
     vertical-align: top;
+    white-space: nowrap;
 }
 
 /* this is for the print table:
@@ -25,7 +25,7 @@
 #ovp_table_print tr>td+td {text-align: center; width: 1cm;}
 #ovp_table_print tr>td+td+td {text-align: center; width: 1cm;}
 #ovp_table_print tr>td+td+td+td {text-align: center; width: 1cm;}
-#ovp_table_print tr>td+td+td+td+td {text-align: left; width: auto;}
+#ovp_table_print tr>td+td+td+td+td {text-align: left; width: auto; white-space: normal;}
 #ovp_table_print tr>td+td+td+td+td+td {text-align: left; width: 1cm;}
 
 #ovp_table_print td.ovp_cell_teacher {
@@ -43,7 +43,7 @@
 #ovp_table_public tr>td+td+td {text-align: center; width: 1cm;}
 #ovp_table_public tr>td+td+td+td {text-align: center; width: 1cm;}
 #ovp_table_public tr>td+td+td+td+td {text-align: center; width: 1cm;}
-#ovp_table_public tr>td+td+td+td+td+td {text-align: left; width: auto;}
+#ovp_table_public tr>td+td+td+td+td+td {text-align: left; width: auto; white-space: normal;}
 #ovp_table_public tr>td+td+td+td+td+td+td {text-align: left; width: 1cm;}
 
 input[type="submit"] {
