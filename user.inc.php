@@ -97,9 +97,9 @@ class ovp_user extends ovp_asset {
 
     public static function remove(db $db, $id) {
         $db->query(
-           "DELETE FROM `user` WHERE
-                `id` = '".$db->protect($id)."'
-            LIMIT 1");
+           "DELETE FROM `user`
+            WHERE `id` = '".$db->protect($id)."'
+            AND `name` != 'admin' LIMIT 1");
         return $db->affected_rows == 1;
     }
 
