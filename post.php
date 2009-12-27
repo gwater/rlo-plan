@@ -2,66 +2,41 @@
 
 require_once('db.inc.php');
 require_once('misc.inc.php');
-require_once('admin.inc.php');
+require_once('poster.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
 
 session_start();
 $db = new db();
-if (!is_authorized(VIEW_AUTHOR)) {
+
+switch ($_GET['poster']) {
+case 'password':
+    $poster = new post_password($db);
+    break;
+case 'user':
+    $poster = new post_user($db);
+    break;
+case 'entry':
+    $poster = new post_entry($db);
+    break;
+case 'login':
+    $poster = new post_login($db);
+    break;
+case 'logout':
+    $poster = new post_logout($db);
+    break;
+default:
+    fail('I mean, what could possibly go wrong?');
+}
+
+$poster_vars = get_class_vars(get_class($poster));
+
+if (!is_authorized($poster_vars['priv_req'])) {
     header('HTTP/1.0 401 Unauthorized');
     exit('you need to log in first');
 }
 
-// FIXME hack because this file is such an unexpandable mess - lets talk about namespace pollution again
-if ($_POST['asset'] == 'user') {
-    evaluate_admin_request($db);
-    exit();
-}
-
-switch ($_POST['action']) {
-case 'add':
-    if (!(isset($_POST['day'])     && isset($_POST['teacher'])  &&
-          isset($_POST['time'])    && isset($_POST['course'])   &&
-          isset($_POST['subject']) && isset($_POST['duration']) &&
-          isset($_POST['sub'])     && isset($_POST['change'])   &&
-          isset($_POST['oldroom']) && isset($_POST['newroom']))) {
-        fail('parameter missing');
-    }
-    $entry = new entry($_POST);
-    exit($db->add_entry($entry));
-case 'update':
-    if (!(isset($_POST['id'])      &&
-          isset($_POST['day'])     && isset($_POST['teacher'])  &&
-          isset($_POST['time'])    && isset($_POST['course'])   &&
-          isset($_POST['subject']) && isset($_POST['duration']) &&
-          isset($_POST['sub'])     && isset($_POST['change'])   &&
-          isset($_POST['oldroom']) && isset($_POST['newroom']))) {
-        fail('parameter missing');
-    }
-    $entry = new entry($_POST);
-    if ($db->update_entry($entry)) {
-        exit('updated');
-    } else {
-        fail('invalid data');
-    }
-case 'delete':
-    if (!(isset($_POST['id']) && is_numeric($_POST['id']))) {
-        fail('invalid id');
-    }
-    if (!$db->remove_entry($_POST['id'])) {
-        fail('id not found');
-    } else {
-        exit('deleted');
-    }
-default:
-    fail('invalid action');
-}
-
-function fail($msg) {
-    header('HTTP/1.0 400 Bad Request');
-    exit($msg);
-}
+$poster->evaluate($_POST);
 
 ?>

@@ -2,7 +2,7 @@ var column_names      = ['name',  'password', 'role'];
 var column_widths     = ['100px', '100px',    '40px'];
 var column_maxLengths = [ 20,      20,         5];
 
-var url = 'post_new.php?poster=user';
+var url = 'post.php?poster=user';
 
 function make_backup(cell, value) {
     var backup = newElement('span');

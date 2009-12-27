@@ -332,7 +332,7 @@ class ovp_login extends ovp_source {
          '<div class="ovp_container">
           <h1>Login</h1>
           <p>Um diese Seite öffnen zu können, benötigen Sie ein entsprechend autorisiertes Benutzerkonto.</p>
-          <form action="post_new.php?poster=login';
+          <form action="post.php?poster=login';
         if (isset($_GET['continue'])) {
             $html .= '&continue='.urlencode($_GET['continue']);
         }
@@ -441,7 +441,7 @@ class ovp_password extends ovp_source {
         $html =
          '<div class="ovp_container">
           <h1>'.self::$title.'</h1>
-          <form action="post_new.php?poster=password" method="POST">
+          <form action="post.php?poster=password" method="POST">
             <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
@@ -530,7 +530,7 @@ class ovp_page {
         }
         if (is_authorized(PRIV_LOGIN)){
             $html .= ' |
-                <a href="post_new.php?poster=logout">Logout</a>';
+                <a href="post.php?poster=logout">Logout</a>';
         }
         $html .= '
               </div>';
