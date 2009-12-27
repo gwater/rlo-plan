@@ -1,3 +1,7 @@
-#ovp_navi, .ovp_heading, .ovp_day_links {
+#ovp_navi, .ovp_container h1, .ovp_day_links {
     display: none;
+}
+
+.ovp_table {
+    width: 100%;
 }

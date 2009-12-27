@@ -1,9 +1,47 @@
+.ovp_container, #ovp_navi {
+    font-family: sans-serif;
+}
+
 .ovp_table {
     border-collapse: collapse;
 }
+
+.ovp_table th {
+    background-color: #999;
+}
+
 .ovp_table, .ovp_table tr, .ovp_table td, .ovp_table th {
     border: 1px solid black;
+    padding-left: 3pt;
+    padding-right: 3pt;
 }
+
+/* this is for the print table:
+ * time, course, subject, duration, change, room
+ */
+#ovp_table_print tr>td {text-align: right; width: 1cm;}
+#ovp_table_print tr>td+td {text-align: center; width: 1cm;}
+#ovp_table_print tr>td+td+td {text-align: center; width: 1cm;}
+#ovp_table_print tr>td+td+td+td {text-align: center; width: 1cm;}
+#ovp_table_print tr>td+td+td+td+td {text-align: left; width: auto;}
+#ovp_table_print tr>td+td+td+td+td+td {text-align: left; width: 1cm;}
+
+#ovp_table_print td.ovp_cell_teacher {
+    padding-top: 1em;
+    font-weight: bold;
+    text-align: left;
+}
+
+/* this is for the public table:
+ * time, course, subject, oldroom, duration, change, newroom
+ */
+#ovp_table_public tr>td {text-align: right; width: 1cm;}
+#ovp_table_public tr>td+td {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td+td {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td+td+td {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td+td+td+td {text-align: left; width: auto;}
+#ovp_table_public tr>td+td+td+td+td+td+td {text-align: left; width: 1cm;}
 
 input[type="submit"] {
     width: 100%;

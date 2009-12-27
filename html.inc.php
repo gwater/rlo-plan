@@ -27,10 +27,11 @@ abstract class ovp_source {
     }
 
     public function get_header() {
-        $header =
-         '<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-          <link rel="stylesheet" href="style.css" type="text/css">';
-        $header .= $this->generate_header();
+        $header = '
+          <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+          <link rel="stylesheet" href="style.css" type="text/css" media="all">
+          <link rel="stylesheet" href="print.css" type="text/css" media="print">
+          '.$this->generate_header();
         return $header;
     }
 
@@ -145,10 +146,6 @@ class ovp_print extends ovp_source {
         $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
-    }
-
-    protected function generate_header() {
-        return '<link rel="stylesheet" type="text/css" href="print.css" media="print">';
     }
 
     protected function generate_view() {

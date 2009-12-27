@@ -55,7 +55,11 @@ class entry {
     }
 
     public function get_time() {
-        return strftime('%H:%M', $this->time);
+        $str = strftime('%H:%M', $this->time);
+        if ($str[0] == '0') {
+            return substr($str, 1);
+        }
+        return $str;
     }
 }
 
