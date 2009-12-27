@@ -246,7 +246,7 @@ class db extends mysqli {
         /*
         This table holds the user data of all the students who have access.
         id:        unique user id used to identify user during their session
-        name:      user name, e.g. 'jdoe'
+        name:      user name, e.g. 'jdoe' FIXME: Unique?
         pwd_hash:  sha256-hashed password
         privilege: privilege level
                      0 - no rights whatsoever (useful for suspending accounts)
@@ -292,7 +292,7 @@ class db extends mysqli {
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
-        ovp_user::add($this, 'admin', ADMIN_PWD, VIEW_ADMIN);
+        ovp_user::add($this, 'admin', ADMIN_PWD, 'admin');
     }
 
     private function fail($msg) {

@@ -27,7 +27,11 @@ class post_user extends poster {
         case 'add':
             if (isset($post['name']) && isset($post['password']) && isset($post['role'])) {
                 $id = ovp_user::add($this->db, $post['name'], $post['password'], $post['role']);
-                exit($id);
+                if ($id){
+                    exit($id);
+                } else {
+                    fail('could not add user');
+                }
             }
             fail('parameter missing');
         case 'update':
@@ -53,10 +57,10 @@ class post_user extends poster {
                     $result = $user->set_role($value);
                     break;
                 default:
-                    fail('invalid data');
+                    fail('too much data');
                 }
                 if (!($result)) {
-                    fail('Why Luigi, why?');
+                    fail('invalid data');
                 }
             }
             exit('updated');

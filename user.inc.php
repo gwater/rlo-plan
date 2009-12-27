@@ -3,12 +3,12 @@
 require_once('misc.inc.php');
 
 abstract class ovp_asset {
-    public $id;
+    protected $id;
     protected $db;
 
     public function __construct(db $db, $id) {
         $this->db = $db;
-        $this->id = $id;
+        $this->id = $db->protect($id);
     }
 }
 
@@ -59,7 +59,20 @@ class ovp_user extends ovp_asset {
         return VIEW_NONE;
     }
 
+    public static function check_name(db $db, $name) {
+        $result = $db->query(
+           "SELECT `id` FROM `user`
+            WHERE `name` = '".$db->protect($name)."'");
+        if ($result->num_rows != 0) {
+            return false;
+        }
+        return true;
+    }
+
     public static function add(db $db, $name, $password, $role) {
+        if (!self::check_name($db, $name)) {
+            return false;
+        }
         $hash = hash('sha256', $password);
         $privilege = self::role_to_privilege($role);
         $db->query(
@@ -101,10 +114,14 @@ class ovp_user extends ovp_asset {
         parent::__construct($db, $id);
     }
 
+    public function get_id() {
+        return $this->id;
+    }
+
     public function get_privilege() {
         $result = $this->db->query(
             "SELECT `privilege` FROM `user`
-             WHERE `id` = '".$this->db->protect($this->id)."'
+             WHERE `id` = '".$this->id."'
              LIMIT 1")->fetch_assoc();
         return $result['privilege'];
     }
@@ -112,7 +129,7 @@ class ovp_user extends ovp_asset {
     public function get_name() {
         $result = $this->db->query(
            "SELECT `name` FROM `user`
-            WHERE `id` = '".$this->db->protect($this->id)."'
+            WHERE `id` = '".$this->id."'
             LIMIT 1")->fetch_assoc();
         return $result['name'];
     }
@@ -120,7 +137,7 @@ class ovp_user extends ovp_asset {
     public function check_password($password) {
         $hash = $this->db->query(
            "SELECT `pwd_hash` FROM `user`
-            WHERE `id` = '".$this->db->protect($this->id)."'
+            WHERE `id` = '".$this->id."'
             LIMIT 1");
         if ($hash == hash('sha256', $password)) {
             return true;
@@ -147,11 +164,8 @@ class ovp_user extends ovp_asset {
     }
 
     public function set_name($name) {
-        $users = $this->db->get_users(1, 'name');
-        foreach ($users as $user) {
-            if ($user->get_name() == $name) {
-                return false;
-            }
+        if (!self::check_name($this->db, $name)) {
+            return false;
         }
         return $this->db->query(
            "UPDATE `user`

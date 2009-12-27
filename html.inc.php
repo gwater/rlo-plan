@@ -407,7 +407,7 @@ class ovp_admin extends ovp_source {
         foreach ($this->users as $user) {
             $role = $roles[$user->get_privilege()];
             $script .= '
-                users.push(newUser("'.$user->id.'", "'.$user->get_name().'", "***", "'.$role.'"));';
+                users.push(newUser("'.$user->get_id().'", "'.$user->get_name().'", "***", "'.$role.'"));';
         }
         $script .= '
                 insertUsers(users);
