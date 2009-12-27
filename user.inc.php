@@ -10,6 +10,11 @@ abstract class ovp_asset {
         $this->db = $db;
         $this->id = $db->protect($id);
     }
+
+    public function get_id() {
+        return $this->id;
+    }
+
 }
 
 class ovp_user extends ovp_asset {
@@ -112,10 +117,6 @@ class ovp_user extends ovp_asset {
             fail('invalid user id');
         }
         parent::__construct($db, $id);
-    }
-
-    public function get_id() {
-        return $this->id;
     }
 
     public function get_privilege() {
