@@ -3,6 +3,7 @@
 require_once('db.inc.php');
 require_once('user.inc.php');
 require_once('misc.inc.php');
+require_once('entry_new.inc.php');
 
 abstract class poster {
     public static $priv_req;
@@ -156,8 +157,10 @@ class post_entry extends poster {
                 isset($post['oldroom']) && isset($post['newroom']))) {
                 fail('parameter missing');
             }
-            $entry = new entry($post);
-            exit($this->db->add_entry($entry));
+            if (ovp_entry::add($this->db, $post)) {
+                exit('success');
+            }
+            fail('could no add entry');
         case 'update':
             if (!(isset($post['id'])      &&
                 isset($post['day'])     && isset($post['teacher'])  &&
@@ -167,8 +170,8 @@ class post_entry extends poster {
                 isset($post['oldroom']) && isset($post['newroom']))) {
                 fail('parameter missing');
             }
-            $entry = new entry($post);
-            if ($this->db->update_entry($entry)) {
+            $entry = new ovp_entry($this->db, $post['id']);
+            if ($entry->set_values($post)) {
                 exit('updated');
             } else {
                 fail('invalid data');
@@ -177,7 +180,7 @@ class post_entry extends poster {
             if (!(isset($post['id']) && is_numeric($post['id']))) {
                 fail('invalid id');
             }
-            if (!$this->db->remove_entry($post['id'])) {
+            if (!ovp_entry::remove($this->db, $post['id'])) {
                 fail('id not found');
             } else {
                 exit('deleted');

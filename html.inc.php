@@ -3,7 +3,7 @@
 require_once('db.inc.php');
 require_once('config.inc.php');
 require_once('user.inc.php');
-
+require_once('entry_new.inc.php');
 
 /**
  * This is the basic API for all content provided by rlo-plan
@@ -49,42 +49,25 @@ class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Standardansicht';
     public static $priv_req = VIEW_PUBLIC;
-    private $entries;
 
     public function __construct($db, $time = -1) {
         parent::__construct($db);
         if ($time == -1) {
             $time = time();
         }
-        $this->entries = $db->get_entries();
-    }
-
-    private function refactor_entries($entries) {
-        if (count($entries) == 0) {
-            return $entries;
-        }
-        $old_date = $entries[0]->get_date();
-        foreach ($entries as $entry) {
-            if ($old_date != $entry->get_date()) {
-                $old_date = $entry->get_date();
-                $days[] = $day;
-                unset($day);
-            }
-            $day[] = $entry;
-        }
-        $days[] = $day;
-        return $days;
     }
 
     protected function generate_view() {
-        $entries_by_date = $this->refactor_entries($this->entries);
-
+        $entries_by_date = ovp_entry::get_entries_by_date($this->db);
         $html = '
           <div class="ovp_container">
             <h1>'.self::$title.'</h1>';
         foreach($entries_by_date as $entries_today) {
+            foreach ($entries_today as $first_entry) {
+                break;
+            }
             $html .= '
-            <h2>'.$entries_today[0]->get_date().'</h2>
+            <h2>'.$first_entry->get_date().'</h2>
             <table class="ovp_table" id="ovp_table_'.self::$type.'">
               <tr>
                 <th>Uhrzeit</th>
@@ -96,15 +79,16 @@ class ovp_public extends ovp_source {
                 <th>Neuer Raum</th>
               </tr>';
             foreach ($entries_today as $entry) {
+                $values = $entry->get_values();
                 $html .= '
               <tr>
-                <td>'.$entry->get_time().'</td>
-                <td>'.$entry->course.    '</td>
-                <td>'.$entry->subject.   '</td>
-                <td>'.$entry->oldroom.   '</td>
-                <td>'.$entry->duration.  '</td>
-                <td>'.$entry->change.    '</td>
-                <td>'.$entry->newroom.   '</td>
+                <td>'.$entry->get_time(). '</td>
+                <td>'.$values['course'].  '</td>
+                <td>'.$values['subject']. '</td>
+                <td>'.$values['oldroom']. '</td>
+                <td>'.$values['duration'].'</td>
+                <td>'.$values['change'].  '</td>
+                <td>'.$values['newroom']. '</td>
               </tr>';
             }
             $html .= '
@@ -126,7 +110,7 @@ class ovp_print extends ovp_source {
     public static $type = 'print';
     public static $title ='Aushang';
     public static $priv_req = VIEW_PRINT;
-    private $entries;
+    private $time;
     private $today;
     private $yesterday;
     private $tomorrow;
@@ -142,13 +126,14 @@ class ovp_print extends ovp_source {
             }
             $time = mktime(0, 0, 0, $matches[2], $matches[3], $matches[1]);
         }
-        $this->entries = $db->get_entries($time);
         $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
+        $this->time = $time;
     }
 
     protected function generate_view() {
+        $entries_by_teacher = ovp_entry::get_entries_by_teacher($this->db, $this->time);
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -162,36 +147,34 @@ class ovp_print extends ovp_source {
                 <th>Vertretung durch</th>
                 <th>Raum</th>
               </tr>';
-
-        $oldteacher = '';
-        foreach ($this->entries as $entry) {
-            if ($entry->teacher != $oldteacher) {
+        foreach ($entries_by_teacher as $teacher => $entries) {
                 $html .=
              '<tr>
-                <td class="ovp_cell_teacher" colspan="6">'.$entry->teacher.'</td>
+                <td class="ovp_cell_teacher" colspan="6">'.$teacher.'</td>
               </tr>';
-                $oldteacher = $entry->teacher;
-            }
 
-            /* An ugly hack to properly merge the changes column follows */
-            $changes = '';
-            if (($entry->sub != '') && ($entry->change != '')) {
-                $changes = $entry->sub.', '.$entry->change;
-            } else if ($entry->sub != '') {
-                $changes = $entry->sub;
-            } else if ($entry->change != '') {
-                $changes = $entry->change;
-            }
+            foreach ($entries as $entry) {
+                $values = $entry->get_values();
+                /* An ugly hack to properly merge the changes column follows */
+                $changes = '';
+                if (($values['sub'] != '') && ($values['change'] != '')) {
+                    $changes = $values['sub'].', '.$values['change'];
+                } else if ($values['sub'] != '') {
+                    $changes = $values['sub'];
+                } else if ($values['change'] != '') {
+                    $changes = $values['change'];
+                }
 
-            $html .=
-             '<tr>
-                <td>'.$entry->get_time().'</td>
-                <td>'.$entry->course.    '</td>
-                <td>'.$entry->subject.   '</td>
-                <td>'.$entry->duration.  '</td>
-                <td>'.$changes.          '</td>
-                <td>'.$entry->newroom.   '</td>
-              </tr>';
+                $html .=
+                 '<tr>
+                    <td>'.$entry->get_time().'</td>
+                    <td>'.$values['course'].    '</td>
+                    <td>'.$values['subject'].   '</td>
+                    <td>'.$values['duration'].  '</td>
+                    <td>'.$changes.          '</td>
+                    <td>'.$values['newroom'].   '</td>
+                  </tr>';
+              }
         }
         $html .=
            '</table>
@@ -213,82 +196,43 @@ class ovp_author extends ovp_source {
     public static $type = 'author';
     public static $title ='Einträge verwalten';
     public static $priv_req = VIEW_AUTHOR;
-    private $entries;
 
     public function __construct($db) {
         parent::__construct($db);
-        $this->entries = $db->get_entries();
-    }
-
-    /** a horribly complex algorithm to get from
-     * $entry = $entries[day, teacher, time]
-     * to
-     * $entry = $entries[day][teacher][time]
-     */
-    private function refactor_entries($entries) {
-        if (count($entries) == 0) {
-            return $entries;
-        }
-        $old_date = $entries[0]->get_date();
-        foreach ($entries as $entry) {
-            if ($old_date != $entry->get_date()) {
-                $old_date = $entry->get_date();
-                $days[] = $day;
-                unset($day);
-            }
-            $day[] = $entry;
-        }
-        $days[] = $day;
-        foreach ($days as $i => $day) {
-            $old_teacher = $day[0]->teacher;
-            unset($teacher);
-            unset($teachers);
-            foreach ($day as $entry) {
-                if ($old_teacher != $entry->teacher) {
-                    $old_teacher = $entry->teacher;
-                    $teachers[] = $teacher;
-                    unset($teacher);
-                }
-                $teacher[] = $entry;
-            }
-            $teachers[] = $teacher;
-            $days[$i] = $teachers;
-        }
-        return $days;
     }
 
     protected function generate_header() {
-        $entries_by_date = $this->refactor_entries($this->entries);
+        $entries_by_date = ovp_entry::get_entries_by_teacher_and_date($this->db);
         $script =
            '<script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
             function fill_in_data() {
                 var days = [];';
-
         foreach ($entries_by_date as $entries_by_teacher) {
-            $today = strftime("%A, %d.%m.%Y", $entries_by_teacher[0][0]->time);
             $script .= '
                 var teachers = [];';
-            foreach ($entries_by_teacher as $entries_for_teacher) {
+            foreach ($entries_by_teacher as $teacher => $entries) {
                 $script .= '
                 var entries = [];';
-                foreach ($entries_for_teacher as $entry) {
+                foreach ($entries as $entry) {
+                    $values = $entry->get_values();
                     $script .= '
                 entries.push(newEntry('.
-                        $entry->id.', ["'.
-                        $entry->get_time().'", "'.
-                        $entry->course.'", "'.
-                        $entry->subject.'", "'.
-                        $entry->duration.'", "'.
-                        $entry->sub.'", "'.
-                        $entry->change.'", "'.
-                        $entry->oldroom.'", "'.
-                        $entry->newroom.'"]));';
+                        $entry->get_id().   ', ["'.
+                        $entry->get_time(). '", "'.
+                        $values['course'].  '", "'.
+                        $values['subject']. '", "'.
+                        $values['duration'].'", "'.
+                        $values['sub'].     '", "'.
+                        $values['change'].  '", "'.
+                        $values['oldroom']. '", "'.
+                        $values['newroom']. '"]));';
                 }
                 $script .= '
-                teachers.push(newTeacher("'.$entries_for_teacher[0]->teacher.'", entries));';
+                teachers.push(newTeacher("'.$teacher.'", entries));';
             }
+            $today = strftime("%A, %d.%m.%Y", $values['time']);
             $script .= '
                 days.push(newDay("'.$today.'", teachers));';
         }
@@ -298,8 +242,6 @@ class ovp_author extends ovp_source {
     }
 
     protected function generate_view() {
-        $entries_by_date = $this->refactor_entries($this->entries);
-
         $html =
          '<div class="ovp_container">
             <img src="1x1.gif" onload="init()">
