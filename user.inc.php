@@ -52,7 +52,6 @@ class ovp_user extends ovp_asset {
             }
         }
         return $users;
-
     }
 
     public static function role_to_privilege($newrole) {
@@ -64,18 +63,15 @@ class ovp_user extends ovp_asset {
         return VIEW_NONE;
     }
 
-    public static function check_name(db $db, $name) {
+    public static function name_exists(db $db, $name) {
         $result = $db->query(
            "SELECT `id` FROM `user`
             WHERE `name` = '".$db->protect($name)."'");
-        if ($result->num_rows != 0) {
-            return false;
-        }
-        return true;
+        return $result->num_rows == 0;
     }
 
     public static function add(db $db, $name, $password, $role) {
-        if (!self::check_name($db, $name)) {
+        if (self::name_exists($db, $name)) {
             return false;
         }
         $hash = hash('sha256', $password);
@@ -165,7 +161,7 @@ class ovp_user extends ovp_asset {
     }
 
     public function set_name($name) {
-        if (!self::check_name($this->db, $name)) {
+        if (self::name_exists($this->db, $name)) {
             return false;
         }
         return $this->db->query(
