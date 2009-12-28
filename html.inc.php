@@ -3,7 +3,7 @@
 require_once('db.inc.php');
 require_once('config.inc.php');
 require_once('user.inc.php');
-require_once('entry_new.inc.php');
+require_once('entry.inc.php');
 
 /**
  * This is the basic API for all content provided by rlo-plan

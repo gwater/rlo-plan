@@ -3,7 +3,7 @@
 require_once('db.inc.php');
 require_once('user.inc.php');
 require_once('misc.inc.php');
-require_once('entry_new.inc.php');
+require_once('entry.inc.php');
 
 abstract class poster {
     public static $priv_req;

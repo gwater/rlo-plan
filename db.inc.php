@@ -1,7 +1,6 @@
 <?php
 
 require_once('config.inc.php');
-require_once('entry.inc.php');
 require_once('user.inc.php');
 
 class db extends mysqli {
@@ -23,142 +22,6 @@ class db extends mysqli {
             file_put_contents('config.inc.php', $config);
         }
     }
-
-    /**
-     * Adds an entry to the database.
-     * @return: id of the new entry
-     */
-    public function add_entry(entry $entry) {
-        $this->query(
-           "INSERT INTO `entry` VALUES (
-                NULL,
-                '".$this->protect($entry->teacher)."',
-                FROM_UNIXTIME('".$this->protect($entry->time)."'),
-                '".$this->protect($entry->course)."',
-                '".$this->protect($entry->subject)."',
-                '".$this->protect($entry->duration)."',
-                '".$this->protect($entry->sub)."',
-                '".$this->protect($entry->change)."',
-                '".$this->protect($entry->oldroom)."',
-                '".$this->protect($entry->newroom)."'
-            )"
-        );
-        $row = $this->query(
-            "SELECT `id` FROM `entry` WHERE
-                `teacher`  = '".$this->protect($entry->teacher)."'  AND
-                `time`     = FROM_UNIXTIME('".$this->protect($entry->time)."') AND
-                `course`   = '".$this->protect($entry->course)."'   AND
-                `subject`  = '".$this->protect($entry->subject)."'  AND
-                `duration` = '".$this->protect($entry->duration)."' AND
-                `sub`      = '".$this->protect($entry->sub)."'      AND
-                `change`   = '".$this->protect($entry->change)."'   AND
-                `oldroom`  = '".$this->protect($entry->oldroom)."'  AND
-                `newroom`  = '".$this->protect($entry->newroom)."'
-            LIMIT 1")->fetch_assoc();
-        return $row['id'];
-    }
-
-    /**
-     * Updates the entry referenced by $entry->id with the data inside $entry.
-     * @return: true if the update was successful
-     */
-    public function update_entry(entry $entry) {
-        $this->query(
-            "UPDATE `entry` SET
-                `teacher`  = '".$this->protect($entry->teacher)."',
-                `time`     = FROM_UNIXTIME('".$this->protect($entry->time)."'),
-                `course`   = '".$this->protect($entry->course)."',
-                `subject`  = '".$this->protect($entry->subject)."',
-                `duration` = '".$this->protect($entry->duration)."',
-                `sub`      = '".$this->protect($entry->sub)."',
-                `change`   = '".$this->protect($entry->change)."',
-                `oldroom`  = '".$this->protect($entry->oldroom)."',
-                `newroom`  = '".$this->protect($entry->newroom)."'
-            WHERE
-                `id` = '".$this->protect($entry->id)."'
-            LIMIT 1");
-        return $this->affected_rows == 1;
-    }
-
-    /**
-     * Deletes the entry referenced by the id $entry_id.
-     * @return: true if the entry was found and deleted
-     */
-    public function remove_entry($entry_id) {
-        $this->query(
-           "DELETE FROM `entry` WHERE
-                `id` = '".$this->protect($entry_id)."'
-            LIMIT 1");
-        return $this->affected_rows == 1;
-    }
-
-    /**
-     * Retrieves an array of entries from the database on the given day.
-     * Format of $date: unix timestamp of midnight (the beginning) on the requested day.
-     */
-    public function get_entries($date = -1) {
-        if ($date == -1) {
-            $result = $this->query(
-               "SELECT
-                    `id`,
-                    `teacher`,
-                    UNIX_TIMESTAMP(`time`) AS 'time',
-                    `course`,
-                    `subject`,
-                    `duration`,
-                    `sub`,
-                    `change`,
-                    `oldroom`,
-                    `newroom`
-                FROM `entry` ORDER BY
-                    UNIX_TIMESTAMP(`time`) - MOD(UNIX_TIMESTAMP(`time`), 60*60*24),
-                    `teacher`,
-                    `time`"
-            );
-        } else {
-            $result = $this->query(
-               "SELECT
-                    `id`,
-                    `teacher`,
-                    UNIX_TIMESTAMP(`time`) AS 'time',
-                    `course`,
-                    `subject`,
-                    `duration`,
-                    `sub`,
-                    `change`,
-                    `oldroom`,
-                    `newroom`
-                FROM `entry` WHERE
-                    UNIX_TIMESTAMP(`time`) >= '".$this->protect($date)."' AND
-                    UNIX_TIMESTAMP(`time`) <  '".$this->protect($date + 60*60*24)."'
-                ORDER BY
-                    `teacher`,
-                    `time`"
-            );
-        }
-        $entries = array();
-        while ($row = $result->fetch_assoc()) {
-            $entries[] = new entry($row);
-        }
-        return $entries;
-    }
-
-    /**
-     * Deletes entries older than DELETE_OLDER_THAN days.
-     * @return: the number of deleted entries
-     */
-    public function cleanup_entries() {
-        if (DELETE_OLDER_THAN >= 0) {
-            $this->query(
-               "DELETE FROM `entry` WHERE
-                    DATEDIFF(CURDATE(), `time`) > '".$this->protect(DELETE_OLDER_THAN)."'"
-            );
-            return $this->affected_rows;
-        } else {
-            return 0;
-        }
-    }
-
 
     // checks if the current user's ip address matches the one in the database
     public function session_ok() {
@@ -221,7 +84,6 @@ class db extends mysqli {
         return $this->affected_rows == 1;
     }
 
-    // FIXME: return assoc_array if applicable
     public function query($query) {
         if (!($result = parent::query($query))) {
             if (DEBUG) {
@@ -295,6 +157,7 @@ class db extends mysqli {
         ovp_user::add($this, 'admin', ADMIN_PWD, 'admin');
     }
 
+    // FIXME: maybe use fail() from misc.inc.php instead?
     private function fail($msg) {
         die('ERROR: '.$msg);
     }
