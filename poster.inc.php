@@ -19,10 +19,6 @@ abstract class poster {
 class post_user extends poster {
     public static $priv_req = VIEW_ADMIN;
 
-    public function __construct(db $db) {
-        parent::__construct($db);
-    }
-
     public function evaluate($post) {
         switch ($post['action']) {
         case 'add':
@@ -83,10 +79,6 @@ class post_user extends poster {
 class post_password extends poster {
     public static $priv_req = PRIV_LOGIN;
 
-    public function __construct(db $db) {
-        parent::__construct($db);
-    }
-
     public function evaluate($post) {
         if (isset($post['newpwd']) && isset($post['oldpwd'])) {
             $user = ovp_user::get_current_user($this->db);
@@ -107,10 +99,6 @@ class post_password extends poster {
 
 class post_login extends poster {
     public static $priv_req = PRIV_LOGOUT;
-
-    public function __construct(db $db) {
-        parent::__construct($db);
-    }
 
     public function evaluate($post) {
         if (isset($post['name']) && isset($post['pwd'])) {
@@ -142,10 +130,6 @@ class post_logout extends poster {
 
 class post_entry extends poster {
     public static $priv_req = VIEW_AUTHOR;
-
-    public function __construct(db $db) {
-        parent::__construct($db);
-    }
 
     public function evaluate($post) {
         switch ($post['action']) {

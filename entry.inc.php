@@ -205,17 +205,24 @@ class ovp_entry extends ovp_asset {
     }
 
     public function set_values($values) {
+        $time = self::to_time($values['day'], $values['time']);
         foreach ($values as $attribute => $value) {
             if (!array_key_exists($attribute, self::$attributes)) {
-                unset($value); // kinda symbolic; for being BAD
-            } else if (!$this->set_value($attribute, $value)) {
-                return false;
+                // DoNothing (tm) -> eg $values['day']
+            } else {
+                if ($attribute == 'time') {
+                    $value = self::to_time($values['day'], $values['time']);
+                }
+                if (!$this->set_value($attribute, $value)) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
     private function set_value($attribute, $value) {
+        print_r(array($attribute, $value));
         if ($attribute == 'time') {
             $this->db->query(
                "UPDATE `entry`
