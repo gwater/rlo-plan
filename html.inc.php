@@ -415,6 +415,16 @@ class ovp_password extends ovp_source {
     }
 }
 
+class ovp_about extends ovp_source {
+    public static $type = 'about';
+    public static $title ='Über RLO-Plan';
+    public static $priv_req = VIEW_NONE;
+
+    public function generate_view() {
+        return file_get_contents('about.inc.html');
+    }
+}
+
 /**
  * This class acts as a wrapper around any ovp_source object and provides
  * complete html pages based on the content provided by the source.
@@ -455,6 +465,7 @@ class ovp_page {
         $sources[] = get_class_vars('ovp_print');
         $sources[] = get_class_vars('ovp_author');
         $sources[] = get_class_vars('ovp_admin');
+        $sources[] = get_class_vars('ovp_about');
         $sources[] = get_class_vars('ovp_password');
         $sources[] = get_class_vars('ovp_login');
 

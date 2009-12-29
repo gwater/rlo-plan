@@ -33,6 +33,9 @@ case 'login':
 case 'password':
     $source = new ovp_password($db);
     break;
+case 'about':
+    $source = new ovp_about($db);
+    break;
 case 'public':
 default:
     $source = new ovp_public($db);
