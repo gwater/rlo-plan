@@ -426,44 +426,12 @@ class ovp_about extends ovp_source {
     }
 }
 
-/**
- * This class acts as a wrapper around any ovp_source object and provides
- * complete html pages based on the content provided by the source.
- *
- * Its use is optional and merely provided for convenience and simple setups.
- */
-class ovp_page {
-    private $source; // the ovp_source object used to generate the page
-    private $title;
-    private $type;
-    private $db;
+class ovp_navi extends ovp_source {
+    public static $type = 'navi';
+    public static $title ='Navigationsleiste';
+    public static $priv_req = ovp_logger::VIEW_NONE;
 
-    public function __construct(db $db, ovp_source $source) {
-        $this->db = $db;
-        $this->source = $source;
-        $source_vars = get_class_vars(get_class($source));
-        $this->title = $source_vars['title'];
-        $this->type = $source_vars['type'];
-    }
-
-    private function generate_view() {
-        $html =
-'<!DOCTYPE html>
-<html>
-  <head>
-    <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
-    <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
-    '.$this->source->get_header().'
-  </head>
-  <body>
-    '.$this->generate_navi().'
-    '.$this->source->get_view().'
-  </body>
-</html>';
-        return $html;
-    }
-
-    private function generate_navi() {
+    public function generate_view() {
         $sources = array();
         $sources[] = get_class_vars('ovp_public');
         $sources[] = get_class_vars('ovp_print');
@@ -500,9 +468,45 @@ class ovp_page {
               </div>';
         return $html;
     }
+}
+
+/**
+ * This class acts as a wrapper around any ovp_source object and provides
+ * complete html pages based on the content provided by the source.
+ *
+ * Its use is optional and merely provided for convenience and simple setups.
+ */
+class ovp_page {
+    private $source; // the ovp_source object used to generate the page
+    private $title;
+    private $type;
+    private $db;
+    private $navi;
+
+    public function __construct(db $db, ovp_source $source) {
+        $this->db = $db;
+        $this->source = $source;
+        $this->navi = new ovp_navi($db);
+        $source_vars = get_class_vars(get_class($source));
+        $this->title = $source_vars['title'];
+        $this->type = $source_vars['type'];
+    }
 
     public function get_html() {
-        return $this->generate_view();
+        $html =
+'<!DOCTYPE html>
+<html>
+  <head>
+    <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
+    <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
+    '.$this->source->get_header().'
+  </head>
+  <body>
+    '.$this->navi->get_view().'
+    '.$this->source->get_view().'
+  </body>
+</html>';
+        return $html;
     }
 }
 
