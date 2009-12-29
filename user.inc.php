@@ -33,9 +33,7 @@ class ovp_user extends ovp_asset {
         $result = $db->query("SELECT `id`, `name` FROM `user`");
         $users = array();
         while ($row = $result->fetch_assoc()) {
-            if ($row['name'] != 'admin') {
-                $users[] = new ovp_user($db, $row['id']);
-            }
+            $users[] = new ovp_user($db, $row['id']);
         }
         return $users;
     }
@@ -83,10 +81,14 @@ class ovp_user extends ovp_asset {
     }
 
     public static function remove(db $db, $id) {
+        $user = ovp_logger::get_current_user($db);
+        if ($user->get_id() == $id) {
+            fail('you cannot delete your own account');
+        }
         $db->query(
            "DELETE FROM `user`
             WHERE `id` = '".$db->protect($id)."'
-            AND `name` != 'admin' LIMIT 1");
+            LIMIT 1");
         return $db->affected_rows == 1;
     }
 
