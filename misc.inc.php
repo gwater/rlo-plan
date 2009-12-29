@@ -3,12 +3,12 @@
 require_once('db.inc.php');
 require_once('user.inc.php');
 
-function redirect($to = '') {
+function redirect($to = false) {
     if (!$to) {
         $to = 'index.php';
     }
     $server = $_SERVER['SERVER_NAME'];
-    $path = dirname($_SERVER['PHP_SELF']);
+    $path = dirname($_SERVER['SCRIPT_NAME']);
     header('Location: http://'.$server.$path.'/'.$to);
     exit;
 }
@@ -32,7 +32,7 @@ function is_authorized($requiredPrivilege = 1) {
 
 function authorize($requiredPrivilege = 1) {
     if (!is_authorized($requiredPrivilege)) {
-        $continue = urlencode(basename($_SERVER['REQUEST_URI']));
+        $continue = urlencode(basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING']);
         redirect('index.php?source=login&continue='.$continue); // does not return
     }
     return true;
