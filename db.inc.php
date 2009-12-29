@@ -5,6 +5,18 @@ require_once('user.inc.php');
 
 class db extends mysqli {
 
+    public static function check_creds($host, $base, $user, $pass) {
+        $temp = new mysqli();
+        @$temp->connect($host, $user, $pass);
+        if ($temp->connect_error) {
+            return 'could not connect to database server';
+        }
+        if ($base != '' && !$temp->select_db($base)) {
+            return 'could not select database';
+        }
+        return NULL;
+    }
+
     public function __construct() {
         parent::__construct(DB_HOST, DB_USER, DB_PASS);
         if ($this->connect_errno) {
@@ -13,7 +25,9 @@ class db extends mysqli {
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->query("SET @@time_zone = 'Europe/Berlin'");
         if (!$this->select_db(DB_BASE)) {
-            $this->create_db();
+            if (!$this->create_db()) {
+                $this->fail('could not create database'); // need database or rights to create it
+            }
         }
         if (FIRST_RUN) {
             $this->reset_tables();
@@ -100,8 +114,10 @@ class db extends mysqli {
     }
 
     private function create_db() {
-        $this->query("CREATE DATABASE `".$this->protect(DB_BASE)."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'");
-        $this->select_db(DB_BASE);
+        if ($this->query("CREATE DATABASE `".$this->protect(DB_BASE)."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'") === false) {
+            return false;
+        }
+        return $this->select_db(DB_BASE);
     }
 
     private function reset_tables() {
