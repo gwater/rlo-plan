@@ -3,6 +3,7 @@
 require_once('db.inc.php');
 require_once('misc.inc.php');
 require_once('poster.inc.php');
+require_once('logger.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
@@ -32,7 +33,7 @@ default:
 
 $poster_vars = get_class_vars(get_class($poster));
 
-if (!is_authorized($poster_vars['priv_req'])) {
+if (!ovp_logger::is_authorized($db, $poster_vars['priv_req'])) {
     header('HTTP/1.0 401 Unauthorized');
     exit('you need to log in first');
 }

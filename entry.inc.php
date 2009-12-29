@@ -1,8 +1,8 @@
 <?php
 
 require_once('db.inc.php');
-require_once('user.inc.php');
 require_once('misc.inc.php');
+require_once('logger.inc.php');
 
 class ovp_entry extends ovp_asset {
     private static $attributes = array('teacher', 'time', 'course',
@@ -19,11 +19,11 @@ class ovp_entry extends ovp_asset {
 
     private static function to_time($day, $time) {
         if (!preg_match('/(\d\d?).(\d\d?).((\d\d)?\d\d) (\d\d?).(\d\d?)/', $day.' '.$time, $matches)) {
-            $this->fail('invalid day or time format');
+            fail('invalid day or time format');
         }
         $unix = mktime($matches[5], $matches[6], 0, $matches[2], $matches[1], $matches[3]);
         if ($unix == false || $unix == -1) {
-            $this->fail('invalid day or time value');
+            fail('invalid day or time value');
         }
         return $unix;
     }

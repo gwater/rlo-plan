@@ -1,7 +1,6 @@
 <?php
 
-require_once('config.inc.php');
-require_once('misc.inc.php');
+require_once('logger.inc.php');
 require_once('db.inc.php');
 require_once('html.inc.php');
 
@@ -42,8 +41,8 @@ default:
 }
 
 $source_vars = get_class_vars(get_class($source));
-authorize($source_vars['priv_req']);
-$page = new ovp_page($source);
+ovp_logger::authorize($db, $source_vars['priv_req']);
+$page = new ovp_page($db, $source);
 exit($page->get_html());
 
 ?>

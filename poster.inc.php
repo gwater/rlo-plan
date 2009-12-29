@@ -4,6 +4,7 @@ require_once('db.inc.php');
 require_once('user.inc.php');
 require_once('misc.inc.php');
 require_once('entry.inc.php');
+require_once('logger.inc.php');
 
 abstract class poster {
     public static $priv_req;
@@ -17,7 +18,7 @@ abstract class poster {
 }
 
 class post_user extends poster {
-    public static $priv_req = VIEW_ADMIN;
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function evaluate($post) {
         switch ($post['action']) {
@@ -77,11 +78,11 @@ class post_user extends poster {
 }
 
 class post_password extends poster {
-    public static $priv_req = PRIV_LOGIN;
+    public static $priv_req = ovp_logger::PRIV_LOGIN;
 
     public function evaluate($post) {
         if (isset($post['newpwd']) && isset($post['oldpwd'])) {
-            $user = ovp_user::get_current_user($this->db);
+            $user = ovp_logger::get_current_user($this->db);
             if ($user->check_password($post['oldpwd'])) {
                 if ($user->set_password($post['newpwd'])) {
                     exit('updated');
@@ -98,38 +99,34 @@ class post_password extends poster {
 }
 
 class post_login extends poster {
-    public static $priv_req = PRIV_LOGOUT;
+    public static $priv_req = ovp_logger::PRIV_LOGOUT;
 
     public function evaluate($post) {
         if (isset($post['name']) && isset($post['pwd'])) {
-            $_SESSION['privilege'] = $this->db->login($post['name'], $post['pwd']);
+            $_SESSION['privilege'] = ovp_logger::login($this->db, $post['name'], $post['pwd']);
             if ($_SESSION['privilege'] != -1) {
-                redirect($_GET['continue']);
+                ovp_logger::redirect($_GET['continue']);
             }
         }
-        redirect('index.php?source=login&attempt=failed&continue='.urlencode($_GET['continue']));
+        ovp_logger::redirect('index.php?source=login&attempt=failed&continue='.urlencode($_GET['continue']));
     }
 }
 
 class post_logout extends poster {
-    public static $priv_req = PRIV_LOGIN;
-
-    public function __construct(db $db) {
-        parent::__construct($db);
-    }
+    public static $priv_req = ovp_logger::PRIV_LOGIN;
 
     public function evaluate($post) {
-        $this->db->logout();
+        ovp_logger::logout($this->db);
         $_SESSION = array();
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
         session_destroy();
-        redirect('index.php');
+        ovp_logger::redirect('index.php');
     }
 }
 
 class post_entry extends poster {
-    public static $priv_req = VIEW_AUTHOR;
+    public static $priv_req = ovp_logger::VIEW_AUTHOR;
 
     public function evaluate($post) {
         switch ($post['action']) {

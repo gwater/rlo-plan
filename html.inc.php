@@ -4,6 +4,7 @@ require_once('db.inc.php');
 require_once('config.inc.php');
 require_once('user.inc.php');
 require_once('entry.inc.php');
+require_once('logger.inc.php');
 
 /**
  * This is the basic API for all content provided by rlo-plan
@@ -48,7 +49,7 @@ abstract class ovp_source {
 class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Standardansicht';
-    public static $priv_req = VIEW_PUBLIC;
+    public static $priv_req = ovp_logger::VIEW_PUBLIC;
 
     public function __construct($db, $time = -1) {
         parent::__construct($db);
@@ -109,7 +110,7 @@ class ovp_public extends ovp_source {
 class ovp_print extends ovp_source {
     public static $type = 'print';
     public static $title ='Aushang';
-    public static $priv_req = VIEW_PRINT;
+    public static $priv_req = ovp_logger::VIEW_PRINT;
     private $time;
     private $today;
     private $yesterday;
@@ -195,7 +196,7 @@ class ovp_print extends ovp_source {
 class ovp_author extends ovp_source {
     public static $type = 'author';
     public static $title ='Einträge verwalten';
-    public static $priv_req = VIEW_AUTHOR;
+    public static $priv_req = ovp_logger::VIEW_AUTHOR;
 
     public function __construct($db) {
         parent::__construct($db);
@@ -270,7 +271,7 @@ class ovp_author extends ovp_source {
 class ovp_login extends ovp_source {
     public static $type = 'login';
     public static $title ='Login';
-    public static $priv_req = PRIV_LOGOUT;
+    public static $priv_req = ovp_logger::PRIV_LOGOUT;
 
     public function __construct($db) {
         parent::__construct($db);
@@ -317,7 +318,7 @@ class ovp_login extends ovp_source {
 class ovp_admin extends ovp_source {
     public static $type = 'admin';
     public static $title ='Benutzer verwalten';
-    public static $priv_req = VIEW_ADMIN;
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
     protected $users;
 
 
@@ -377,12 +378,12 @@ class ovp_admin extends ovp_source {
 class ovp_password extends ovp_source {
     public static $type = 'password';
     public static $title ='Passwort ändern';
-    public static $priv_req = PRIV_LOGIN;
+    public static $priv_req = ovp_logger::PRIV_LOGIN;
     private $user;
 
 
     public function __construct($db) {
-        $this->user = ovp_user::get_current_user($db);
+        $this->user = ovp_logger::get_current_user($db);
     }
 
     protected function generate_view() {
@@ -418,7 +419,7 @@ class ovp_password extends ovp_source {
 class ovp_about extends ovp_source {
     public static $type = 'about';
     public static $title ='Über RLO-Plan';
-    public static $priv_req = VIEW_NONE;
+    public static $priv_req = ovp_logger::VIEW_NONE;
 
     public function generate_view() {
         return file_get_contents('about.inc.html');
@@ -435,8 +436,10 @@ class ovp_page {
     private $source; // the ovp_source object used to generate the page
     private $title;
     private $type;
+    private $db;
 
-    public function __construct(ovp_source $source) {
+    public function __construct(db $db, ovp_source $source) {
+        $this->db = $db;
         $this->source = $source;
         $source_vars = get_class_vars(get_class($source));
         $this->title = $source_vars['title'];
@@ -474,7 +477,7 @@ class ovp_page {
              '<div id="ovp_navi">';
         $first = true;
         foreach ($sources as $source) {
-            if (is_authorized($source['priv_req'])) {
+            if (ovp_logger::is_authorized($this->db, $source['priv_req'])) {
                 if($first) {
                     $first = false;
                 } else {
@@ -489,7 +492,7 @@ class ovp_page {
                 }
             }
         }
-        if (is_authorized(PRIV_LOGIN)){
+        if (ovp_logger::is_authorized($this->db, ovp_logger::PRIV_LOGIN)){
             $html .= ' |
                 <a href="post.php?poster=logout">Logout</a>';
         }

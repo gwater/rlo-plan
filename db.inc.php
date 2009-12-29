@@ -37,67 +37,6 @@ class db extends mysqli {
         }
     }
 
-    // checks if the current user's ip address matches the one in the database
-    public function session_ok() {
-        $result = $this->query(
-           "SELECT
-                `ip1`,
-                `ip2`
-            FROM `user` WHERE
-                `sid`  = '".$this->protect(session_id())."'
-            LIMIT 1"
-        );
-        if (!($row = $result->fetch_assoc())) {
-            return false;
-        }
-        if ($row['ip2'] != NULL) {
-            $ip = ($row['ip2'] << 64) + $row['ip1'];
-        } else {
-            $ip = $row['ip1'];
-        }
-        return $ip == ip2long($_SERVER['REMOTE_ADDR']);
-    }
-
-    public function login($name, $pwd) {
-        $result = $this->query(
-           "SELECT
-                `id`,
-                `privilege`
-            FROM `user` WHERE
-                `name`      = '".$this->protect($name)."' AND
-                `pwd_hash`  = '".$this->protect(hash('sha256', $pwd))."'"
-        );
-        if (!($row = $result->fetch_assoc())) {
-            return -1; // user not found or wrong password
-        }
-        $ip = ip2long($_SERVER['REMOTE_ADDR']);
-        $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
-        $ip2 = $ip >> 64;
-        $this->query(
-           "UPDATE `user` SET
-                `ip1` = '".$this->protect($ip1)."',
-                `ip2` = '".$this->protect($ip2)."',
-                `sid` = '".$this->protect(session_id())."'
-            WHERE
-                `id` = '".$this->protect($row['id'])."'
-            LIMIT 1"
-        );
-        return $row['privilege']; // privilege is always positive
-    }
-
-    public function logout() {
-        $this->query(
-           "UPDATE `user` SET
-                `ip1` = NULL,
-                `ip2` = NULL,
-                `sid` = NULL
-            WHERE
-                `sid` = '".$this->protect(session_id())."'
-            LIMIT 1"
-        );
-        return $this->affected_rows == 1;
-    }
-
     public function query($query) {
         if (!($result = parent::query($query))) {
             if (DEBUG) {

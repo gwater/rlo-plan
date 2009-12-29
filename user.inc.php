@@ -1,6 +1,7 @@
 <?php
 
 require_once('misc.inc.php');
+require_once('logger.inc.php');
 
 abstract class ovp_asset {
     protected $id;
@@ -18,29 +19,14 @@ abstract class ovp_asset {
 }
 
 class ovp_user extends ovp_asset {
-    private static $roles = array(VIEW_NONE   => 'none',
-                                  VIEW_PUBLIC => 'public',
-                                  VIEW_PRINT  => 'print',
-                                  VIEW_AUTHOR => 'author',
-                                  VIEW_ADMIN  => 'admin');
+    private static $roles = array(ovp_logger::VIEW_NONE   => 'none',
+                                  ovp_logger::VIEW_PUBLIC => 'public',
+                                  ovp_logger::VIEW_PRINT  => 'print',
+                                  ovp_logger::VIEW_AUTHOR => 'author',
+                                  ovp_logger::VIEW_ADMIN  => 'admin');
 
     public final static function get_roles() {
         return self::$roles;
-    }
-
-    public static function get_current_user(db $db) {
-        $ip = ip2long($_SERVER['REMOTE_ADDR']);
-        $result = $db->query(
-           "SELECT `id` FROM `user`
-            WHERE
-                `ip1` = '".$db->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
-                `ip2` = '".$db->protect($ip >> 64)."' AND
-                `sid` = '".$db->protect(session_id())."'
-            LIMIT 1")->fetch_assoc();
-        if ($uid = $result['id']) {
-            return new ovp_user($db, $uid);
-        }
-        return null;
     }
 
     public static function get_all_users(db $db) {
@@ -60,14 +46,14 @@ class ovp_user extends ovp_asset {
                 return $priv;
             }
         }
-        return VIEW_NONE;
+        return ovp_logger::VIEW_NONE;
     }
 
     public static function name_exists(db $db, $name) {
         $result = $db->query(
            "SELECT `id` FROM `user`
             WHERE `name` = '".$db->protect($name)."'");
-        return $result->num_rows == 0;
+        return $result->num_rows != 0;
     }
 
     public static function add(db $db, $name, $password, $role) {
