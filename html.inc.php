@@ -138,6 +138,10 @@ class ovp_print extends ovp_source {
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
+            <div class="ovp_day_links">
+              <a href="index.php?source='.self::$type.'&date='.$this->yesterday.'">Einen Tag zurück</a>
+              <a href="index.php?source='.self::$type.'&date='.$this->tomorrow.'">Einen Tag weiter</a>
+            </div>
             <h2>'.$this->today.'</h2>
             <table  class="ovp_table" id="ovp_table_'.self::$type.'">
               <tr>
@@ -179,10 +183,6 @@ class ovp_print extends ovp_source {
         }
         $html .=
            '</table>
-            <div class="ovp_day_links">
-              <a href="index.php?source='.self::$type.'&date='.$this->yesterday.'">Einen Tag zurück</a>
-              <a href="index.php?source='.self::$type.'&date='.$this->tomorrow.'">Einen Tag weiter</a>
-            </div>
           </div>';
         return $html;
     }

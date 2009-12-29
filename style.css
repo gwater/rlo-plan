@@ -46,7 +46,7 @@
 #ovp_table_public tr>td+td+td+td+td+td {text-align: left; width: auto; white-space: normal;}
 #ovp_table_public tr>td+td+td+td+td+td+td {text-align: left; width: 1cm;}
 
-input[type="submit"] {
+.ovp_container input[type="submit"] {
     width: 100%;
 }
 
