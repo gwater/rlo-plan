@@ -449,6 +449,7 @@ class ovp_page {
 <html>
   <head>
     <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
+    <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
     '.$this->source->get_header().'
   </head>
   <body>
