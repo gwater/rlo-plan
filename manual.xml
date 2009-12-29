@@ -1,0 +1,29 @@
+<?xml version='1.1'?>
+<!DOCTYPE book>
+<book>
+<info>
+  <title>RLO-Plan Handbuch</title>
+  <author><firstname>Josua</firstname><surname>Grawitter</surname></author>
+  <copyright><year>2009</year><holder>Josua Grawitter</holder></copyright>
+</info>
+<chapter>
+<title>Grundlagen</title>
+<p>...</p>
+</chapter>
+<chapter>
+<title>Nutzer</title>
+<p>...</p>
+</chapter>
+<chapter>
+<title>Autoren</title>
+<p>...</p>
+</chapter>
+<chapter>
+<title>Administratoren</title>
+<p>...</p>
+</chapter>
+<chapter>
+<title>Entwickler</title>
+<p>...</p>
+</chapter>
+</book>
