@@ -1,6 +1,5 @@
-<?xml version='1.1'?>
-<!DOCTYPE book>
-<book>
+<?xml version="1.0" encoding="utf-8"?>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="de">
 <info>
   <title>RLO-Plan Handbuch</title>
   <author><firstname>Josua</firstname><surname>Grawitter</surname></author>
@@ -8,22 +7,22 @@
 </info>
 <chapter>
 <title>Grundlagen</title>
-<p>...</p>
+<para>...</para>
 </chapter>
 <chapter>
 <title>Nutzer</title>
-<p>...</p>
+<para>...</para>
 </chapter>
 <chapter>
 <title>Autoren</title>
-<p>...</p>
+<para>...</para>
 </chapter>
 <chapter>
 <title>Administratoren</title>
-<p>...</p>
+<para>...</para>
 </chapter>
 <chapter>
 <title>Entwickler</title>
-<p>...</p>
+<para>...</para>
 </chapter>
 </book>
