@@ -119,13 +119,14 @@ class ovp_print extends ovp_source {
     public function __construct($db, $date = -1) {
         parent::__construct($db);
         if ($date == -1) {
-            $time = time();
+            $time = time() + 3600; // adjust GMT to CET
             $time = $time - $time % 86400;
         } else {
             if (!preg_match('/(\d{4})-(\d\d)-(\d\d)/', $date, $matches)) {
                 exit('lol wut?');
             }
-            $time = mktime(0, 0, 0, $matches[2], $matches[3], $matches[1]);
+            // don't know where the missing two hours went (one is GMT-CET)
+            $time = mktime(0, 0, 0, $matches[2], $matches[3], $matches[1]) + 7200;
         }
         $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
