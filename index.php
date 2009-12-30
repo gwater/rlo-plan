@@ -142,7 +142,7 @@ case 'done':
         rename('index_.php', 'index.php');
     }
     $wizard = file_get_contents('wizard.php');
-    $replacement = 'ovp_logger::authorize(new db(), ovp_logger::VIEW_ADMIN);';
+    $replacement = '$logger = new ovp_logger(new db()); $logger->authorize(ovp_logger::VIEW_ADMIN);';
     $wizard = preg_replace('|/\* authorization placeholder \*/|', $replacement, $wizard, 1);
     file_put_contents('wizard.php', $wizard);
     $html .= '<p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p>';
