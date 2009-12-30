@@ -41,6 +41,9 @@ class ovp_logger {
 
     public function authorize($requiredPrivilege = 1) {
         if (!$this->is_authorized($requiredPrivilege)) {
+            if ($requiredPrivilege == ovp::PRIV_LOGOUT) {
+                self::redirect('index.php');
+            }
             $continue = urlencode(basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING']);
             self::redirect('index.php?source=login&continue='.$continue); // does not return
         }
