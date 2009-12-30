@@ -57,7 +57,7 @@ function fade_out(e) {
             e.style.opacity -= 0.1;
             fade_out(e);
         } else {
-            e.parentNode.removeChild(e);
+            remove(e);
         }
     }, 100, 'JavaScript');
 }

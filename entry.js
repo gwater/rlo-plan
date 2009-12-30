@@ -40,12 +40,12 @@ function delete_entry(button) {
                 var teacher = row.parentNode.parentNode;
                 var day = teacher.parentNode;
                 if (day.childNodes.length == 4) {
-                    day.parentNode.removeChild(day);
+                    remove(day);
                 } else {
-                    teacher.parentNode.removeChild(teacher);
+                    remove(teacher);
                 }
             } else {
-                row.parentNode.removeChild(row);
+                remove(row);
             }
         } else {
             show_buttons(button.previousSibling);
@@ -139,12 +139,12 @@ function delete_new_entry(button) {
         var teacher = row.parentNode.parentNode;
         var day = teacher.parentNode;
         if (day.childNodes.length == 4) {
-            day.parentNode.removeChild(day);
+            remove(day);
         } else {
-            teacher.parentNode.removeChild(teacher);
+            remove(teacher);
         }
     } else {
-        row.parentNode.removeChild(row);
+        remove(row);
     }
 }
 

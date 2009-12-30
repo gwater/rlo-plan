@@ -86,7 +86,7 @@ function delete_user(button) {
     var request = send_msg(msg);
     if (request) {
         if (request.status == 200) {
-                row.parentNode.removeChild(row);
+                remove(row);
         } else {
             show_buttons(button.previousSibling);
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
@@ -224,7 +224,7 @@ function save_new_user(button) {
 
 function delete_new_user(button) {
     var row = button.parentNode.parentNode;
-    row.parentNode.removeChild(row);
+    remove(row);
 }
 
 function init_admin() {
