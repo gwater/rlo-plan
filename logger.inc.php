@@ -13,35 +13,34 @@ class ovp_logger {
     const VIEW_PRINT  =  2; // user may see sensitive data
     const VIEW_AUTHOR =  3; // user may add, remove and edit entries
     const VIEW_ADMIN  =  4; // user may add, remove and edit accounts
+    private $user;
+    private $db;
 
-    public static function redirect($to = false) {
-        if (!$to) {
-            $to = 'index.php';
+
+    public function __construct(db $db, $user = false) {
+        if (!$user) {
+            $user = self::get_current_user($db);
         }
-        $server = $_SERVER['SERVER_NAME'];
-        $path = dirname($_SERVER['SCRIPT_NAME']);
-        header('Location: http://'.$server.$path.'/'.$to);
-        exit;
+        $this->user = $user;
+        $this->db = $db;
     }
 
-    public static function is_authorized(db $db, $requiredPrivilege = 1) {
+    public function is_authorized($requiredPrivilege = 1) {
         if ($requiredPrivilege == self::PRIV_LOGIN) {
-            $logged_user = self::get_current_user($db);
-            return isset($logged_user);
+            return isset($this->user);
         } else if ($requiredPrivilege == self::PRIV_LOGOUT) {
-            $logged_user = self::get_current_user($db);
-            return !isset($logged_user);
+            return !isset($this->user);
         }
         if ($requiredPrivilege <= PRIV_DEFAULT) {
             return true;
         }
         return isset($_SESSION['privilege']) &&
             $_SESSION['privilege'] >= $requiredPrivilege &&
-            self::session_ok($db);
+            $this->session_ok();
     }
 
-    public static function authorize(db $db, $requiredPrivilege = 1) {
-        if (!self::is_authorized($db, $requiredPrivilege)) {
+    public function authorize($requiredPrivilege = 1) {
+        if (!$this->is_authorized($requiredPrivilege)) {
             $continue = urlencode(basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING']);
             self::redirect('index.php?source=login&continue='.$continue); // does not return
         }
@@ -49,13 +48,13 @@ class ovp_logger {
     }
     
     // checks if the current user's ip address matches the one in the database
-    public static function session_ok(db $db) {
-        $result = $db->query(
+    public function session_ok() {
+        $result = $this->db->query(
            "SELECT
                 `ip1`,
                 `ip2`
             FROM `user` WHERE
-                `sid`  = '".$db->protect(session_id())."'
+                `sid`  = '".$this->db->protect(session_id())."'
             LIMIT 1"
         );
         if (!($row = $result->fetch_assoc())) {
@@ -67,6 +66,16 @@ class ovp_logger {
             $ip = $row['ip1'];
         }
         return $ip == ip2long($_SERVER['REMOTE_ADDR']);
+    }
+
+    public static function redirect($to = false) {
+        if (!$to) {
+            $to = 'index.php';
+        }
+        $server = $_SERVER['SERVER_NAME'];
+        $path = dirname($_SERVER['SCRIPT_NAME']);
+        header('Location: http://'.$server.$path.'/'.$to);
+        exit;
     }
 
     public static function login(db $db, $name, $pwd) {

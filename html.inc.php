@@ -442,12 +442,13 @@ class ovp_navi extends ovp_source {
         $sources[] = get_class_vars('ovp_about');
         $sources[] = get_class_vars('ovp_password');
         $sources[] = get_class_vars('ovp_login');
+        $logger = new ovp_logger($this->db);
 
         $html =
              '<div id="ovp_navi">';
         $first = true;
         foreach ($sources as $source) {
-            if (ovp_logger::is_authorized($this->db, $source['priv_req'])) {
+            if ($logger->is_authorized($source['priv_req'])) {
                 if($first) {
                     $first = false;
                 } else {
@@ -462,7 +463,7 @@ class ovp_navi extends ovp_source {
                 }
             }
         }
-        if (ovp_logger::is_authorized($this->db, ovp_logger::PRIV_LOGIN)){
+        if ($logger->is_authorized(ovp_logger::PRIV_LOGIN)){
             $html .= ' |
                 <a href="post.php?poster=logout">Logout</a>';
         }

@@ -41,7 +41,8 @@ default:
 }
 
 $source_vars = get_class_vars(get_class($source));
-ovp_logger::authorize($db, $source_vars['priv_req']);
+$logger = new ovp_logger($db);
+$logger->authorize($source_vars['priv_req']);
 $page = new ovp_page($db, $source);
 exit($page->get_html());
 
