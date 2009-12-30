@@ -21,12 +21,12 @@
 /* this is for the print table:
  * time, course, subject, duration, change, room
  */
-#ovp_table_print tr>td {text-align: right; width: 1cm;}
-#ovp_table_print tr>td+td {text-align: center; width: 1cm;}
-#ovp_table_print tr>td+td+td {text-align: center; width: 1cm;}
-#ovp_table_print tr>td+td+td+td {text-align: center; width: 1cm;}
-#ovp_table_print tr>td+td+td+td+td {text-align: left; width: auto; white-space: normal;}
-#ovp_table_print tr>td+td+td+td+td+td {text-align: left; width: 1cm;}
+#ovp_table_print tr>td                {text-align: right;  width: 1cm;}
+#ovp_table_print tr>td+td             {text-align: center; width: 1cm;}
+#ovp_table_print tr>td+td+td          {text-align: center; width: 1cm;}
+#ovp_table_print tr>td+td+td+td       {text-align: center; width: 1cm;}
+#ovp_table_print tr>td+td+td+td+td    {text-align: left;   width: auto; white-space: normal;}
+#ovp_table_print tr>td+td+td+td+td+td {text-align: left;   width: 1cm;}
 
 #ovp_table_print td.ovp_cell_teacher {
     padding-top: 1em;
@@ -38,13 +38,13 @@
 /* this is for the public table:
  * time, course, subject, oldroom, duration, change, newroom
  */
-#ovp_table_public tr>td {text-align: right; width: 1cm;}
-#ovp_table_public tr>td+td {text-align: center; width: 1cm;}
-#ovp_table_public tr>td+td+td {text-align: center; width: 1cm;}
-#ovp_table_public tr>td+td+td+td {text-align: center; width: 1cm;}
-#ovp_table_public tr>td+td+td+td+td {text-align: center; width: 1cm;}
-#ovp_table_public tr>td+td+td+td+td+td {text-align: left; width: auto; white-space: normal;}
-#ovp_table_public tr>td+td+td+td+td+td+td {text-align: left; width: 1cm;}
+#ovp_table_public tr>td                   {text-align: right;  width: 1cm;}
+#ovp_table_public tr>td+td                {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td             {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td+td          {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td+td+td       {text-align: center; width: 1cm;}
+#ovp_table_public tr>td+td+td+td+td+td    {text-align: left;   width: auto; white-space: normal;}
+#ovp_table_public tr>td+td+td+td+td+td+td {text-align: left;   width: 1cm;}
 
 .ovp_container input[type="submit"] {
     width: 100%;
@@ -52,6 +52,7 @@
 
 .ovp_error {
     background: #FF8888;
+    padding: 5px;
 }
 
 #ovp_tip {

@@ -51,13 +51,6 @@ class ovp_public extends ovp_source {
     public static $title ='Standardansicht';
     public static $priv_req = ovp_logger::VIEW_PUBLIC;
 
-    public function __construct($db, $time = -1) {
-        parent::__construct($db);
-        if ($time == -1) {
-            $time = time();
-        }
-    }
-
     protected function generate_view() {
         $entries_by_date = ovp_entry::get_entries_by_date($this->db);
         $html = '
@@ -246,7 +239,7 @@ class ovp_author extends ovp_source {
     protected function generate_view() {
         $html =
          '<div class="ovp_container">
-            <img src="1x1.gif" onload="init()">
+            <img src="1x1.gif" onload="init()" style="display: none">
             '.$this->get_tip().'
             <h1>'.self::$title.'</h1>
             <div id="ovp"></div>
