@@ -56,37 +56,41 @@ class ovp_public extends ovp_source {
         $html = '
           <div class="ovp_container">
             <h1>'.self::$title.'</h1>';
-        foreach($entries_by_date as $entries_today) {
-            foreach ($entries_today as $first_entry) {
-                break;
-            }
-            $html .= '
-            <h2>'.$first_entry->get_date().'</h2>
-            <table class="ovp_table" id="ovp_table_'.self::$type.'">
-              <tr>
-                <th>Uhrzeit</th>
-                <th>Klasse</th>
-                <th>Fach</th>
-                <th>Originalraum</th>
-                <th>Dauer</th>
-                <th>Änderung</th>
-                <th>Neuer Raum</th>
-              </tr>';
-            foreach ($entries_today as $entry) {
-                $values = $entry->get_values();
+        if ($entries_by_date) {
+            foreach($entries_by_date as $entries_today) {
+                foreach ($entries_today as $first_entry) {
+                    break;
+                }
                 $html .= '
-              <tr>
-                <td>'.$entry->get_time(). '</td>
-                <td>'.$values['course'].  '</td>
-                <td>'.$values['subject']. '</td>
-                <td>'.$values['oldroom']. '</td>
-                <td>'.$values['duration'].'</td>
-                <td>'.$values['change'].  '</td>
-                <td>'.$values['newroom']. '</td>
-              </tr>';
+                <h2>'.$first_entry->get_date().'</h2>
+                <table class="ovp_table" id="ovp_table_'.self::$type.'">
+                  <tr>
+                    <th>Uhrzeit</th>
+                    <th>Klasse</th>
+                    <th>Fach</th>
+                    <th>Originalraum</th>
+                    <th>Dauer</th>
+                    <th>Änderung</th>
+                    <th>Neuer Raum</th>
+                  </tr>';
+                foreach ($entries_today as $entry) {
+                    $values = $entry->get_values();
+                    $html .= '
+                  <tr>
+                    <td>'.$entry->get_time(). '</td>
+                    <td>'.$values['course'].  '</td>
+                    <td>'.$values['subject']. '</td>
+                    <td>'.$values['oldroom']. '</td>
+                    <td>'.$values['duration'].'</td>
+                    <td>'.$values['change'].  '</td>
+                    <td>'.$values['newroom']. '</td>
+                  </tr>';
+                }
+                $html .= '
+                </table>';
             }
-            $html .= '
-            </table>';
+        } else {
+            $html .= '<p>Es sind keine Einträge vorhanden.</p>';
         }
         $html .= '
           </div>';
@@ -202,37 +206,41 @@ class ovp_author extends ovp_source {
            '<script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
-            function fill_in_data() {
-                var days = [];';
-        foreach ($entries_by_date as $entries_by_teacher) {
+            function fill_in_data() {';
+        if ($entries_by_date) {
             $script .= '
-                var teachers = [];';
-            foreach ($entries_by_teacher as $teacher => $entries) {
+                    var days = [];';
+            foreach ($entries_by_date as $entries_by_teacher) {
                 $script .= '
-                var entries = [];';
-                foreach ($entries as $entry) {
-                    $values = $entry->get_values();
+                    var teachers = [];';
+                foreach ($entries_by_teacher as $teacher => $entries) {
                     $script .= '
-                entries.push(newEntry('.
-                        $entry->get_id().   ', ["'.
-                        $entry->get_time(). '", "'.
-                        $values['course'].  '", "'.
-                        $values['subject']. '", "'.
-                        $values['duration'].'", "'.
-                        $values['sub'].     '", "'.
-                        $values['change'].  '", "'.
-                        $values['oldroom']. '", "'.
-                        $values['newroom']. '"]));';
+                    var entries = [];';
+                    foreach ($entries as $entry) {
+                        $values = $entry->get_values();
+                        $script .= '
+                    entries.push(newEntry('.
+                            $entry->get_id().   ', ["'.
+                            $entry->get_time(). '", "'.
+                            $values['course'].  '", "'.
+                            $values['subject']. '", "'.
+                            $values['duration'].'", "'.
+                            $values['sub'].     '", "'.
+                            $values['change'].  '", "'.
+                            $values['oldroom']. '", "'.
+                            $values['newroom']. '"]));';
+                    }
+                    $script .= '
+                    teachers.push(newTeacher("'.$teacher.'", entries));';
                 }
+                $today = strftime("%A, %d.%m.%Y", $values['time']);
                 $script .= '
-                teachers.push(newTeacher("'.$teacher.'", entries));';
+                    days.push(newDay("'.$today.'", teachers));';
             }
-            $today = strftime("%A, %d.%m.%Y", $values['time']);
             $script .= '
-                days.push(newDay("'.$today.'", teachers));';
+                    insert_days(days);';
         }
-        $script .= '
-                insert_days(days);}</script>';
+        $script .= '}</script>';
         return $script;
     }
 

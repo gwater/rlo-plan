@@ -132,14 +132,14 @@ class ovp_entry extends ovp_asset {
         $row = $db->query(
            "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
             ORDER BY `time` ASC LIMIT 1")->fetch_assoc();
+        if (!$row) {
+            return false;
+        }
         $start = self::normalize_date($row['time']);
         $row = $db->query(
             "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
              ORDER BY `time` DESC LIMIT 1")->fetch_assoc();
         $stop = $row['time'] + 1;
-        if (!isset($start) || !isset($stop)) {
-            return false;
-        }
         $entries_by_date = array();
         for ($date = $start; $date < $stop; $date += 60*60*24) {
             $result = $db->query(
