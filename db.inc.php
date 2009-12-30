@@ -110,7 +110,6 @@ class db extends mysqli {
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
-        ovp_user::add($this, 'admin', ADMIN_PWD, 'admin');
     }
 
     // FIXME: maybe use fail() from misc.inc.php instead?

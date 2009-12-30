@@ -38,6 +38,14 @@ class ovp_user extends ovp_asset {
         return $users;
     }
 
+    public static function get_user_by_name(db $db, $name) {
+        $result = $db->query("SELECT `id` FROM `user` WHERE `name` = '".$db->protect($name)."'");
+        if ($row = $result->fetch_assoc()) {
+            return new ovp_user($db, $row['id']);
+        }
+        return NULL;
+    }
+
     public static function role_to_privilege($newrole) {
         foreach (self::$roles as $priv => $role) {
             if ($newrole == $role) {
