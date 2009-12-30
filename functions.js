@@ -71,3 +71,14 @@ function make_textbox(cell, i) {
     cell.innerHTML = '';
     cell.appendChild(textbox);
 }
+
+function cancel_editing(button) {
+    var saveButton = button.previousSibling;
+    hide_buttons(saveButton);
+    show_buttons(saveButton.previousSibling.previousSibling);
+    var row = button.parentNode.parentNode;
+    for (var i = 0; i < row.childNodes.length - 1; i++) {
+        var cell = row.childNodes[i];
+        cell.textContent = cell.lastChild.textContent;
+    }
+}

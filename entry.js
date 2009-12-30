@@ -129,7 +129,7 @@ function save_new_entry(button) {
     }
     button.nextSibling.innerHTML = 'Abbrechen';
     button.nextSibling.onclick = function() {
-        cancel_editing_entry(button.nextSibling);
+        cancel_editing(button.nextSibling);
     }
 }
 
@@ -145,17 +145,6 @@ function delete_new_entry(button) {
         }
     } else {
         remove(row);
-    }
-}
-
-function cancel_editing_entry(button) {
-    var saveButton = button.previousSibling;
-    hide_buttons(saveButton);
-    show_buttons(saveButton.previousSibling.previousSibling);
-    var row = button.parentNode.parentNode;
-    for (var i = 0; i < row.childNodes.length - 1; i++) {
-        var cell = row.childNodes[i];
-        cell.textContent = cell.lastChild.textContent;
     }
 }
 
@@ -281,7 +270,7 @@ function newEntry(id, cols) {
     var save_button = newButton('Speichern', save_entry);
     save_button.style.display = 'none';
     button_cell.appendChild(save_button);
-    var cancel_button = newButton('Abbrechen', cancel_editing_entry);
+    var cancel_button = newButton('Abbrechen', cancel_editing);
     cancel_button.style.display = 'none';
     button_cell.appendChild(cancel_button);
     row.appendChild(button_cell);
