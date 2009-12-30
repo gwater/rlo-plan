@@ -207,7 +207,7 @@ class ovp_entry extends ovp_asset {
     public function set_values($values) {
         $time = self::to_time($values['day'], $values['time']);
         foreach ($values as $attribute => $value) {
-            if (!array_key_exists($attribute, self::$attributes)) {
+            if (!in_array($attribute, self::$attributes)) {
                 // DoNothing (tm) -> eg $values['day']
             } else {
                 if ($attribute == 'time') {
@@ -221,8 +221,23 @@ class ovp_entry extends ovp_asset {
         return true;
     }
 
+    private function get_value($attribute) {
+        if ($attribute == 'time') {
+            $row = $this->db->query(
+               "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
+                WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+        } else {
+            $row = $this->db->query(
+               "SELECT `".$this->db->protect($attribute)."` FROM `entry`
+                WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+        }
+        return $row[$attribute];
+    }
+
     private function set_value($attribute, $value) {
-        print_r(array($attribute, $value));
+        if ($this->get_value($attribute) == $this->db->protect($value)) {
+            return true;
+        }
         if ($attribute == 'time') {
             $this->db->query(
                "UPDATE `entry`
