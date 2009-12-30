@@ -99,8 +99,9 @@ class db extends mysqli {
         $this->query("DROP TABLE IF EXISTS `entry`");
         $this->query("CREATE TABLE `entry` (
             `id`       INT UNSIGNED      NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            `date`     DATE              NULL     DEFAULT NULL,
             `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
-            `time`     TIMESTAMP         NULL     DEFAULT NULL,
+            `time`     TIME              NULL     DEFAULT NULL,
             `course`   VARCHAR(5)        NULL     DEFAULT NULL,
             `subject`  VARCHAR(5)        NULL     DEFAULT NULL,
             `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,

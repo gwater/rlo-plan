@@ -66,7 +66,7 @@ function save_entry(button) {
     var row = button.parentNode.parentNode;
     var teacher = row.parentNode.parentNode;
     var day = teacher.parentNode;
-    var msg = '&day=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
+    var msg = '&date=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
     var contentHasChanged = false;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
@@ -103,7 +103,7 @@ function save_new_entry(button) {
     var row = button.parentNode.parentNode;
     var teacher = row.parentNode.parentNode;
     var day = teacher.parentNode;
-    var msg = '&day=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
+    var msg = '&date=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         cell.textContent = cell.firstChild.value;

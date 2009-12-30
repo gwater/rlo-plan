@@ -131,7 +131,7 @@ class post_entry extends poster {
     public function evaluate($post) {
         switch ($post['action']) {
         case 'add':
-            if (!(isset($post['day'])     && isset($post['teacher'])  &&
+            if (!(isset($post['date'])  && isset($post['teacher'])  &&
                 isset($post['time'])    && isset($post['course'])   &&
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
@@ -143,8 +143,8 @@ class post_entry extends poster {
             }
             fail('could no add entry');
         case 'update':
-            if (!(isset($post['id'])      &&
-                isset($post['day'])     && isset($post['teacher'])  &&
+            if (!(isset($post['id'])    &&
+                isset($post['date'])    && isset($post['teacher'])  &&
                 isset($post['time'])    && isset($post['course'])   &&
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&

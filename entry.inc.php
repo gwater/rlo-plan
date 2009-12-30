@@ -5,7 +5,7 @@ require_once('misc.inc.php');
 require_once('logger.inc.php');
 
 class ovp_entry extends ovp_asset {
-    private static $attributes = array('teacher', 'time', 'course',
+    private static $attributes = array('date', 'teacher', 'time', 'course',
                                        'subject', 'duration', 'sub',
                                        'change', 'oldroom', 'newroom');
 
@@ -17,11 +17,11 @@ class ovp_entry extends ovp_asset {
         return $time - ($time % (60 * 60 * 24));
     }
 
-    private static function to_time($day, $time) {
-        if (!preg_match('/(\d\d?).(\d\d?).((\d\d)?\d\d) (\d\d?).(\d\d?)/', $day.' '.$time, $matches)) {
+    private static function parse_date($day) {
+        if (!preg_match('/(\d\d?).(\d\d?).((\d\d)?\d\d)/', $day, $matches)) {
             fail('invalid day or time format');
         }
-        $unix = mktime($matches[5], $matches[6], 0, $matches[2], $matches[1], $matches[3]);
+        $unix = mktime(0, 0, 0, $matches[2], $matches[1], $matches[3]);
         if ($unix == false || $unix == -1) {
             fail('invalid day or time value');
         }
@@ -33,32 +33,34 @@ class ovp_entry extends ovp_asset {
      * @return: id of the new entry
      */
     public function add(db $db, $values) {
-        $time = self::to_time($values['day'], $values['time']);
+        $date = self::parse_date($values['date']);
         $db->query(
            "INSERT INTO `entry` VALUES (
                 NULL,
-                '".$db->protect($values['teacher'])."',
-                FROM_UNIXTIME('".$db->protect($time)."'),
-                '".$db->protect($values['course'])."',
-                '".$db->protect($values['subject'])."',
+                FROM_UNIXTIME('".$db->protect($date)."'),
+                '".$db->protect($values['teacher']) ."',
+                '".$db->protect($values['time'])    ."',
+                '".$db->protect($values['course'])  ."',
+                '".$db->protect($values['subject']) ."',
                 '".$db->protect($values['duration'])."',
-                '".$db->protect($values['sub'])."',
-                '".$db->protect($values['change'])."',
-                '".$db->protect($values['oldroom'])."',
-                '".$db->protect($values['newroom'])."'
+                '".$db->protect($values['sub'])     ."',
+                '".$db->protect($values['change'])  ."',
+                '".$db->protect($values['oldroom']) ."',
+                '".$db->protect($values['newroom']) ."'
             )"
         );
         $row = $db->query(
             "SELECT `id` FROM `entry` WHERE
-                `teacher`  = '".$db->protect($values['teacher'])."'  AND
-                `time`     = FROM_UNIXTIME('".$db->protect($time)."') AND
-                `course`   = '".$db->protect($values['course'])."'   AND
-                `subject`  = '".$db->protect($values['subject'])."'  AND
+                `date`     = FROM_UNIXTIME('".$db->protect($date)."') AND
+                `teacher`  = '".$db->protect($values['teacher']) ."' AND
+                `time`     = '".$db->protect($values['time'])    ."' AND
+                `course`   = '".$db->protect($values['course'])  ."' AND
+                `subject`  = '".$db->protect($values['subject']) ."' AND
                 `duration` = '".$db->protect($values['duration'])."' AND
-                `sub`      = '".$db->protect($values['sub'])."'      AND
-                `change`   = '".$db->protect($values['change'])."'   AND
-                `oldroom`  = '".$db->protect($values['oldroom'])."'  AND
-                `newroom`  = '".$db->protect($values['newroom'])."'
+                `sub`      = '".$db->protect($values['sub'])     ."' AND
+                `change`   = '".$db->protect($values['change'])  ."' AND
+                `oldroom`  = '".$db->protect($values['oldroom']) ."' AND
+                `newroom`  = '".$db->protect($values['newroom']) ."'
             LIMIT 1")->fetch_assoc();
         return $row['id'];
     }
@@ -76,14 +78,12 @@ class ovp_entry extends ovp_asset {
     }
 
     // used by ovp_print
-    public static function get_entries_by_teacher(db $db, $time) {
-        $date = self::normalize_date($time);
+    public static function get_entries_by_teacher(db $db, $date) {
         $result = $db->query(
            "SELECT `teacher` FROM `entry`
-            WHERE UNIX_TIMESTAMP(`time`) >= '".$db->protect($date)."' AND
-                  UNIX_TIMESTAMP(`time`) <  '".$db->protect($date + 60*60*24)."'
+            WHERE `date` = '".$db->protect($date)."'
             GROUP BY `teacher`
-            ORDER BY SUBSTRING(`teacher`, 6)");
+            ORDER BY SUBSTRING(`teacher`, 6) ASC");
         $teachers = array();
         while ($row = $result->fetch_assoc()) {
             $teachers[] = $row['teacher'];
@@ -94,10 +94,9 @@ class ovp_entry extends ovp_asset {
                "SELECT
                     `id`
                 FROM `entry`
-                WHERE UNIX_TIMESTAMP(`time`) >= '".$db->protect($date)."' AND
-                      UNIX_TIMESTAMP(`time`) <  '".$db->protect($date + 60*60*24)."'
+                WHERE `date` = '".$db->protect($date)."'
                 AND `teacher` = '".$db->protect($teacher)."'
-                ORDER BY `time`");
+                ORDER BY `time` ASC");
                 $entries = array();
                 while ($row = $result->fetch_assoc()) {
                     $entries[] = new ovp_entry($db, $row['id']);
@@ -109,19 +108,12 @@ class ovp_entry extends ovp_asset {
 
     // used by ovp_author
     public static function get_entries_by_teacher_and_date(db $db) {
-        $row = $db->query(
-           "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
-            ORDER BY `time` ASC LIMIT 1")->fetch_assoc();
-        $start = $row['time'];
-        $row = $db->query(
-            "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
-             ORDER BY `time` DESC LIMIT 1")->fetch_assoc();
-        $stop = $row['time'] + 1;
-        if (!isset($start) || !isset($stop)) {
+        $dates = self::get_dates($db);
+        if (!$dates) {
             return false;
         }
         $entries_by_date = array();
-        for ($date = $start; $date < $stop; $date += 60*60*24) {
+        foreach ($dates as $date) {
             if ($entries_by_teacher = self::get_entries_by_teacher($db, $date)) {
                 $entries_by_date[] = $entries_by_teacher;
             }
@@ -131,30 +123,18 @@ class ovp_entry extends ovp_asset {
 
     // used by ovp_public
     public static function get_entries_by_date(db $db) {
-        $row = $db->query(
-           "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
-            ORDER BY `time` ASC LIMIT 1")->fetch_assoc();
-        if (!$row) {
+        $dates = self::get_dates($db);
+        if (!$dates) {
             return false;
         }
-        $start = self::normalize_date($row['time']);
-        $row = $db->query(
-            "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
-             ORDER BY `time` DESC LIMIT 1")->fetch_assoc();
-        $stop = $row['time'] + 1;
         $entries_by_date = array();
-        for ($date = $start; $date < $stop; $date += 60*60*24) {
+        foreach ($dates as $date) {
             $result = $db->query(
-               "SELECT
-                    `id`
-                FROM `entry` WHERE
-                    UNIX_TIMESTAMP(`time`) >= '".$db->protect($date)."' AND
-                    UNIX_TIMESTAMP(`time`) <  '".$db->protect($date + 60*60*24)."'
-                ORDER BY
-                    `time`");
+               "SELECT `id` FROM `entry`
+                WHERE `date` = '".$db->protect($date)."'
+                ORDER BY `time` ASC");
             $entries = array();
-            for ($i = 0; $i < $result->num_rows; $i++) {
-                $row = $result->fetch_assoc();
+            while ($row = $result->fetch_assoc()) {
                 $entries[] = new ovp_entry($db, $row['id']);
             }
             if (count($entries) > 0) {
@@ -162,6 +142,17 @@ class ovp_entry extends ovp_asset {
             }
         }
         return $entries_by_date;
+    }
+
+    public static function get_dates(db $db) {
+        $result = $db->query(
+           "SELECT `date` FROM `entry`
+            ORDER BY `date` ASC LIMIT 1");
+        $dates = array();
+        while ($row = $result->fetch_assoc()) {
+            $dates[] = $row['date'];
+        }
+        return $dates;
     }
 
     /**
@@ -172,7 +163,7 @@ class ovp_entry extends ovp_asset {
         if (DELETE_OLDER_THAN >= 0) {
             $db->query(
                "DELETE FROM `entry` WHERE
-                    DATEDIFF(CURDATE(), `time`) > '".$db->protect(DELETE_OLDER_THAN)."'"
+                    DATEDIFF(CURDATE(), `date`) > '".$db->protect(DELETE_OLDER_THAN)."'"
             );
             return $db->affected_rows;
         } else {
@@ -194,8 +185,9 @@ class ovp_entry extends ovp_asset {
 
     public function get_values() {
         $row = $this->db->query(
-           "SELECT  `teacher`,
-                    UNIX_TIMESTAMP(`time`) AS 'time',
+           "SELECT  `date`
+                    `teacher`,
+                    `time`,
                     `course`,
                     `subject`,
                     `duration`,
@@ -209,14 +201,10 @@ class ovp_entry extends ovp_asset {
     }
 
     public function set_values($values) {
-        $time = self::to_time($values['day'], $values['time']);
         foreach ($values as $attribute => $value) {
             if (!in_array($attribute, self::$attributes)) {
-                // DoNothing (tm) -> eg $values['day']
+                // DoNothing (tm)
             } else {
-                if ($attribute == 'time') {
-                    $value = self::to_time($values['day'], $values['time']);
-                }
                 if (!$this->set_value($attribute, $value)) {
                     return false;
                 }
@@ -226,15 +214,9 @@ class ovp_entry extends ovp_asset {
     }
 
     private function get_value($attribute) {
-        if ($attribute == 'time') {
-            $row = $this->db->query(
-               "SELECT UNIX_TIMESTAMP(`time`) AS 'time' FROM `entry`
-                WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
-        } else {
-            $row = $this->db->query(
-               "SELECT `".$this->db->protect($attribute)."` FROM `entry`
-                WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
-        }
+        $row = $this->db->query(
+           "SELECT `".$this->db->protect($attribute)."` FROM `entry`
+            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
         return $row[$attribute];
     }
 
@@ -242,32 +224,25 @@ class ovp_entry extends ovp_asset {
         if ($this->get_value($attribute) == $this->db->protect($value)) {
             return true;
         }
-        if ($attribute == 'time') {
-            $this->db->query(
-               "UPDATE `entry`
-                SET `time` = FROM_UNIXTIME('".$this->db->protect($value)."')
-                WHERE `id` = '".$this->id."' LIMIT 1");
-        } else {
-            $this->db->query(
-               "UPDATE `entry`
-                SET `".$this->db->protect($attribute)."` = '".$this->db->protect($value)."'
-                WHERE `id` = '".$this->id."' LIMIT 1");
-        }
+        $this->db->query(
+           "UPDATE `entry`
+            SET `".$this->db->protect($attribute)."` = '".$this->db->protect($value)."'
+            WHERE `id` = '".$this->id."' LIMIT 1");
         return $this->db->affected_rows == 1;
     }
 
     public function get_date() {
-        $values = $this->get_values();
-        return strftime("%A, %d.%m.%Y", $values['time']);
+        $row = $this->db->query(
+           "SELECT UNIX_TIMESTAMP(`date`) AS 'date' FROM `entry`
+            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+        return strftime("%A, %d.%m.%Y", $row['date']);
     }
 
     public function get_time() {
-        $values = $this->get_values();
-        $str = strftime('%H:%M', $values['time']);
-        if ($str[0] == '0') {
-            return substr($str, 1);
-        }
-        return $str;
+        $row = $this->db->query(
+           "SELECT TIME_FORMAT(`time`, '%k:%i') AS 'time' FROM `entry`
+            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+        return $row['time'];
     }
 
 }

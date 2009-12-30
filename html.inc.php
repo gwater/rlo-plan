@@ -108,7 +108,7 @@ class ovp_print extends ovp_source {
     public static $type = 'print';
     public static $title ='Aushang';
     public static $priv_req = ovp_logger::VIEW_PRINT;
-    private $time;
+    private $date;
     private $today;
     private $yesterday;
     private $tomorrow;
@@ -128,11 +128,11 @@ class ovp_print extends ovp_source {
         $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
-        $this->time = $time;
+        $this->date = $date;
     }
 
     protected function generate_view() {
-        $entries_by_teacher = ovp_entry::get_entries_by_teacher($this->db, $this->time);
+        $entries_by_teacher = ovp_entry::get_entries_by_teacher($this->db, $this->date);
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -384,7 +384,7 @@ class ovp_password extends ovp_source {
     private $user;
 
 
-    public function __construct($db) {
+    public function __construct(db $db) {
         $this->user = ovp_logger::get_current_user($db);
     }
 
@@ -432,6 +432,12 @@ class ovp_navi extends ovp_source {
     public static $type = 'navi';
     public static $title ='Navigationsleiste';
     public static $priv_req = ovp_logger::VIEW_NONE;
+    private $current;
+
+    public function __construct($db, $current) {
+        parent::__construct($db);
+        $this->current = $current;
+    }
 
     public function generate_view() {
         $sources = array();
@@ -454,7 +460,7 @@ class ovp_navi extends ovp_source {
                 } else {
                     $html .= ' |';
                 }
-                if ($source['type'] != $this->type) {
+                if ($source['type'] != $this->current) {
                     $html .= '
                 <a href="index.php?source='.$source['type'].'">'.$source['title'].'</a>';
                 } else {
@@ -489,10 +495,9 @@ class ovp_page {
     public function __construct(db $db, ovp_source $source) {
         $this->db = $db;
         $this->source = $source;
-        $this->navi = new ovp_navi($db);
         $source_vars = get_class_vars(get_class($source));
         $this->title = $source_vars['title'];
-        $this->type = $source_vars['type'];
+        $this->navi = new ovp_navi($db, $source_vars['type']);
     }
 
     public function get_html() {
