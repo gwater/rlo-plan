@@ -1,3 +1,6 @@
+function remove(element) {
+    element.parentNode.removeChild(element);
+}
 
 function newElement(type) {
     return document.createElement(type);
@@ -34,7 +37,7 @@ function send_msg(msg) {
     if (window.XMLHttpRequest) {
         request = new XMLHttpRequest();
     } else if (window.ActiveXObject) {
-        request = new ActiveXObject("Microsoft.XMLHTTP");
+        request = new ActiveXObject('Microsoft.XMLHTTP');
     }
     if (request) {
         // url is defined in entry.js and admin.js
@@ -45,18 +48,18 @@ function send_msg(msg) {
     return request;
 }
 
-function fadeOut(e) {
+function fade_out(e) {
     if (!e.style.opacity) {
         e.style.opacity = 1.0;
     }
     setTimeout(function() {
         if (e.style.opacity > 0) {
             e.style.opacity -= 0.1;
-            fadeOut(e);
+            fade_out(e);
         } else {
             e.parentNode.removeChild(e);
         }
-    }, 100, "JavaScript");
+    }, 100, 'JavaScript');
 }
 
 function make_textbox(cell, i) {

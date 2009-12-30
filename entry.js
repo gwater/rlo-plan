@@ -19,7 +19,6 @@ function modify_entry(button) {
     hide_buttons(button);
     show_buttons(button.nextSibling.nextSibling);
     var row = button.parentNode.parentNode;
-    var firstRow = row.parentNode.firstChild;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         make_textbox(cell, i);
@@ -52,8 +51,8 @@ function delete_entry(button) {
             show_buttons(button.previousSibling);
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
-                fadeOut(status);
-            }, 3000, "JavaScript");
+                fade_out(status);
+            }, 3000, 'JavaScript');
         }
     }
 }
@@ -87,8 +86,8 @@ function save_entry(button) {
             } else {
                 status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
                 setTimeout(function() {
-                    fadeOut(status);
-                }, 3000, "JavaScript");
+                    fade_out(status);
+                }, 3000, 'JavaScript');
             }
         }
     }
@@ -118,8 +117,8 @@ function save_new_entry(button) {
         } else {
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
-                fadeOut(status);
-            }, 3000, "JavaScript");
+                fade_out(status);
+            }, 3000, 'JavaScript');
             row.lastChild.firstChild.onclick();
             return;
         }
@@ -309,11 +308,11 @@ function save_teacher(teacher) {
                 if (request.status == 200) {
                     status.textContent = 'OK';
                     status.style.background = 'lightgreen';
-                    fadeOut(status);
+                    fade_out(status);
                 } else {
                     status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
                     status.style.background = 'lightred';
-                    fadeOut(status);
+                    fade_out(status);
                 }
             }
         }

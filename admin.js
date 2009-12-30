@@ -91,8 +91,8 @@ function delete_user(button) {
             show_buttons(button.previousSibling);
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
-                fadeOut(status);
-            }, 3000);
+                fade_out(status);
+            }, 3000, 'JavaScript');
         }
     }
 }
@@ -118,7 +118,6 @@ function save_user(button) {
         }
     }
     if (contentHasChanged) {
-        var row = button.parentNode.parentNode;
         msg = 'action=update&id=' + row.id.substr(4) + msg;
         var status = newElement('span');
         status.textContent = 'Speichern...';
@@ -130,8 +129,8 @@ function save_user(button) {
             } else {
                 status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
                 setTimeout(function() {
-                    fadeOut(status);
-                }, 3000);
+                    fade_out(status);
+                }, 3000, 'JavaScript');
             }
         }
     }
@@ -206,8 +205,8 @@ function save_new_user(button) {
         } else {
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {
-                fadeOut(status);
-            }, 3000, "JavaScript");
+                fade_out(status);
+            }, 3000, 'JavaScript');
             row.lastChild.firstChild.onclick();
             return;
         }
