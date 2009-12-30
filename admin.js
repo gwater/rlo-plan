@@ -4,13 +4,6 @@ var column_maxLengths = [ 20,      20,         5];
 
 var url = 'post.php?poster=user';
 
-function make_backup(cell, value) {
-    var backup = newElement('span');
-    backup.style.display = 'none';
-    backup.textContent = value;
-    cell.appendChild(backup);
-}
-
 function make_selector(cell) {
     var selector = newElement('select');
     for (var i in roles){

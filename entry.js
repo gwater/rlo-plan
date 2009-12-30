@@ -8,13 +8,6 @@ var relative_day_names = ['heute', 'morgen', 'übermorgen']; // array index corr
 
 var url = 'post.php?poster=entry';
 
-function make_backup(cell) {
-    var backup = newElement('span');
-    backup.style.display = 'none';
-    backup.textContent = cell.lastChild.value;
-    cell.appendChild(backup);
-}
-
 function modify_entry(button) {
     hide_buttons(button);
     show_buttons(button.nextSibling.nextSibling);
@@ -22,7 +15,7 @@ function modify_entry(button) {
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
         make_textbox(cell, i);
-        make_backup(cell);
+        make_backup(cell, cell.lastChild.value);
     }
 }
 

@@ -72,6 +72,13 @@ function make_textbox(cell, i) {
     cell.appendChild(textbox);
 }
 
+function make_backup(cell, value) {
+    var backup = newElement('span');
+    backup.style.display = 'none';
+    backup.textContent = value;
+    cell.appendChild(backup);
+}
+
 function cancel_editing(button) {
     var saveButton = button.previousSibling;
     hide_buttons(saveButton);
