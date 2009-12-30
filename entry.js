@@ -26,6 +26,20 @@ function modify_entry(button) {
     }
 }
 
+function remove_row(row) {
+    if (row.parentNode.childNodes.length == 2) {
+        var teacher = row.parentNode.parentNode;
+        var day = teacher.parentNode;
+        if (day.childNodes.length == 4) {
+            remove(day);
+        } else {
+            remove(teacher);
+        }
+    } else {
+        remove(row);
+    }
+}
+
 function delete_entry(button) {
     hide_buttons(button.previousSibling);
     var row = button.parentNode.parentNode;
@@ -36,17 +50,7 @@ function delete_entry(button) {
     var request = send_msg(msg);
     if (request) {
         if (request.status == 200) {
-            if (row.parentNode.childNodes.length == 2) {
-                var teacher = row.parentNode.parentNode;
-                var day = teacher.parentNode;
-                if (day.childNodes.length == 4) {
-                    remove(day);
-                } else {
-                    remove(teacher);
-                }
-            } else {
-                remove(row);
-            }
+            remove_row(row);
         } else {
             show_buttons(button.previousSibling);
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
@@ -135,17 +139,7 @@ function save_new_entry(button) {
 
 function delete_new_entry(button) {
     var row = button.parentNode.parentNode;
-    if (row.parentNode.childNodes.length == 2) {
-        var teacher = row.parentNode.parentNode;
-        var day = teacher.parentNode;
-        if (day.childNodes.length == 4) {
-            remove(day);
-        } else {
-            remove(teacher);
-        }
-    } else {
-        remove(row);
-    }
+    remove_row(row);
 }
 
 function add_new_entry(button) {
@@ -154,11 +148,7 @@ function add_new_entry(button) {
     // data cells:
     for (var i = 0; i < column_widths.length; i++) {
         var cell = newCell('');
-        var textbox = newElement('input');
-        textbox.type = 'text';
-        textbox.maxLength = column_maxLengths[i];
-        textbox.style.width = column_widths[i];
-        cell.appendChild(textbox);
+        make_textbox(cell, i);
         row.appendChild(cell);
     }
 

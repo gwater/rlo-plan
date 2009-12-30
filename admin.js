@@ -11,39 +11,6 @@ function make_backup(cell, value) {
     cell.appendChild(backup);
 }
 
-function newUser(id, name, password, role) {
-    var row = newElement('tr');
-    row.id = 'user' + id;
-
-    // data cells:
-    row.appendChild(newCell(name));
-    row.appendChild(newCell(password));
-    row.appendChild(newCell(role));
-
-    // button cell:
-    var button_cell = newElement('td');
-    var mod_button = newButton('Bearbeiten', modify_user);
-    button_cell.appendChild(mod_button);
-    var del_button = newButton('Löschen', delete_user);
-    button_cell.appendChild(del_button);
-    var save_button = newButton('Speichern', save_user);
-    save_button.style.display = 'none';
-    button_cell.appendChild(save_button);
-    var cancel_button = newButton('Abbrechen', cancel_editing);
-    cancel_button.style.display = 'none';
-    button_cell.appendChild(cancel_button);
-    row.appendChild(button_cell);
-
-    return row;
-}
-
-function insertUsers(users) {
-    for (i in users) {
-        var table = document.getElementById('ovp_table_users');
-        table.appendChild(users[i]);
-    }
-}
-
 function make_selector(cell) {
     var selector = newElement('select');
     for (var i in roles){
@@ -79,14 +46,14 @@ function modify_user(button) {
 function delete_user(button) {
     hide_buttons(button.previousSibling);
     var row = button.parentNode.parentNode;
-    var msg = '&action=delete&id=' + row.id.substr(4); // remove 'user' from 'user123'
+    var msg = 'action=delete&id=' + row.id.substr(4); // remove 'user' from 'user123'
     var status = newElement('span');
     status.textContent = 'Löschen...';
     row.lastChild.appendChild(status);
     var request = send_msg(msg);
     if (request) {
         if (request.status == 200) {
-                remove(row);
+            remove(row);
         } else {
             show_buttons(button.previousSibling);
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
@@ -137,38 +104,6 @@ function save_user(button) {
     show_buttons(button.previousSibling.previousSibling);
 }
 
-function add_new_user(button) {
-    var row = newElement('tr');
-
-    // data cells:
-    for (var i = 0; i < column_widths.length; i++) {
-        var cell = newCell('');
-        if (column_names[i] == 'role') {
-            make_selector(cell);
-        } else {
-            make_textbox(cell, i);
-        }
-        row.appendChild(cell);
-    }
-
-    // button cell:
-    var button_cell = newElement('td');
-    var mod_button = newButton('Bearbeiten', modify_user);
-    mod_button.style.display = 'none';
-    button_cell.appendChild(mod_button);
-    var del_button = newButton('Löschen', delete_user);
-    del_button.style.display = 'none';
-    button_cell.appendChild(del_button);
-    var save_button = newButton('Speichern', save_new_user);
-    button_cell.appendChild(save_button);
-    var cancel_button = newButton('Löschen', delete_new_user);
-    button_cell.appendChild(cancel_button);
-    row.appendChild(button_cell);
-
-    document.getElementById('ovp_table_users').appendChild(row);
-    row.firstChild.firstChild.focus();
-}
-
 function save_new_user(button) {
     hide_buttons(button);
     var row = button.parentNode.parentNode;
@@ -214,6 +149,71 @@ function save_new_user(button) {
 function delete_new_user(button) {
     var row = button.parentNode.parentNode;
     remove(row);
+}
+
+function add_new_user(button) {
+    var row = newElement('tr');
+
+    // data cells:
+    for (var i = 0; i < column_widths.length; i++) {
+        var cell = newCell('');
+        if (column_names[i] == 'role') {
+            make_selector(cell);
+        } else {
+            make_textbox(cell, i);
+        }
+        row.appendChild(cell);
+    }
+
+    // button cell:
+    var button_cell = newElement('td');
+    var mod_button = newButton('Bearbeiten', modify_user);
+    mod_button.style.display = 'none';
+    button_cell.appendChild(mod_button);
+    var del_button = newButton('Löschen', delete_user);
+    del_button.style.display = 'none';
+    button_cell.appendChild(del_button);
+    var save_button = newButton('Speichern', save_new_user);
+    button_cell.appendChild(save_button);
+    var cancel_button = newButton('Löschen', delete_new_user);
+    button_cell.appendChild(cancel_button);
+    row.appendChild(button_cell);
+
+    document.getElementById('ovp_table_users').appendChild(row);
+    row.firstChild.firstChild.focus();
+}
+
+function newUser(id, name, password, role) {
+    var row = newElement('tr');
+    row.id = 'user' + id;
+
+    // data cells:
+    row.appendChild(newCell(name));
+    row.appendChild(newCell(password));
+    row.appendChild(newCell(role));
+
+    // button cell:
+    var button_cell = newElement('td');
+    var mod_button = newButton('Bearbeiten', modify_user);
+    button_cell.appendChild(mod_button);
+    var del_button = newButton('Löschen', delete_user);
+    button_cell.appendChild(del_button);
+    var save_button = newButton('Speichern', save_user);
+    save_button.style.display = 'none';
+    button_cell.appendChild(save_button);
+    var cancel_button = newButton('Abbrechen', cancel_editing);
+    cancel_button.style.display = 'none';
+    button_cell.appendChild(cancel_button);
+    row.appendChild(button_cell);
+
+    return row;
+}
+
+function insertUsers(users) {
+    var table = document.getElementById('ovp_table_users');
+    for (i in users) {
+        table.appendChild(users[i]);
+    }
 }
 
 function init_admin() {
