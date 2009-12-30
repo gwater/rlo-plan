@@ -122,7 +122,9 @@ class ovp_entry extends ovp_asset {
         }
         $entries_by_date = array();
         for ($date = $start; $date < $stop; $date += 60*60*24) {
-            $entries_by_date[] = self::get_entries_by_teacher($db, $date);
+            if ($entries_by_teacher = self::get_entries_by_teacher($db, $date)) {
+                $entries_by_date[] = $entries_by_teacher;
+            }
         }
         return $entries_by_date;
     }
@@ -155,7 +157,9 @@ class ovp_entry extends ovp_asset {
                 $row = $result->fetch_assoc();
                 $entries[] = new ovp_entry($db, $row['id']);
             }
-            $entries_by_date[] = $entries;
+            if (count($entries) > 0) {
+                $entries_by_date[] = $entries;
+            }
         }
         return $entries_by_date;
     }
