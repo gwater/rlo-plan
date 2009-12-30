@@ -116,7 +116,8 @@ class ovp_print extends ovp_source {
     public function __construct($db, $date = -1) {
         parent::__construct($db);
         if ($date == -1) {
-            $date = strftime("%Y-%m-%d", (time() + 3600)); // adjust GMT to CET
+            $time = time() + 3600; // adjust GMT to CET
+            $date = strftime("%Y-%m-%d", ($time));
         } else {
             if (!preg_match('/(\d{4})-(\d\d)-(\d\d)/', $date, $matches)) {
                 exit('lol wut?');
