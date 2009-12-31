@@ -110,7 +110,7 @@ class ovp_user extends ovp_asset {
     public static function remove(db $db, $id) {
         $user = ovp_logger::get_current_user($db);
         if ($user->get_id() == $id) {
-            fail('you cannot delete your own account');
+            fail('Eigener Account darf nicht gelöscht werden');
         }
         $db->query(
            "DELETE FROM `user`
@@ -125,7 +125,7 @@ class ovp_user extends ovp_asset {
             WHERE `id` = '".$db->protect($id)."'
             LIMIT 1");
         if ($result->num_rows != 1) {
-            fail('invalid user id');
+            fail('ID ungültig');
         }
         parent::__construct($db, $id);
     }

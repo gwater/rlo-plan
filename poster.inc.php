@@ -47,15 +47,13 @@ class post_user extends poster {
                 if ($id){
                     exit($id);
                 } else {
-                    fail('could not add user');
+                    fail('Hinzufügen gescheitert');
                 }
             }
-            fail('parameter missing');
+            fail('Daten unvollständig');
         case 'update':
             if (!isset($post['id'])) {
-                fail('parameter missing');
-            } else if (!is_numeric($post['id'])) {
-                fail('invalid id');
+                fail('ID fehlt');
             }
             $user = new ovp_user($this->db, $post['id']);
             $result = true;
@@ -74,24 +72,22 @@ class post_user extends poster {
                     $result = $user->set_role($value);
                     break;
                 default:
-                    fail('too much data');
+                    // DoNothing (tm)
                 }
                 if (!($result)) {
-                    fail('invalid data');
+                    fail('Änderung gescheitert');
                 }
             }
             exit('updated');
         case 'delete':
             if (!isset($post['id'])) {
-                fail('parameter missing');
-            } else if (!is_numeric($post['id'])) {
-                fail('invalid id');
+                fail('ID fehlt');
             } else if (ovp_user::remove($this->db, $post['id'])) {
                 exit('deleted');
             }
-            fail('id not found');
+            fail('ID ungültig');
         default:
-            fail('invalid action');
+            fail('Ungültige Anfrage');
         }
     }
 }
@@ -106,13 +102,13 @@ class post_password extends poster {
                 if ($user->set_password($post['newpwd'])) {
                     exit('updated');
                 } else {
-                    fail('...la familia, Luigi...');
+                    fail('Passwort ändern gescheitert');
                 }
             } else {
-                fail('old password incorrect');
+                fail('Altes Password inkorrekt');
             }
         } else {
-            fail('parameters missing');
+            fail('Daten unvollständig');
         }
     }
 }
@@ -155,12 +151,12 @@ class post_entry extends poster {
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
                 isset($post['oldroom']) && isset($post['newroom']))) {
-                fail('parameter missing');
+                fail('Daten unvollständig');
             }
             if (ovp_entry::add($this->db, $post)) {
                 exit('success');
             }
-            fail('could no add entry');
+            fail('Hinzufügen gescheitert');
         case 'update':
             if (!(isset($post['id'])    &&
                 isset($post['date'])    && isset($post['teacher'])  &&
@@ -168,25 +164,25 @@ class post_entry extends poster {
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
                 isset($post['oldroom']) && isset($post['newroom']))) {
-                fail('parameter missing');
+                fail('Daten unvollständig');
             }
             $entry = new ovp_entry($this->db, $post['id']);
             if ($entry->set_values($post)) {
                 exit('updated');
             } else {
-                fail('invalid data');
+                fail('Änderung gescheitert');
             }
         case 'delete':
-            if (!(isset($post['id']) && is_numeric($post['id']))) {
-                fail('invalid id');
+            if (!isset($post['id'])) {
+                fail('ID fehlt');
             }
             if (!ovp_entry::remove($this->db, $post['id'])) {
-                fail('id not found');
+                fail('ID ungültig');
             } else {
                 exit('deleted');
             }
         default:
-            fail('invalid action');
+            fail('Ungültige Anfrage');
         }
     }
 

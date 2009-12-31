@@ -47,7 +47,7 @@ case 'logout':
     $poster = new post_logout($db);
     break;
 default:
-    fail('I mean, what could possibly go wrong?');
+    fail('Ungültige Anfrage');
 }
 
 $poster_vars = get_class_vars(get_class($poster));

@@ -38,11 +38,11 @@ class ovp_entry extends ovp_asset {
 
     private static function parse_date($day) {
         if (!preg_match('/(\d\d?).(\d\d?).((\d\d)?\d\d)/', $day, $matches)) {
-            fail('invalid day or time format');
+            fail('Datum ungültig');
         }
         $unix = mktime(0, 0, 0, $matches[2], $matches[1], $matches[3]);
         if ($unix == false || $unix == -1) {
-            fail('invalid day or time value');
+            fail('Datum ungültig');
         }
         return $unix;
     }
@@ -197,7 +197,7 @@ class ovp_entry extends ovp_asset {
             WHERE `id` = '".$db->protect($id)."'
             LIMIT 1");
         if ($result->num_rows != 1) {
-            fail('invalid entry id');
+            fail('ID ungültig');
         }
         parent::__construct($db, $id);
     }
