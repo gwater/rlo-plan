@@ -180,9 +180,19 @@ class ovp_entry extends ovp_asset {
      */
     public static function cleanup($db) {
         if (DELETE_OLDER_THAN >= 0) {
+            $adjust = 0;
+            if (SKIP_WEEKENDS) {
+                $row = $db->query(
+                   "SELECT DAYOFWEEK(CURDATE()) AS 'weekday'")->fetch_assoc();
+                if ($row['weekday'] == 7) {
+                    $adjust = 1; // Saturday
+                } else if ($row['weekday'] == 1) {
+                    $adjust = 2; // Sunday
+                }
+            }
             $db->query(
                "DELETE FROM `entry` WHERE
-                    DATEDIFF(CURDATE(), `date`) > '".$db->protect(DELETE_OLDER_THAN)."'"
+                    DATEDIFF(CURDATE(), `date`) > '".$db->protect(DELETE_OLDER_THAN + $adjust)."'"
             );
             return $db->affected_rows;
         } else {
