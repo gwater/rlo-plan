@@ -89,11 +89,11 @@ case 'settings':
                   </select></td>
                 </tr>
                 <tr>
-                  <td>Nach wie vielen Tagen sollen alte Einträge automatisch gelöscht werden? (-1 = nie)</td>
+                  <td>Nach wie vielen Tagen sollen alte EintrÃ¤ge automatisch gelÃ¶scht werden? (-1 = nie)</td>
                   <td><input type="text" name="delold" value="'.get('DELETE_OLDER_THAN').'"></td>
                 </tr>
                 <tr>
-                  <td>Sollen Wochenenden dabei <i>nicht</i> mitzählen?</td>
+                  <td>Sollen Wochenenden dabei <i>nicht</i> mitzÃ¤hlen?</td>
                   <td><select name="skipweekends">
                     <option value="true"'.($skip_weekends == 'true' ? ' selected="selected"' : '').'>Ja</option>
                     <option value="false"'.($skip_weekends == 'false' ? ' selected="selected"' : '').'>Nein</option>
@@ -164,7 +164,7 @@ case 'done':
     $replacement = '$logger = new ovp_logger(new db()); $logger->authorize(ovp_logger::VIEW_ADMIN);';
     $wizard = preg_replace('|/\* authorization placeholder \*/|', $replacement, $wizard, 1);
     file_put_contents('wizard.php', $wizard);
-    $html .= '<p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p>';
+    $html .= '<p>Sie kÃ¶nnen jetzt die <a href="index.php">Startseite</a> Ã¶ffnen.</p>';
     break;
 default:
     if (file_exists($temp)) {
