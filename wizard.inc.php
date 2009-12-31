@@ -170,7 +170,7 @@ default:
     if (file_exists($temp)) {
         unlink($temp); // the wizard was restarted, discard unsaved changes
     }
-    // TODO: pack sources
+    ovp_zipper::pack_dir();
     copy($config, $temp);
     goto_page('mysql');
     break;

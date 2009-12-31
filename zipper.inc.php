@@ -23,7 +23,7 @@ class ovp_zipper {
     public static function pack_dir() {
         $dir = getcwd();
         $files = self::list_files($dir);
-        
+
         $zip = new ZipArchive;
         $res = $zip->open('source.zip', ZipArchive::CREATE);
         if (!$res) {
@@ -34,7 +34,7 @@ class ovp_zipper {
         }
         $zip->close();
     }
-    
+
     private static function list_files($dir) {
         $handle = opendir($dir);
 
