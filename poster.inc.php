@@ -133,7 +133,7 @@ class post_login extends poster {
                 ovp_logger::redirect($_GET['continue']);
             }
         }
-        $link = ovp_logger::get_source_link('login&attempt=failed&continue='.urlencode($_GET['continue']))
+        $link = ovp_logger::get_source_link('login&attempt=failed&continue='.urlencode($_GET['continue']));
         ovp_logger::redirect($link);
     }
 }
