@@ -545,16 +545,25 @@ class ovp_navi_wizard extends ovp_source {
     public static $type = 'navi_wizard';
     public static $title = 'Installationsnavigator';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
+    private $current;
+
+    public function __construct($current) {
+        $this->current = $current;
+    }
 
     public function generate_view() {
+        $sources = array();
+        $sources[] = get_class_vars('ovp_mysql');
+        $sources[] = get_class_vars('ovp_settings');
+        $sources[] = get_class_vars('ovp_account');
+        $sources[] = get_class_vars('ovp_final');
+
         $html = '<div id="ovp_navi"><ol>';
-        // FIXME
-        $pages = array('mysql' => 'MySQL Credentials', 'settings' => 'Misc. Settings', 'admin' => 'Admin Account', 'done' => 'Save and Clean Up');
-        foreach ($pages as $page => $title) {
-            if ($_GET['page'] == $page) {
-                $html .= '<li><b>'.$title.'</b></li><br>';
+        foreach ($sources as $source) {
+            if ($this->current == $source['type']) {
+                $html .= '<li>'.$title.'</li><br>';
             } else {
-                $html .= '<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?page='.$page.'">'.$title.'</a></li><br>';
+                $html .= '<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?source='.$source['type'].'">'.$source['title'].'</a></li><br>';
             }
         }
         return $html.'</ol></div>';

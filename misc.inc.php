@@ -25,7 +25,6 @@ function fail($msg) {
 }
 
 function goto_page($page) {
-    //WTF?
     ovp_logger::redirect(basename($_SERVER['SCRIPT_NAME']).($page != '' ? '?page='.$page : ''));
 }
 

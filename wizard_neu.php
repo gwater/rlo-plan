@@ -34,7 +34,7 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
  */
 define('WIZARD', true);
 
-switch $_GET['source'] {
+switch ($_GET['source']) {
     case 'mysql':
         $source = new ovp_mysql();
         break;
@@ -53,7 +53,8 @@ switch $_GET['source'] {
         goto_page('mysql'); //FIXME
 }
 
-$navi = new ovp_navi_wizard();
+$source_vars = get_class_vars(get_class($source));
+$navi = new ovp_navi_wizard($source_vars['type']);
 $page = new ovp_page($source, $navi);
 exit($page->get_html());
 
