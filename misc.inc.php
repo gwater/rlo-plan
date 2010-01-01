@@ -32,7 +32,7 @@ class ovp_config {
     private $file;
 
     public function __construct($file = 'config.inc.php') {
-        if ($file_exists($file)) {
+        if (file_exists($file)) {
             $this->file = $file;
         } else {
             fail('Konfigurationsdatei nicht gefunden');

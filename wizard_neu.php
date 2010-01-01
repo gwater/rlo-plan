@@ -30,20 +30,20 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
  * move it to another file and include that file instead.
  */
 
-/* use this constant anywhere you need to decide between wizard usage and
+/* use this variable anywhere you need to decide between wizard usage and
  * general usage (eg redirections to the next wizard page in poster.inc.php)
  */
-define('WIZARD', true);
+$is_wiz = true
 
 switch ($_GET['poster']) {
 case 'mysql':
-    $poster = new post_mysql();
+    $poster = new post_mysql($is_wiz);
     break;
 case 'settings':
-    $poster = new post_settings();
+    $poster = new post_settings($is_wiz);
     break;
 case 'account':
-    $poster = new post_account(new db());
+    $poster = new post_account(new db(), $is_wiz);
     break;
 default:
     // DoNothing (tm)

@@ -209,6 +209,11 @@ class post_entry extends poster {
 
 class post_mysql extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
+    private $is_wiz;
+
+    public function __construct($is_wiz = false) {
+        $this->is_wiz = $is_wiz;
+    }
 
     public function evaluate($post) {
         if (!(isset($post['host']) && isset($post['base']) && isset($post['user']) && isset($post['pass']))) {
@@ -228,7 +233,7 @@ class post_mysql extends poster {
             define('DB_USER', $post['user']);
             define('DB_PASS', $post['pass']);
             new db()->reset_tables();
-            if (WIZARD) {
+            if ($this->is_wiz) {
                 $link = get_link('settings');
             } else {
                 $link = get_link('mysql');
@@ -240,6 +245,11 @@ class post_mysql extends poster {
 
 class post_settings extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
+    private $is_wiz;
+
+    public function __construct($is_wiz = false) {
+        $this->is_wiz = $is_wiz;
+    }
 
     public function evaluate($post) {
         if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
@@ -249,7 +259,7 @@ class post_settings extends poster {
         $config->set('DELETE_OLDER_THAN', $post['delold']);
         $config->set('SKIP_WEEKENDS',     $post['skipweekends']);
         $config->set('PRIV_DEFAULT',      $post['privdefault']);
-        if (WIZARD) {
+        if ($this->is_wiz) {
             $link = get_link('account');
         } else {
             $link = get_link('settings');
@@ -261,9 +271,11 @@ class post_settings extends poster {
 class post_account extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
     private $db;
+    private $is_wiz;
 
-    public function __construct(db $db) {
+    public function __construct(db $db, $is_wiz = false) {
         $this->db = $db;
+        $this->is_wiz = $is_wiz;
     }
 
     public function evaluate($post) {
@@ -276,7 +288,7 @@ class post_account extends poster {
         } else {
             ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
         }
-        if (WIZARD) {
+        if ($this->is_wiz) {
             $link = get_link('final');
         } else {
             $link = get_link('account');

@@ -561,7 +561,7 @@ class ovp_navi_wizard extends ovp_source {
         $html = '<div id="ovp_navi"><ol>';
         foreach ($sources as $source) {
             if ($this->current == $source['type']) {
-                $html .= '<li>'.$title.'</li><br>';
+                $html .= '<li>'.$source['title'].'</li><br>';
             } else {
                 $html .= '<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?source='.$source['type'].'">'.$source['title'].'</a></li><br>';
             }
