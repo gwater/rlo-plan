@@ -24,4 +24,35 @@ function fail($msg) {
     exit($msg);
 }
 
+function goto_page($page) {
+    //WTF?
+    ovp_logger::redirect(basename($_SERVER['SCRIPT_NAME']).($page != '' ? '?page='.$page : ''));
+}
+
+class ovp_config {
+    private $file;
+
+    public function __construct($file = 'config.inc.php') {
+        if ($file_exists($file)) {
+            $this->file = $file;
+        } else {
+            fail('Konfigurationsdatei nicht gefunden');
+        }
+    }
+
+    public function get($define) {
+        $text = file_get_contents($this->file);
+        if (preg_match('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $text, $matches) == 0) {
+            die('ERROR: define ' + $define  + ' not found');
+        }
+        return trim($matches[0], "'");
+    }
+
+    public function set($define, $value) {
+        $text = file_get_contents($this->file);
+        $text = preg_replace('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $value, $text, 1);
+        file_put_contents($this->file, $text);
+    }
+}
+
 ?>

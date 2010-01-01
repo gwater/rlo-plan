@@ -192,15 +192,17 @@ class post_mysql extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['host']) && isset($post['base']) && isset($post['user']) && isset($post['pass']))) {
-            die('ERROR: post parameter missing');
+            fail('Daten unvollständig');
         }
-        set('DB_HOST', "'".$post['host']."'");
-        set('DB_BASE', "'".$post['base']."'");
-        set('DB_USER', "'".$post['user']."'");
-        set('DB_PASS', "'".$post['pass']."'");
+        $config = new ovp_config();
+        $config->set('DB_HOST', "'".$post['host']."'");
+        $config->set('DB_BASE', "'".$post['base']."'");
+        $config->set('DB_USER', "'".$post['user']."'");
+        $config->set('DB_PASS', "'".$post['pass']."'");
         if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
             goto_page('mysql&error='.urlencode($error));
         }
+        $this->db->reset_tables();
         //FIXME
         goto_page('settings');
     }
@@ -210,36 +212,16 @@ class post_account extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function evaluate($post) {
-    // FIXME+++FIXME+++FIXME!!!
-    case 'save':
-        if (!(isset($_POST['name']) && isset($_POST['pwd']))) {
-            die('ERROR: post parameter missing');
+        if (!(isset($post['name']) && isset($post['pwd']))) {
+            fail('Daten unvollständig');
         }
-        set('FIRST_RUN', 'true'); // this causes the database tables to be reset!
-        if (file_exists($temp)) {
-            unlink($config);
-            rename($temp, $config);
-        }
-        // HACKHACK: what this does is "re-evaluate" db.inc.php
-        session_start();
-        $_SESSION['name'] = $_POST['name'];
-        $_SESSION['pwd']  = $_POST['pwd'];
-        goto_page('admin&action=save2');
-        break;
-    case 'save2':
-        session_start();
-        $_POST['name'] = $_SESSION['name'];
-        $_POST['pwd']  = $_SESSION['pwd'];
-        session_destroy();
-        // END OF HACK
-        $db = new db();
-        $error = '';
-        if (ovp_user::name_exists($db, $_POST['name'])) {
-            $user = ovp_user::get_user_by_name($db, $_POST['name']);
-            $user->set_password($_POST['pwd']);
+        if (ovp_user::name_exists($this->db, $post['name'])) {
+            $user = ovp_user::get_user_by_name($this->db, $post['name']);
+            $user->set_password($post['pwd']);
         } else {
-            ovp_user::add($db, $_POST['name'], $_POST['pwd'], 'admin');
+            ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
         }
+        //FIXME
         goto_page('done');
         break;
     }
@@ -250,12 +232,12 @@ class post_settings extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
-            die('ERROR: post parameter missing');
+            fail('Daten unvollständig');
         }
-        set('DEBUG',             $post['debug']);
-        set('DELETE_OLDER_THAN', $post['delold']);
-        set('SKIP_WEEKENDS',     $post['skipweekends']);
-        set('PRIV_DEFAULT',      $post['privdefault']);
+        $config->set('DEBUG',             $post['debug']);
+        $config->set('DELETE_OLDER_THAN', $post['delold']);
+        $config->set('SKIP_WEEKENDS',     $post['skipweekends']);
+        $config->set('PRIV_DEFAULT',      $post['privdefault']);
         //FIXME
         goto_page('admin');
     }

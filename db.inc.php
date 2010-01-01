@@ -78,7 +78,7 @@ class db extends mysqli {
         return $this->select_db(DB_BASE);
     }
 
-    private function reset_tables() {
+    public function reset_tables() {
         /*
         This table holds the user data of all the students who have access.
         id:        unique user id used to identify user during their session
