@@ -24,9 +24,14 @@ function fail($msg) {
     exit($msg);
 }
 
-function get_link($source) {
+function get_source_link($source) {
     return basename($_SERVER['SCRIPT_NAME']).'?source='.$source;
 }
+
+function get_poster_link($poster) {
+    return basename($_SERVER['SCRIPT_NAME']).'?poster='.$poster;
+}
+
 
 class ovp_config {
     private $file;
@@ -50,7 +55,11 @@ class ovp_config {
     public function set($define, $value) {
         $text = file_get_contents($this->file);
         $text = preg_replace('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $value, $text, 1);
-        file_put_contents($this->file, $text);
+        if (file_put_contents($this->file, $text)) {
+            return true;
+        } else {
+            fail('Ändern der Konfigurationsdatei gescheitert');
+        }
     }
 }
 

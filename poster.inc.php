@@ -225,18 +225,14 @@ class post_mysql extends poster {
         $config->set('DB_USER', "'".$post['user']."'");
         $config->set('DB_PASS', "'".$post['pass']."'");
         if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
-            $link = get_link('mysql&error='.urlencode($error));
+            $link = get_source_link('mysql&error='.urlencode($error));
         } else {
-            //FIXME: HACKHACK
-            define('DB_HOST', $post['host']);
-            define('DB_BASE', $post['base']);
-            define('DB_USER', $post['user']);
-            define('DB_PASS', $post['pass']);
-            new db()->reset_tables();
+            $db = new db($config);
+            $db->reset_tables();
             if ($this->is_wiz) {
-                $link = get_link('settings');
+                $link = get_source_link('settings');
             } else {
-                $link = get_link('mysql');
+                $link = get_source_link('mysql');
             }
         }
         ovp_logger::redirect($link);
@@ -255,14 +251,15 @@ class post_settings extends poster {
         if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
             fail('Daten unvollständig');
         }
+        $config = new ovp_config();
         $config->set('DEBUG',             $post['debug']);
         $config->set('DELETE_OLDER_THAN', $post['delold']);
         $config->set('SKIP_WEEKENDS',     $post['skipweekends']);
         $config->set('PRIV_DEFAULT',      $post['privdefault']);
         if ($this->is_wiz) {
-            $link = get_link('account');
+            $link = get_source_link('account');
         } else {
-            $link = get_link('settings');
+            $link = get_source_link('settings');
         }
         ovp_logger::redirect($link);
     }
@@ -289,9 +286,9 @@ class post_account extends poster {
             ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
         }
         if ($this->is_wiz) {
-            $link = get_link('final');
+            $link = get_source_link('final');
         } else {
-            $link = get_link('account');
+            $link = get_source_link('account');
         }
         ovp_logger::redirect($link);
     }

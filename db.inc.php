@@ -36,23 +36,28 @@ class db extends mysqli {
         return NULL;
     }
 
-    public function __construct() {
-        parent::__construct(DB_HOST, DB_USER, DB_PASS);
+    public function __construct($config = null) {
+        if ($config) {
+            $host = $config->get('DB_HOST');
+            $user = $config->get('DB_USER');
+            $pass = $config->get('DB_PASS');
+            $base = $config->get('DB_BASE');
+        } else {
+            $host = DB_HOST;
+            $user = DB_USER;
+            $pass = DB_PASS;
+            $base = DB_BASE;
+        }
+        parent::__construct($host, $user, $pass);
         if ($this->connect_errno) {
             $this->fail('Kein Verbindung zum DB-Server');
         }
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->query("SET @@time_zone = 'Europe/Berlin'");
-        if (!$this->select_db(DB_BASE)) {
+        if (!$this->select_db($base)) {
             if (!$this->create_db()) {
                 $this->fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
             }
-        }
-        if (FIRST_RUN) {
-            $this->reset_tables();
-            $config = file_get_contents('config.inc.php');
-            $config = preg_replace('/(?<=define\(\'FIRST_RUN\', )true(?=\);)/i', 'false', $config, 1);
-            file_put_contents('config.inc.php', $config);
         }
     }
 

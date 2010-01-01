@@ -24,6 +24,7 @@ require_once('config.inc.php');
 require_once('user.inc.php');
 require_once('entry.inc.php');
 require_once('logger.inc.php');
+require_once('misc.inc.php');
 
 /**
  * This is the basic API for all content provided by rlo-plan
@@ -448,8 +449,9 @@ class ovp_mysql extends ovp_source {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
         $config = new ovp_config();
+        $link = get_poster_link(self::$type);
         $html .= '
-            <form action="'.$_SERVER['SCRIPT_NAME'].'?page=mysql&action=save" method="POST"><table>
+            <form action="'.$link.'" method="POST"><table>
                 <tr><td>Server</td><td><input type="text" name="host" value="'.$config->get('DB_HOST').'"></td></tr>
                 <tr><td>Datenbank</td><td><input type="text" name="base" value="'.$config->get('DB_BASE').'"></td></tr>
                 <tr><td>Benutzer</td><td><input type="text" name="user" value="'.$config->get('DB_USER').'"></td></tr>
@@ -467,9 +469,10 @@ class ovp_account extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {
+        $link = get_poster_link(self::$type);
         $html = '
             <div class="ovp_container">
-            <form action="'.$_SERVER['SCRIPT_NAME'].'?page=admin&action=save" method="POST"><table>
+            <form action="'.$link.'" method="POST"><table>
                 <tr><td>Benutzer</td><td><input type="text" name="name" value="admin">
                 <tr><td>Passwort</td><td><input type="password" name="pwd" value="">
                 <tr><td></td><td><input type="submit" value="Speichern und weiter">
@@ -489,13 +492,13 @@ class ovp_settings extends ovp_source {
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
-        // FIXME
+        $link = get_poster_link(self::$type);
         $config = new ovp_config();
         $debug         = $config->get('DEBUG');
         $skip_weekends = $config->get('SKIP_WEEKENDS');
         $priv_default  = $config->get('PRIV_DEFAULT');
         $html .= '
-            <form action="'.$_SERVER['SCRIPT_NAME'].'?page=settings&action=save" method="POST"><table>
+            <form action="'.$link.'" method="POST"><table>
                 <tr>
                   <td>Sollen detaillierte Fehlermeldungen angezeigt werden?</td>
                   <td><select name="debug">
@@ -538,6 +541,7 @@ class ovp_final extends ovp_source {
 
     public function generate_view() {
         $html = '<div class="ovp_container"><p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p></div>';
+        return $html;
     }
 }
 
@@ -563,7 +567,8 @@ class ovp_navi_wizard extends ovp_source {
             if ($this->current == $source['type']) {
                 $html .= '<li>'.$source['title'].'</li><br>';
             } else {
-                $html .= '<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?source='.$source['type'].'">'.$source['title'].'</a></li><br>';
+                $link = get_source_link($source['type']);
+                $html .= '<li><a href="'.$link.'">'.$source['title'].'</a></li><br>';
             }
         }
         return $html.'</ol></div>';
@@ -604,8 +609,9 @@ class ovp_navi extends ovp_source {
                     $html .= ' |';
                 }
                 if ($source['type'] != $this->current) {
+                    $link = get_source_link($source['type']);
                     $html .= '
-                <a href="index.php?source='.$source['type'].'">'.$source['title'].'</a>';
+                <a href="'.$link.'">'.$source['title'].'</a>';
                 } else {
                     $html .= '
                 <span>'.$source['title'].'</span>';
