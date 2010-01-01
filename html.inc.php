@@ -34,12 +34,6 @@ require_once('logger.inc.php');
  * html page.
  */
 abstract class ovp_source {
-    protected $db;
-
-    public function __construct(db $db) {
-        $this->db = $db;
-    }
-
     abstract protected function generate_view();
 
     protected function generate_header() {
@@ -69,6 +63,11 @@ class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Standardansicht';
     public static $priv_req = ovp_logger::VIEW_PUBLIC;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
 
     protected function generate_view() {
         $entries_by_date = ovp_entry::get_entries_by_date($this->db);
@@ -127,13 +126,12 @@ class ovp_print extends ovp_source {
     public static $type = 'print';
     public static $title ='Aushang';
     public static $priv_req = ovp_logger::VIEW_PRINT;
-    private $date;
     private $today;
     private $yesterday;
     private $tomorrow;
+    private $entries;
 
-    public function __construct($db, $date = -1) {
-        parent::__construct($db);
+    public function __construct(db $db, $date = -1) {
         if ($date == -1) {
             $time = time() + 3600; // adjust GMT to CET
             $date = strftime("%Y-%m-%d", ($time));
@@ -147,11 +145,10 @@ class ovp_print extends ovp_source {
         $this->today = strftime("%A, %d.%m.%y", $time);
         $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
         $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
-        $this->date = $date;
+        $this->entries = ovp_entry::get_entries_by_teacher($db, $date);
     }
 
     protected function generate_view() {
-        $entries_by_teacher = ovp_entry::get_entries_by_teacher($this->db, $this->date);
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -169,7 +166,7 @@ class ovp_print extends ovp_source {
                 <th>Vertretung durch</th>
                 <th>Raum</th>
               </tr>';
-        foreach ($entries_by_teacher as $teacher => $entries) {
+        foreach ($this->entries as $teacher => $entries) {
                 $html .=
              '<tr>
                 <td class="ovp_cell_teacher" colspan="6">'.$teacher.'</td>
@@ -214,22 +211,22 @@ class ovp_author extends ovp_source {
     public static $type = 'author';
     public static $title ='Einträge verwalten';
     public static $priv_req = ovp_logger::VIEW_AUTHOR;
+    private $entries;
 
-    public function __construct($db) {
-        parent::__construct($db);
+    public function __construct(db $db) {
+        $this->entries = ovp_entry::get_entries_by_teacher_and_date($db);
     }
 
     protected function generate_header() {
-        $entries_by_date = ovp_entry::get_entries_by_teacher_and_date($this->db);
         $script =
            '<script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
             function fill_in_data() {';
-        if ($entries_by_date) {
+        if ($this->entries) {
             $script .= '
                     var days = [];';
-            foreach ($entries_by_date as $entries_by_teacher) {
+            foreach ($this->entries as $entries_by_teacher) {
                 $script .= '
                     var teachers = [];';
                 foreach ($entries_by_teacher as $teacher => $entries) {
@@ -294,10 +291,6 @@ class ovp_login extends ovp_source {
     public static $title ='Login';
     public static $priv_req = ovp_logger::PRIV_LOGOUT;
 
-    public function __construct($db) {
-        parent::__construct($db);
-    }
-
     protected function generate_view() {
         $html =
          '<div class="ovp_container">
@@ -342,12 +335,9 @@ class ovp_admin extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
     protected $users;
 
-
-    public function __construct($db) {
-        parent::__construct($db);
+    public function __construct(db $db) {
         $this->users = ovp_user::get_all_users($db);
     }
-
 
     protected function generate_header() {
         $roles = ovp_user::get_roles();
@@ -452,8 +442,6 @@ class ovp_mysql extends ovp_source {
     public static $title = 'MySQL Konfiguration';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
-    public function __construct() {}
-
     public function generate_view() {
         $html = '<div class="ovp_container">'
         if (isset($_GET['error'])) {
@@ -476,8 +464,6 @@ class ovp_account extends ovp_source {
     public static $type = 'account';
     public static $title = 'Admnistrator anlegen';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
-
-    public function __construct() {}
 
     public function generate_view() {
         $html = '
@@ -548,8 +534,6 @@ class ovp_final extends ovp_source {
     public static $title = 'Konfigurationsabschluss';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
-    public function __construct() {}
-
     public function generate_view() {
         $html = '<div class="ovp_container"><p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p></div>';
     }
@@ -559,8 +543,6 @@ class ovp_navi_wizard extends ovp_source {
     public static $type = 'navi_wizard';
     public static $title = 'Installationsnavigator';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
-
-    public function __construct() {}
 
     public function generate_view() {
         $html = '<div id="ovp_navi"><ol>';

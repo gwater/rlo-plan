@@ -46,13 +46,13 @@ case 'admin':
     $source = new ovp_admin($db);
     break;
 case 'login':
-    $source = new ovp_login($db);
+    $source = new ovp_login();
     break;
 case 'password':
     $source = new ovp_password($db);
     break;
 case 'about':
-    $source = new ovp_about($db);
+    $source = new ovp_about();
     break;
 case 'public':
 default:
