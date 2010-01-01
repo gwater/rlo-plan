@@ -24,7 +24,7 @@
 require_once('db.inc.php');
 require_once('user.inc.php');
 require_once('html.inc.php');
-require_once('zipper.inc.php')
+require_once('zipper.inc.php');
 
 /* authorization placeholder */
 
