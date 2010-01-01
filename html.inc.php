@@ -447,12 +447,13 @@ class ovp_mysql extends ovp_source {
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
+        $config = new ovp_config();
         $html .= '
             <form action="'.$_SERVER['SCRIPT_NAME'].'?page=mysql&action=save" method="POST"><table>
-                <tr><td>Server</td><td><input type="text" name="host" value="'.get('DB_HOST').'"></td></tr>
-                <tr><td>Datenbank</td><td><input type="text" name="base" value="'.get('DB_BASE').'"></td></tr>
-                <tr><td>Benutzer</td><td><input type="text" name="user" value="'.get('DB_USER').'"></td></tr>
-                <tr><td>Passwort</td><td><input type="text" name="pass" value="'.get('DB_PASS').'"></td></tr>
+                <tr><td>Server</td><td><input type="text" name="host" value="'.$config->get('DB_HOST').'"></td></tr>
+                <tr><td>Datenbank</td><td><input type="text" name="base" value="'.$config->get('DB_BASE').'"></td></tr>
+                <tr><td>Benutzer</td><td><input type="text" name="user" value="'.$config->get('DB_USER').'"></td></tr>
+                <tr><td>Passwort</td><td><input type="text" name="pass" value="'.$config->get('DB_PASS').'"></td></tr>
                 <tr><td></td><td><input type="submit" value="Speichern und weiter"></td></tr>
             </table></form>
             </div>';
@@ -489,9 +490,10 @@ class ovp_settings extends ovp_source {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
         // FIXME
-        $debug         = get('DEBUG');
-        $skip_weekends = get('SKIP_WEEKENDS');
-        $priv_default  = get('PRIV_DEFAULT');
+        $config = new ovp_config();
+        $debug         = $config->get('DEBUG');
+        $skip_weekends = $config->get('SKIP_WEEKENDS');
+        $priv_default  = $config->get('PRIV_DEFAULT');
         $html .= '
             <form action="'.$_SERVER['SCRIPT_NAME'].'?page=settings&action=save" method="POST"><table>
                 <tr>
@@ -503,7 +505,7 @@ class ovp_settings extends ovp_source {
                 </tr>
                 <tr>
                   <td>Nach wie vielen Tagen sollen alte Einträge automatisch gelöscht werden? (-1 = nie)</td>
-                  <td><input type="text" name="delold" value="'.get('DELETE_OLDER_THAN').'"></td>
+                  <td><input type="text" name="delold" value="'.$config->get('DELETE_OLDER_THAN').'"></td>
                 </tr>
                 <tr>
                   <td>Sollen Wochenenden dabei <i>nicht</i> mitzählen?</td>
