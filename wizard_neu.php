@@ -34,6 +34,32 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
  */
 define('WIZARD', true);
 
+$db = new db();
+
+switch ($_GET['poster']) {
+case 'mysql':
+    $poster = new post_mysql($db);
+    break;
+case 'settings':
+    $poster = new post_settings($db);
+    break;
+case 'account':
+    $poster = new post_account($db);
+    break;
+default:
+    // DoNothing (tm)
+}
+
+if (isset($poster)) {
+    $poster_vars = get_class_vars(get_class($poster));
+    $logger = new ovp_logger($db);
+    if (!$logger->is_authorized($poster_vars['priv_req'])) {
+        header('HTTP/1.0 401 Unauthorized');
+        exit('you need to log in first');
+    }
+    exit($poster->evaluate($_POST));
+}
+
 switch ($_GET['source']) {
     case 'mysql':
         $source = new ovp_mysql();
@@ -54,6 +80,8 @@ switch ($_GET['source']) {
 }
 
 $source_vars = get_class_vars(get_class($source));
+$logger = new ovp_logger($db);
+$logger->authorize($source_vars['priv_req']);
 $navi = new ovp_navi_wizard($source_vars['type']);
 $page = new ovp_page($source, $navi);
 exit($page->get_html());
@@ -61,19 +89,14 @@ exit($page->get_html());
 class ovp_wizard {
     public static function initialize() {
         if (!ovp_zipper::pack_dir()) {
-            return false; //fail?
-            //FIXME
-        } else if (!copy($config, $temp)) {
-            return false; //fail?
+            fail('Erstellen des Quellarchivs gescheitert')
         }
         return true;
     }
 
     public static function finalize() {
-        $wizard = file_get_contents('wizard.php');
-        $replacement = '$logger = new ovp_logger(new db()); $logger->authorize(ovp_logger::VIEW_ADMIN);';
-        $wizard = preg_replace('|/\* authorization placeholder \*/|', $replacement, $wizard, 1);
-        file_put_contents('wizard.php', $wizard);
+        $config = new ovp_config();
+        $config->set('FIRST_RUN', 'false');
     }
 }
 

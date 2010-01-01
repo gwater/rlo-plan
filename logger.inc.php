@@ -50,7 +50,7 @@ class ovp_logger {
         } else if ($requiredPrivilege == self::PRIV_LOGOUT) {
             return !isset($this->user);
         }
-        if ($requiredPrivilege <= PRIV_DEFAULT) {
+        if (FIRST_RUN || ($requiredPrivilege <= PRIV_DEFAULT)) {
             return true;
         }
         return isset($_SESSION['privilege']) &&
@@ -68,7 +68,7 @@ class ovp_logger {
         }
         return true;
     }
-    
+
     // checks if the current user's ip address matches the one in the database
     public function session_ok() {
         $result = $this->db->query(
@@ -139,7 +139,7 @@ class ovp_logger {
         );
         return $db->affected_rows == 1;
     }
-    
+
     public static function get_current_user(db $db) {
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $db->query(
