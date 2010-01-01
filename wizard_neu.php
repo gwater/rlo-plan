@@ -33,7 +33,7 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
 /* use this variable anywhere you need to decide between wizard usage and
  * general usage (eg redirections to the next wizard page in poster.inc.php)
  */
-$is_wiz = true
+$is_wiz = true;
 
 switch ($_GET['poster']) {
 case 'mysql':
