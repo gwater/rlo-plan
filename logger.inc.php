@@ -61,10 +61,11 @@ class ovp_logger {
     public function authorize($requiredPrivilege = 1) {
         if (!$this->is_authorized($requiredPrivilege)) {
             if ($requiredPrivilege == self::PRIV_LOGOUT) {
-                self::redirect('index.php');
+                self::redirect();
             }
             $continue = urlencode(basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING']);
-            self::redirect('index.php?source=login&continue='.$continue); // does not return
+            $link = self::get_source_link('login&continue='.$continue);
+            self::redirect($link); // does not return
         }
         return true;
     }
@@ -90,17 +91,17 @@ class ovp_logger {
         return $ip == ip2long($_SERVER['REMOTE_ADDR']);
     }
 
-    public static function get_source_link($source) {
+    public static function get_source_link($source = '') {
         return basename($_SERVER['SCRIPT_NAME']).'?source='.$source;
     }
 
-    public static function get_poster_link($poster) {
+    public static function get_poster_link($poster = '') {
         return basename($_SERVER['SCRIPT_NAME']).'?poster='.$poster;
     }
 
     public static function redirect($to = false) {
         if (!$to) {
-            $to = 'index.php';
+            $to = self::get_source_link();
         }
         $server = $_SERVER['SERVER_NAME'];
         $path = dirname($_SERVER['SCRIPT_NAME']);

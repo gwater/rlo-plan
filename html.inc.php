@@ -149,12 +149,14 @@ class ovp_print extends ovp_source {
     }
 
     protected function generate_view() {
+        $yesterday_link = ovp_logger::get_source_link(self::$type.'&date='.$this->yesterday);
+        $tomorrow_link = ovp_logger::get_source_link(self::$type.'&date='.$this->tomorrow);
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
             <div class="ovp_day_links">
-              <a href="index.php?source='.self::$type.'&date='.$this->yesterday.'">Einen Tag zurück</a>
-              <a href="index.php?source='.self::$type.'&date='.$this->tomorrow.'">Einen Tag weiter</a>
+              <a href="'.$yesterday_link.'">Einen Tag zurück</a>
+              <a href="'.$tomorrow_link.'">Einen Tag weiter</a>
             </div>
             <h2>'.$this->today.'</h2>
             <table  class="ovp_table" id="ovp_table_'.self::$type.'">

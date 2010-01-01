@@ -69,6 +69,9 @@ switch ($_GET['source']) {
     case 'account':
         $source = new ovp_account();
         break;
+    case 'login':
+        $source = new ovp_login();
+        break;
     case 'final':
         ovp_wizard::finalize();
         $source = new ovp_final();
