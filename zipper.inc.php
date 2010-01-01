@@ -33,6 +33,7 @@ class ovp_zipper {
             $zip->addFile($file);
         }
         $zip->close();
+        return true;
     }
 
     private static function list_files($dir) {
