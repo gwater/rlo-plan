@@ -27,17 +27,17 @@ require_once('logger.inc.php');
 
 abstract class poster {
     public static $priv_req;
-    protected $db;
     abstract public function evaluate($post);
-
-    public function __construct(db $db) {
-        $this->db = $db;
-    }
 
 }
 
 class post_user extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
 
     public function evaluate($post) {
         switch ($post['action']) {
@@ -94,6 +94,11 @@ class post_user extends poster {
 
 class post_password extends poster {
     public static $priv_req = ovp_logger::PRIV_LOGIN;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
 
     public function evaluate($post) {
         if (isset($post['newpwd']) && isset($post['oldpwd'])) {
@@ -115,6 +120,11 @@ class post_password extends poster {
 
 class post_login extends poster {
     public static $priv_req = ovp_logger::PRIV_LOGOUT;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
 
     public function evaluate($post) {
         if (isset($post['name']) && isset($post['pwd'])) {
@@ -129,6 +139,11 @@ class post_login extends poster {
 
 class post_logout extends poster {
     public static $priv_req = ovp_logger::PRIV_LOGIN;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
 
     public function evaluate($post) {
         ovp_logger::logout($this->db);
@@ -142,6 +157,11 @@ class post_logout extends poster {
 
 class post_entry extends poster {
     public static $priv_req = ovp_logger::VIEW_AUTHOR;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
 
     public function evaluate($post) {
         switch ($post['action']) {
@@ -200,30 +220,21 @@ class post_mysql extends poster {
         $config->set('DB_USER', "'".$post['user']."'");
         $config->set('DB_PASS', "'".$post['pass']."'");
         if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
-            goto_page('mysql&error='.urlencode($error));
-        }
-        $this->db->reset_tables();
-        //FIXME
-        goto_page('settings');
-    }
-}
-
-class post_account extends poster {
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
-
-    public function evaluate($post) {
-        if (!(isset($post['name']) && isset($post['pwd']))) {
-            fail('Daten unvollständig');
-        }
-        if (ovp_user::name_exists($this->db, $post['name'])) {
-            $user = ovp_user::get_user_by_name($this->db, $post['name']);
-            $user->set_password($post['pwd']);
+            $link = get_link('mysql&error='.urlencode($error));
         } else {
-            ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
+            //FIXME: HACKHACK
+            define('DB_HOST', $post['host']);
+            define('DB_BASE', $post['base']);
+            define('DB_USER', $post['user']);
+            define('DB_PASS', $post['pass']);
+            new db()->reset_tables();
+            if (WIZARD) {
+                $link = get_link('settings');
+            } else {
+                $link = get_link('mysql');
+            }
         }
-        //FIXME
-        goto_page('done');
-        break;
+        ovp_logger::redirect($link);
     }
 }
 
@@ -238,8 +249,39 @@ class post_settings extends poster {
         $config->set('DELETE_OLDER_THAN', $post['delold']);
         $config->set('SKIP_WEEKENDS',     $post['skipweekends']);
         $config->set('PRIV_DEFAULT',      $post['privdefault']);
-        //FIXME
-        goto_page('admin');
+        if (WIZARD) {
+            $link = get_link('account');
+        } else {
+            $link = get_link('settings');
+        }
+        ovp_logger::redirect($link);
+    }
+}
+
+class post_account extends poster {
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    private $db;
+
+    public function __construct(db $db) {
+        $this->db = $db;
+    }
+
+    public function evaluate($post) {
+        if (!(isset($post['name']) && isset($post['pwd']))) {
+            fail('Daten unvollständig');
+        }
+        if (ovp_user::name_exists($this->db, $post['name'])) {
+            $user = ovp_user::get_user_by_name($this->db, $post['name']);
+            $user->set_password($post['pwd']);
+        } else {
+            ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
+        }
+        if (WIZARD) {
+            $link = get_link('final');
+        } else {
+            $link = get_link('account');
+        }
+        ovp_logger::redirect($link);
     }
 }
 

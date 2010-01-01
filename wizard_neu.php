@@ -20,6 +20,7 @@
  */
 require_once('misc.inc.php');
 require_once('html.inc.php');
+require_once('zipper.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
@@ -34,23 +35,24 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
  */
 define('WIZARD', true);
 
-$db = new db();
-
 switch ($_GET['poster']) {
 case 'mysql':
-    $poster = new post_mysql($db);
+    $poster = new post_mysql();
     break;
 case 'settings':
-    $poster = new post_settings($db);
+    $poster = new post_settings();
     break;
 case 'account':
-    $poster = new post_account($db);
+    $poster = new post_account(new db());
     break;
 default:
     // DoNothing (tm)
 }
 
 if (isset($poster)) {
+    if (FIRST_RUN) {
+        exit($poster->evaluate($_POST));
+    }
     $poster_vars = get_class_vars(get_class($poster));
     $logger = new ovp_logger($db);
     if (!$logger->is_authorized($poster_vars['priv_req'])) {
@@ -76,12 +78,16 @@ switch ($_GET['source']) {
         break;
     default:
         ovp_wizard::initialize();
-        goto_page('mysql'); //FIXME
+        $link = get_link('mysql');
+        ovp_logger::redirect($link);
 }
 
 $source_vars = get_class_vars(get_class($source));
-$logger = new ovp_logger($db);
-$logger->authorize($source_vars['priv_req']);
+if (!FIRST_RUN) {
+    $db = new db();
+    $logger = new ovp_logger($db);
+    $logger->authorize($source_vars['priv_req']);
+}
 $navi = new ovp_navi_wizard($source_vars['type']);
 $page = new ovp_page($source, $navi);
 exit($page->get_html());
@@ -89,7 +95,7 @@ exit($page->get_html());
 class ovp_wizard {
     public static function initialize() {
         if (!ovp_zipper::pack_dir()) {
-            fail('Erstellen des Quellarchivs gescheitert')
+            fail('Erstellen des Quellarchivs gescheitert');
         }
         return true;
     }

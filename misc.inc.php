@@ -24,8 +24,8 @@ function fail($msg) {
     exit($msg);
 }
 
-function goto_page($page) {
-    ovp_logger::redirect(basename($_SERVER['SCRIPT_NAME']).($page != '' ? '?page='.$page : ''));
+function get_link($source) {
+    return basename($_SERVER['SCRIPT_NAME']).'?source='.$source;
 }
 
 class ovp_config {

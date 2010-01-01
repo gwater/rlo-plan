@@ -443,7 +443,7 @@ class ovp_mysql extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {
-        $html = '<div class="ovp_container">'
+        $html = '<div class="ovp_container">';
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }

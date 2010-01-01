@@ -50,7 +50,7 @@ class ovp_logger {
         } else if ($requiredPrivilege == self::PRIV_LOGOUT) {
             return !isset($this->user);
         }
-        if (FIRST_RUN || ($requiredPrivilege <= PRIV_DEFAULT)) {
+        if ($requiredPrivilege <= PRIV_DEFAULT) {
             return true;
         }
         return isset($_SESSION['privilege']) &&
