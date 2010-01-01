@@ -466,7 +466,7 @@ class ovp_mysql extends ovp_source {
 
 class ovp_account extends ovp_source {
     public static $type = 'account';
-    public static $title = 'Admnistrator anlegen';
+    public static $title = 'Administrator anlegen';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {

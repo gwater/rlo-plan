@@ -28,10 +28,10 @@ class db extends mysqli {
         $temp = new mysqli();
         @$temp->connect($host, $user, $pass);
         if ($temp->connect_error) {
-            return 'Kein Verbindung zum DB-Server';
+            return 'Keine Verbindung zum DB-Server';
         }
         if ($base != '' && !$temp->select_db($base)) {
-            return 'Datenbak nicht gefunden';
+            return 'Datenbank nicht gefunden';
         }
         return NULL;
     }
@@ -50,7 +50,7 @@ class db extends mysqli {
         }
         parent::__construct($host, $user, $pass);
         if ($this->connect_errno) {
-            $this->fail('Kein Verbindung zum DB-Server');
+            $this->fail('Keine Verbindung zum DB-Server');
         }
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->query("SET @@time_zone = 'Europe/Berlin'");
@@ -66,7 +66,7 @@ class db extends mysqli {
             if (DEBUG) {
                 $this->fail($this->error);
             } else {
-                $this->fail('SQL Anfrage ungültig');
+                $this->fail('SQL-Anfrage ungültig');
             }
         }
         return $result;
