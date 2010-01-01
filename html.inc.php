@@ -551,16 +551,7 @@ class ovp_final extends ovp_source {
     public function __construct() {}
 
     public function generate_view() {
-        // FIXME
-        if (basename($_SERVER['SCRIPT_NAME']) == 'index.php') {
-            rename('index.php', 'wizard.php');
-            rename('index_.php', 'index.php');
-        }
-        $wizard = file_get_contents('wizard.php');
-        $replacement = '$logger = new ovp_logger(new db()); $logger->authorize(ovp_logger::VIEW_ADMIN);';
-        $wizard = preg_replace('|/\* authorization placeholder \*/|', $replacement, $wizard, 1);
-        file_put_contents('wizard.php', $wizard);
-        $html .= '<p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p>';
+        $html = '<div class="ovp_container"><p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p></div>';
     }
 }
 
@@ -582,7 +573,7 @@ class ovp_navi_wizard extends ovp_source {
                 $html .= '<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?page='.$page.'">'.$title.'</a></li><br>';
             }
         }
-        return $html.'</ul></div>';
+        return $html.'</ol></div>';
     }
 }
 
