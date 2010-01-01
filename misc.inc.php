@@ -24,15 +24,6 @@ function fail($msg) {
     exit($msg);
 }
 
-function get_source_link($source) {
-    return basename($_SERVER['SCRIPT_NAME']).'?source='.$source;
-}
-
-function get_poster_link($poster) {
-    return basename($_SERVER['SCRIPT_NAME']).'?poster='.$poster;
-}
-
-
 class ovp_config {
     private $file;
 

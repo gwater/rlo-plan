@@ -24,7 +24,6 @@ require_once('config.inc.php');
 require_once('user.inc.php');
 require_once('entry.inc.php');
 require_once('logger.inc.php');
-require_once('misc.inc.php');
 
 /**
  * This is the basic API for all content provided by rlo-plan
@@ -449,7 +448,7 @@ class ovp_mysql extends ovp_source {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
         $config = new ovp_config();
-        $link = get_poster_link(self::$type);
+        $link = ovp_logger::get_poster_link(self::$type);
         $html .= '
             <form action="'.$link.'" method="POST"><table>
                 <tr><td>Server</td><td><input type="text" name="host" value="'.$config->get('DB_HOST').'"></td></tr>
@@ -469,7 +468,7 @@ class ovp_account extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {
-        $link = get_poster_link(self::$type);
+        $link = ovp_logger::get_poster_link(self::$type);
         $html = '
             <div class="ovp_container">
             <form action="'.$link.'" method="POST"><table>
@@ -492,7 +491,7 @@ class ovp_settings extends ovp_source {
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
-        $link = get_poster_link(self::$type);
+        $link = ovp_logger::get_poster_link(self::$type);
         $config = new ovp_config();
         $debug         = $config->get('DEBUG');
         $skip_weekends = $config->get('SKIP_WEEKENDS');
@@ -567,7 +566,7 @@ class ovp_navi_wizard extends ovp_source {
             if ($this->current == $source['type']) {
                 $html .= '<li>'.$source['title'].'</li><br>';
             } else {
-                $link = get_source_link($source['type']);
+                $link = ovp_logger::get_source_link($source['type']);
                 $html .= '<li><a href="'.$link.'">'.$source['title'].'</a></li><br>';
             }
         }
@@ -609,7 +608,7 @@ class ovp_navi extends ovp_source {
                     $html .= ' |';
                 }
                 if ($source['type'] != $this->current) {
-                    $link = get_source_link($source['type']);
+                    $link = ovp_logger::get_source_link($source['type']);
                     $html .= '
                 <a href="'.$link.'">'.$source['title'].'</a>';
                 } else {

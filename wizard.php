@@ -22,14 +22,10 @@ require_once('misc.inc.php');
 require_once('html.inc.php');
 require_once('zipper.inc.php');
 require_once('poster.inc.php');
+require_once('logger.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
-
-/*
- * don't include this file anywhere. If you need a part,
- * move it to another file and include that file instead.
- */
 
 /* use this variable anywhere you need to decide between wizard usage and
  * general usage (eg redirections to the next wizard page in poster.inc.php)
@@ -79,7 +75,7 @@ switch ($_GET['source']) {
         break;
     default:
         ovp_wizard::initialize();
-        $link = get_source_link('mysql');
+        $link = ovp_logger::get_source_link('mysql');
         ovp_logger::redirect($link);
 }
 

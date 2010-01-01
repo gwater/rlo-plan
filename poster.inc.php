@@ -225,14 +225,14 @@ class post_mysql extends poster {
         $config->set('DB_USER', "'".$post['user']."'");
         $config->set('DB_PASS', "'".$post['pass']."'");
         if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
-            $link = get_source_link('mysql&error='.urlencode($error));
+            $link = ovp_logger::get_source_link('mysql&error='.urlencode($error));
         } else {
             $db = new db($config);
             $db->reset_tables();
             if ($this->is_wiz) {
-                $link = get_source_link('settings');
+                $link = ovp_logger::get_source_link('settings');
             } else {
-                $link = get_source_link('mysql');
+                $link = ovp_logger::get_source_link('mysql');
             }
         }
         ovp_logger::redirect($link);
@@ -257,9 +257,9 @@ class post_settings extends poster {
         $config->set('SKIP_WEEKENDS',     $post['skipweekends']);
         $config->set('PRIV_DEFAULT',      $post['privdefault']);
         if ($this->is_wiz) {
-            $link = get_source_link('account');
+            $link = ovp_logger::get_source_link('account');
         } else {
-            $link = get_source_link('settings');
+            $link = ovp_logger::get_source_link('settings');
         }
         ovp_logger::redirect($link);
     }
@@ -286,9 +286,9 @@ class post_account extends poster {
             ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
         }
         if ($this->is_wiz) {
-            $link = get_source_link('final');
+            $link = ovp_logger::get_source_link('final');
         } else {
-            $link = get_source_link('account');
+            $link = ovp_logger::get_source_link('account');
         }
         ovp_logger::redirect($link);
     }

@@ -90,6 +90,14 @@ class ovp_logger {
         return $ip == ip2long($_SERVER['REMOTE_ADDR']);
     }
 
+    public static function get_source_link($source) {
+        return basename($_SERVER['SCRIPT_NAME']).'?source='.$source;
+    }
+
+    public static function get_poster_link($poster) {
+        return basename($_SERVER['SCRIPT_NAME']).'?poster='.$poster;
+    }
+
     public static function redirect($to = false) {
         if (!$to) {
             $to = 'index.php';
