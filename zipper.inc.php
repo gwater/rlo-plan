@@ -3,7 +3,7 @@
 /**
  * This file is part of RLO-Plan.
  *
- * Copyright 2009 Tillmann Karras, Josua Grawitter
+ * Copyright 2009, 2010 Tillmann Karras, Josua Grawitter
  *
  * RLO-Plan is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
