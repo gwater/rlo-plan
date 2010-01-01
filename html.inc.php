@@ -447,15 +447,156 @@ class ovp_about extends ovp_source {
     }
 }
 
+class ovp_mysql extends ovp_source {
+    public static $type = 'mysql';
+    public static $title = 'MySQL Konfiguration';
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function __construct() {}
+
+    public function generate_view() {
+        $html = '<div class="ovp_container">'
+        if (isset($_GET['error'])) {
+            $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
+        }
+        $html .= '
+            <form action="'.$_SERVER['SCRIPT_NAME'].'?page=mysql&action=save" method="POST"><table>
+                <tr><td>Server</td><td><input type="text" name="host" value="'.get('DB_HOST').'"></td></tr>
+                <tr><td>Datenbank</td><td><input type="text" name="base" value="'.get('DB_BASE').'"></td></tr>
+                <tr><td>Benutzer</td><td><input type="text" name="user" value="'.get('DB_USER').'"></td></tr>
+                <tr><td>Passwort</td><td><input type="text" name="pass" value="'.get('DB_PASS').'"></td></tr>
+                <tr><td></td><td><input type="submit" value="Speichern und weiter"></td></tr>
+            </table></form>
+            </div>';
+        return $html;
+    }
+}
+
+class ovp_account extends ovp_source {
+    public static $type = 'account';
+    public static $title = 'Admnistrator anlegen';
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function __construct() {}
+
+    public function generate_view() {
+        $html = '
+            <div class="ovp_container">
+            <form action="'.$_SERVER['SCRIPT_NAME'].'?page=admin&action=save" method="POST"><table>
+                <tr><td>Benutzer</td><td><input type="text" name="name" value="admin">
+                <tr><td>Passwort</td><td><input type="password" name="pwd" value="">
+                <tr><td></td><td><input type="submit" value="Speichern und weiter">
+            </table></form>
+            </div>';
+        return $html;
+    }
+}
+
+class ovp_settings extends ovp_source {
+    public static $type = 'settings';
+    public static $title = 'Konfiguration';
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function generate_view() {
+        $html = '<div class="ovp_container">';
+        if (isset($_GET['error'])) {
+            $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
+        }
+        // FIXME
+        $debug         = get('DEBUG');
+        $skip_weekends = get('SKIP_WEEKENDS');
+        $priv_default  = get('PRIV_DEFAULT');
+        $html .= '
+            <form action="'.$_SERVER['SCRIPT_NAME'].'?page=settings&action=save" method="POST"><table>
+                <tr>
+                  <td>Sollen detaillierte Fehlermeldungen angezeigt werden?</td>
+                  <td><select name="debug">
+                    <option value="true"'.($debug == 'true' ? ' selected="selected"' : '').'>Ja</option>
+                    <option value="false"'.($debug == 'false' ? ' selected="selected"' : '').'>Nein</option>
+                  </select></td>
+                </tr>
+                <tr>
+                  <td>Nach wie vielen Tagen sollen alte Einträge automatisch gelöscht werden? (-1 = nie)</td>
+                  <td><input type="text" name="delold" value="'.get('DELETE_OLDER_THAN').'"></td>
+                </tr>
+                <tr>
+                  <td>Sollen Wochenenden dabei <i>nicht</i> mitzählen?</td>
+                  <td><select name="skipweekends">
+                    <option value="true"'.($skip_weekends == 'true' ? ' selected="selected"' : '').'>Ja</option>
+                    <option value="false"'.($skip_weekends == 'false' ? ' selected="selected"' : '').'>Nein</option>
+                  </select></td>
+                </tr>
+                <tr>
+                  <td>Welches Privileg sollen unangemeldete Besucher besitzen?</td>
+                  <td><select name="privdefault">
+                    <option value="0"'.($priv_default == '0' ? ' selected="selected"' : '').'>Keins</option>
+                    <option value="1"'.($priv_default == '1' ? ' selected="selected"' : '').'>Public</option>
+                    <option value="2"'.($priv_default == '2' ? ' selected="selected"' : '').'>Print</option>
+                    <option value="3"'.($priv_default == '3' ? ' selected="selected"' : '').'>Autor</option>
+                    <option value="4"'.($priv_default == '4' ? ' selected="selected"' : '').'>Admin</option>
+                  </select></td>
+                </tr>
+                <tr><td></td><td><input type="submit" value="Speichern und weiter"></td></tr>
+            </table></form>
+            </div>';
+        return $html;
+    }
+}
+
+class ovp_final extends ovp_source {
+    public static $type = 'final';
+    public static $title = 'Konfigurationsabschluss';
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function __construct() {}
+
+    public function generate_view() {
+        // FIXME
+        if (basename($_SERVER['SCRIPT_NAME']) == 'index.php') {
+            rename('index.php', 'wizard.php');
+            rename('index_.php', 'index.php');
+        }
+        $wizard = file_get_contents('wizard.php');
+        $replacement = '$logger = new ovp_logger(new db()); $logger->authorize(ovp_logger::VIEW_ADMIN);';
+        $wizard = preg_replace('|/\* authorization placeholder \*/|', $replacement, $wizard, 1);
+        file_put_contents('wizard.php', $wizard);
+        $html .= '<p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p>';
+    }
+}
+
+class ovp_navi_wizard extends ovp_source {
+    public static $type = 'navi_wizard';
+    public static $title = 'Installationsnavigator';
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function __construct() {}
+
+    public function generate_view() {
+        $html = '<div id="ovp_navi"><ol>';
+        // FIXME
+        $pages = array('mysql' => 'MySQL Credentials', 'settings' => 'Misc. Settings', 'admin' => 'Admin Account', 'done' => 'Save and Clean Up');
+        foreach ($pages as $page => $title) {
+            if ($_GET['page'] == $page) {
+                $html .= '<li><b>'.$title.'</b></li><br>';
+            } else {
+                $html .= '<li><a href="'.basename($_SERVER['SCRIPT_NAME']).'?page='.$page.'">'.$title.'</a></li><br>';
+            }
+        }
+        return $html.'</ul></div>';
+    }
+}
+
+
 class ovp_navi extends ovp_source {
     public static $type = 'navi';
     public static $title ='Navigationsleiste';
     public static $priv_req = ovp_logger::VIEW_NONE;
     private $current;
+    private $logger;
 
-    public function __construct($db, $current) {
-        parent::__construct($db);
+    public function __construct($logger, $current) {
         $this->current = $current;
+        $this->logger = $logger;
     }
 
     public function generate_view() {
@@ -467,13 +608,12 @@ class ovp_navi extends ovp_source {
         $sources[] = get_class_vars('ovp_about');
         $sources[] = get_class_vars('ovp_password');
         $sources[] = get_class_vars('ovp_login');
-        $logger = new ovp_logger($this->db);
 
         $html =
              '<div id="ovp_navi">';
         $first = true;
         foreach ($sources as $source) {
-            if ($logger->is_authorized($source['priv_req'])) {
+            if ($this->logger->is_authorized($source['priv_req'])) {
                 if($first) {
                     $first = false;
                 } else {
@@ -488,7 +628,7 @@ class ovp_navi extends ovp_source {
                 }
             }
         }
-        if ($logger->is_authorized(ovp_logger::PRIV_LOGIN)){
+        if ($this->logger->is_authorized(ovp_logger::PRIV_LOGIN)){
             $html .= ' |
                 <a href="post.php?poster=logout">Logout</a>';
         }
@@ -511,12 +651,11 @@ class ovp_page {
     private $db;
     private $navi;
 
-    public function __construct(db $db, ovp_source $source) {
-        $this->db = $db;
+    public function __construct(ovp_source $source, ovp_source $navi) {
         $this->source = $source;
         $source_vars = get_class_vars(get_class($source));
         $this->title = $source_vars['title'];
-        $this->navi = new ovp_navi($db, $source_vars['type']);
+        $this->navi = $navi;
     }
 
     public function get_html() {

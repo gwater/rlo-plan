@@ -185,7 +185,80 @@ class post_entry extends poster {
             fail('Ungültige Anfrage');
         }
     }
+}
 
+class post_mysql extends poster {
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function evaluate($post) {
+        if (!(isset($post['host']) && isset($post['base']) && isset($post['user']) && isset($post['pass']))) {
+            die('ERROR: post parameter missing');
+        }
+        set('DB_HOST', "'".$post['host']."'");
+        set('DB_BASE', "'".$post['base']."'");
+        set('DB_USER', "'".$post['user']."'");
+        set('DB_PASS', "'".$post['pass']."'");
+        if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
+            goto_page('mysql&error='.urlencode($error));
+        }
+        //FIXME
+        goto_page('settings');
+    }
+}
+
+class post_account extends poster {
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function evaluate($post) {
+    // FIXME+++FIXME+++FIXME!!!
+    case 'save':
+        if (!(isset($_POST['name']) && isset($_POST['pwd']))) {
+            die('ERROR: post parameter missing');
+        }
+        set('FIRST_RUN', 'true'); // this causes the database tables to be reset!
+        if (file_exists($temp)) {
+            unlink($config);
+            rename($temp, $config);
+        }
+        // HACKHACK: what this does is "re-evaluate" db.inc.php
+        session_start();
+        $_SESSION['name'] = $_POST['name'];
+        $_SESSION['pwd']  = $_POST['pwd'];
+        goto_page('admin&action=save2');
+        break;
+    case 'save2':
+        session_start();
+        $_POST['name'] = $_SESSION['name'];
+        $_POST['pwd']  = $_SESSION['pwd'];
+        session_destroy();
+        // END OF HACK
+        $db = new db();
+        $error = '';
+        if (ovp_user::name_exists($db, $_POST['name'])) {
+            $user = ovp_user::get_user_by_name($db, $_POST['name']);
+            $user->set_password($_POST['pwd']);
+        } else {
+            ovp_user::add($db, $_POST['name'], $_POST['pwd'], 'admin');
+        }
+        goto_page('done');
+        break;
+    }
+}
+
+class post_settings extends poster {
+    public static $priv_req = ovp_logger::VIEW_ADMIN;
+
+    public function evaluate($post) {
+        if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
+            die('ERROR: post parameter missing');
+        }
+        set('DEBUG',             $post['debug']);
+        set('DELETE_OLDER_THAN', $post['delold']);
+        set('SKIP_WEEKENDS',     $post['skipweekends']);
+        set('PRIV_DEFAULT',      $post['privdefault']);
+        //FIXME
+        goto_page('admin');
+    }
 }
 
 ?>

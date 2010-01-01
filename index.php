@@ -62,7 +62,8 @@ default:
 $source_vars = get_class_vars(get_class($source));
 $logger = new ovp_logger($db);
 $logger->authorize($source_vars['priv_req']);
-$page = new ovp_page($db, $source);
+$navi = new ovp_navi($logger, $source_vars['type']);
+$page = new ovp_page($source, $navi);
 exit($page->get_html());
 
 ?>
