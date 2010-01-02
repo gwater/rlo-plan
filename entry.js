@@ -72,16 +72,30 @@ function delete_entry(button) {
 }
 
 function save_entry(button) {
-    hide_buttons(button);
     var row = button.parentNode.parentNode;
     var teacher = row.parentNode.parentNode;
     var day = teacher.parentNode;
-    var msg = '&date=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
+    var date = parse_date(day.firstChild.textContent);
+    if (date === null) {
+        alert('Bitte berichtigen Sie erst das Datum.');
+        return;
+    }
+    date = format_date_server(date);
+    var msg = '&date=' + date + '&teacher=' + teacher.firstChild.textContent;
     var contentHasChanged = false;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
-        if (cell.firstChild.value != cell.lastChild.textContent) {
-            cell.textContent = cell.firstChild.value;
+        var new_value = cell.firstChild.value;
+        if (i == 0) {
+            new_value = parse_time(new_value);
+            if (new_value === null) {
+                alert('Die Uhrzeit ist fehlerhaft.');
+                return;
+            }
+            hide_buttons(button);
+        }
+        if (new_value != cell.lastChild.textContent) {
+            cell.textContent = new_value;
             contentHasChanged = true;
         } else {
             cell.textContent = cell.lastChild.textContent;
@@ -109,14 +123,28 @@ function save_entry(button) {
 }
 
 function save_new_entry(button) {
-    hide_buttons(button);
     var row = button.parentNode.parentNode;
     var teacher = row.parentNode.parentNode;
     var day = teacher.parentNode;
-    var msg = '&date=' + day.firstChild.textContent + '&teacher=' + teacher.firstChild.textContent;
+    var date = parse_date(day.firstChild.textContent);
+    if (date === null) {
+        alert('Bitte berichtigen Sie erst das Datum.');
+        return;
+    }
+    date = format_date_server(date);
+    var msg = '&date=' + date + '&teacher=' + teacher.firstChild.textContent;
     for (var i = 0; i < row.childNodes.length - 1; i++) {
         var cell = row.childNodes[i];
-        cell.textContent = cell.firstChild.value;
+        var new_value = cell.firstChild.value;
+        if (i == 0) {
+            new_value = parse_time(new_value);
+            if (new_value === null) {
+                alert('Die Uhrzeit ist fehlerhaft.');
+                return;
+            }
+            hide_buttons(button);
+        }
+        cell.textContent = new_value;
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     msg = 'action=add' + msg;
@@ -188,6 +216,19 @@ function add_teacher(button) {
     teacher.firstChild.onclick();
 }
 
+function parse_time(time) {
+    var matches = time.match(/^(\d\d?).(\d\d?)$/);
+    if (matches !== null) {
+        for (var i = 1; i <= 2; i++) {
+            if (matches[i].length == 1) {
+                matches[i] = '0' + matches[i];
+            }
+        }
+        return matches[1] + ':' + matches[2];
+    }
+    return null;
+}
+
 function parse_date(date) {
     var matches = date.match(/(\d\d?).(\d\d?).((\d\d)?\d\d)$/);
     if (matches !== null) {
@@ -221,8 +262,22 @@ function parse_date(date) {
     return null;
 }
 
-function format_date(d) {
-    return day_names[d.getDay()] + ', ' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+// DayOfWeek, DD.MM.YYYY
+function format_date_client(d) {
+    var day = d.getDate() + '';
+    if (day.length == 1) {
+        day = '0' + day;
+    }
+    var month = (d.getMonth() + 1) + '';
+    if (month.length == 1) {
+        month = '0' + month;
+    }
+    return day_names[d.getDay()] + ', ' + day + '.' + month + '.' + d.getFullYear();
+}
+
+// YYYY-MM-DD
+function format_date_server(d) {
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 }
 
 function get_default_date() {
@@ -240,7 +295,7 @@ function get_default_date() {
     } else if (d.getDay() == 6) { // skip Saturday
         d.setDate(d.getDate() + 2);
     }
-    return format_date(d);
+    return format_date_client(d);
 }
 
 function add_day(button) {
@@ -279,13 +334,18 @@ function newEntry(id, cols) {
 }
 
 function save_teacher(teacher) {
-    var day = teacher.parentNode.firstChild.textContent;
+    var date = parse_date(teacher.parentNode.firstChild.textContent);
+    if (date === null) {
+        alert('Bitte berichtigen Sie erst das Datum.');
+        return;
+    }
+    date = format_date_server(date);
     var rows = teacher.querySelector('.ovp_table').childNodes;
     for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         if (row.id) {
             var cells = row.childNodes;
-            var msg = 'action=update&id=' + row.id.substr(5) + '&day=' + day + '&teacher=' + teacher.firstChild.textContent;
+            var msg = 'action=update&id=' + row.id.substr(5) + '&date=' + date + '&teacher=' + teacher.firstChild.textContent;
             for (var j = 0; j < cells.length - 1; j++) {
                 msg += '&' + column_names[j] + '=' + cells[j].textContent;
             }
@@ -419,7 +479,7 @@ function newDay(title, teachers) {
         if (this.value != '') {
             var new_date = parse_date(this.value);
             if (new_date) {
-                var new_header = format_date(new_date);
+                var new_header = format_date_client(new_date);
                 if (header.textContent != new_header) {
                     header.textContent = new_header;
                     if (table) {

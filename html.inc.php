@@ -253,9 +253,8 @@ class ovp_author extends ovp_source {
                     $script .= '
                     teachers.push(newTeacher("'.$teacher.'", entries));';
                 }
-                $today = strftime("%A, %d.%m.%Y", $values['time']);
                 $script .= '
-                    days.push(newDay("'.$today.'", teachers));';
+                    days.push(newDay("'.$entry->get_date().'", teachers));';
             }
             $script .= '
                     insert_days(days);';

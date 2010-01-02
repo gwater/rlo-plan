@@ -173,8 +173,8 @@ class post_entry extends poster {
                 isset($post['oldroom']) && isset($post['newroom']))) {
                 fail('Daten unvollständig');
             }
-            if (ovp_entry::add($this->db, $post)) {
-                exit('success');
+            if ($id = ovp_entry::add($this->db, $post)) {
+                exit($id);
             }
             fail('Hinzufügen gescheitert');
         case 'update':
@@ -189,18 +189,16 @@ class post_entry extends poster {
             $entry = new ovp_entry($this->db, $post['id']);
             if ($entry->set_values($post)) {
                 exit('updated');
-            } else {
-                fail('Änderung gescheitert');
             }
+            fail('Änderung gescheitert');
         case 'delete':
             if (!isset($post['id'])) {
                 fail('ID fehlt');
             }
-            if (!ovp_entry::remove($this->db, $post['id'])) {
-                fail('ID ungültig');
-            } else {
+            if (ovp_entry::remove($this->db, $post['id'])) {
                 exit('deleted');
             }
+            fail('ID ungültig');
         default:
             fail('Ungültige Anfrage');
         }
