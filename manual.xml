@@ -1,25 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="de">
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:lang="de"
+      xmlns:xl="http://www.w3.org/1999/xlink">
 <info>
   <title>RLO-Plan Handbuch</title>
   <author><firstname>Josua</firstname><surname>Grawitter</surname></author>
   <copyright><year>2009</year><holder>Josua Grawitter</holder></copyright>
+  <legalnotice>Dieses Handbuch steht unter einer <link xl:href="http://creativecommons.org/licenses/by-sa/3.0/de/">Creative Commons Namensnennung-Weitergabe unter gleichen Bedingungen 3.0 Deutschland Lizenz</link></legalnotice>
 </info>
 <chapter>
 <title>Grundlagen</title>
-<para>...</para>
+<section>
+<title>Was ist RLO-Plan?</title>
+<para>RLO-Plan, der "Realtime Lesson Online Plan", ist ein Weboberfläche zum komfortablen Erstellen und Verbreiten von Vertretungsplänen über HTTP.</para>
+</section>
+<section>
+<title>Was sind "Rollen"?</title>
+<para>RLO-Plan basiert auf einem einfachen Rollenmodell, das den Lebenslauf eines Vertretungslpanes eins-zu-eins abbildet.</para>
+<para> Es gibt folgende Rollen: admin, author, print und public.</para>
+<para>Die admin-Rolle ist für Administratoren, die sich um die Benutzerverwaltung und allgemeine Einstellungen wie die Verfallszeit von Einträgen im Vertretungsplan kümmern, vorgesehen.</para>
+<para>Die author-Rolle ist für Autoren, die den Vertretungsplan erstellen und bearbeiten, vorgesehen.</para>
+<para>Nutzer mit der print-Rolle haben Zugriff auf die Druckversion des Vertretungsplans, die auch sensitive Daten, wie Lehrernamen, enthält und zum Aushang in der Schulevorgesehen ist.</para>
+<para>Die public-Rolle bietet nur Zugriff auf die anonymisierte Version des Vertretungsplans und bietet sich damit als standardmäßige Rolle für unangemeldete Nutzer an.</para>
+</section>
 </chapter>
 <chapter>
 <title>Nutzer</title>
-<para>...</para>
+<para>Nutzer haben die Rolle print oder public und können dementsprechend lediglich die anonymisierte oder vollständige Version des Vertretungsplans betrachten.</para>
+<para>Angemeldete Benutzer haben außerdem die Möglichkeit ihr eigenes Passwort zu ändern. Dazu klicken Sie nach dem Login auf "Passwort ändern", geben ihr altes, sowie ein neues Passwort ein und klicken auf "Bestätigen".</para>
 </chapter>
 <chapter>
 <title>Autoren</title>
-<para>...</para>
+<section>
+<title>Wie werden Einträge hinzugefügt?</title>
+<para>Unter "Einträge verwalten" können neue Einträge hinzugefügt werden. Die Einträge werden schon hier nach Tagen und fehlenden Lehrern sortiert. Der Prozess ist damit angelehnt an das handschriftliche Schreiben des Vertretungsplans.</para>
+<para>Als Erstes wir durch einen Klick auf "+Tag" das Datum für den Eintrag festzulegen. Zugelassen sind verschiedene Datumformate: "2.11.", "Montag" oder auch "heute" bzw "morgen".</para>
+<para>Nach einem Klick auf "+Lehrer" muss der fehlende Lehrer spezifiziert werden. Für diesen Lehrer können nun Einträge hinzugefügt werden.</para>
+<para>Für jeden Eintrag muss nun eine Tabellenzeile ausgefüllt werden. Nicht benötigte Felder können leer gelassen werden. Ein Klick auf "Speichern" überträgt die Daten in die Datenbank. Soll der Eintrag nicht gespeichert werden, kann der Vorgang mit einem Klick auf "Abbruch" abgebrochen werden.</para>
+<para>Weitere Tage, Lehrer und Einträge werden nach dem gleichen Verfahren hinzugefügt.</para>
+<para>Das Verfahren zur Änderung von Einträgen sollte offensichtlich sein.</para>
+</section>
 </chapter>
 <chapter>
 <title>Administratoren</title>
-<para>...</para>
+<section>
+<title>Der Installationsprozess</title>
+<para>Sie sollten vor der Installation bereits einen MySQL-Server vorbereiten. Legen Sie eine Datenbank samt einem Benutzer mit allen Privilegien für diese Datenbank an.</para>
+<para>Nachdem Sie RLO-Plan entpackt haben, geben Die ihrem Webserver Schreibrechte für das Installationsverzeichnes, in dem RLO-Plan liegt. Rufen sie dann RLO-Plan in ihrem Browser auf.</para>
+<para>Beim ersten Aufrufen von RLO-Plan wird der Installationswizard geöffnet. Der Wizard führt Sie durch die erstmalige Einrichtung von RLO-Plan. Nachdem der Ersteinrichtung kann RLO-Plan verwendet werden.</para>
+</section>
+<section>
+<title>Bedeutung der AGPL</title>
+<para>RLO-Plan steht under der "GNU Affero General Public License". Die Lizenz garantiert allen Nutzern das Recht den Quelltext einzusehen. Wenn der Quelltext verändert wird muss der veränderte Quelltext ebenfalls den Nutzern zugänglich gemacht werden. Der Installationswizard übernimmt diese Aufgabe, indem er automatisch alle Dateien im Installationsverzeichnis in eine ZIP Datei packt. Sie sollten sich trotzdem über die Bedingungen der Lizenz informieren, um einen Verstoß gegen ihre Bedingungen zu vermeiden.</para>
+</section>
 </chapter>
 <chapter>
 <title>Entwickler</title>
