@@ -19,6 +19,8 @@
  * along with RLO-Plan.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once('config.inc.php');
+
 class ovp_zipper {
     public static function pack_dir() {
         $dir = getcwd();
@@ -51,5 +53,48 @@ class ovp_zipper {
     }
 }
 
+class ovp_config {
+    private $file;
+
+    public function __construct($file = 'config.inc.php') {
+        if (file_exists($file)) {
+            $this->file = $file;
+        } else {
+            ovp_msg::fail('Konfigurationsdatei nicht gefunden');
+        }
+    }
+
+    public function get($define) {
+        $text = file_get_contents($this->file);
+        if (preg_match('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $text, $matches) == 0) {
+            die('ERROR: define ' + $define  + ' not found');
+        }
+        return trim($matches[0], "'");
+    }
+
+    public function set($define, $value) {
+        $text = file_get_contents($this->file);
+        $text = preg_replace('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $value, $text, 1);
+        if (file_put_contents($this->file, $text)) {
+            return true;
+        } else {
+            ovp_msg::fail('Ändern der Konfigurationsdatei gescheitert');
+        }
+    }
+}
+
+class ovp_msg {
+    // TODO: add $code as parameter
+    public static function fail($msg) {
+        header('HTTP/1.0 400 Bad Request');
+        exit($msg);
+    }
+
+    public static function debug($msg) {
+        if (DEBUG) {
+            print($msg);
+        }
+    }
+}
 
 ?>

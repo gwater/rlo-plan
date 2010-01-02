@@ -20,12 +20,11 @@
  */
 
 require_once('config.inc.php');
-require_once('misc.inc.php');
 require_once('html.inc.php');
-require_once('zipper.inc.php');
 require_once('poster.inc.php');
 require_once('logger.inc.php');
 require_once('db.inc.php');
+require_once('interfaces.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
@@ -101,7 +100,7 @@ exit($page->get_html());
 class ovp_wizard {
     public static function initialize() {
         if (!ovp_zipper::pack_dir()) {
-            fail('Erstellen des Quellarchivs gescheitert');
+            ovp_msg::fail('Erstellen des Quellarchivs gescheitert');
         }
         return true;
     }

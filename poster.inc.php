@@ -21,7 +21,7 @@
 
 require_once('db.inc.php');
 require_once('user.inc.php');
-require_once('misc.inc.php');
+require_once('interfaces.inc.php');
 require_once('entry.inc.php');
 require_once('logger.inc.php');
 
@@ -47,13 +47,13 @@ class post_user extends poster {
                 if ($id){
                     exit($id);
                 } else {
-                    fail('Hinzufügen gescheitert');
+                    ovp_msg::fail('Hinzufügen gescheitert');
                 }
             }
-            fail('Daten unvollständig');
+            ovp_msg::fail('Daten unvollständig');
         case 'update':
             if (!isset($post['id'])) {
-                fail('ID fehlt');
+                ovp_msg::fail('ID fehlt');
             }
             $user = new ovp_user($this->db, $post['id']);
             $result = true;
@@ -75,19 +75,19 @@ class post_user extends poster {
                     // DoNothing (tm)
                 }
                 if (!($result)) {
-                    fail('Änderung gescheitert');
+                    ovp_msg::fail('Änderung gescheitert');
                 }
             }
             exit('updated');
         case 'delete':
             if (!isset($post['id'])) {
-                fail('ID fehlt');
+                ovp_msg::fail('ID fehlt');
             } else if (ovp_user::remove($this->db, $post['id'])) {
                 exit('deleted');
             }
-            fail('ID ungültig');
+            ovp_msg::fail('ID ungültig');
         default:
-            fail('Ungültige Anfrage');
+            ovp_msg::fail('Ungültige Anfrage');
         }
     }
 }
@@ -107,13 +107,13 @@ class post_password extends poster {
                 if ($user->set_password($post['newpwd'])) {
                     exit('updated');
                 } else {
-                    fail('Passwort ändern gescheitert');
+                    ovp_msg::fail('Passwort ändern gescheitert');
                 }
             } else {
-                fail('Altes Password inkorrekt');
+                ovp_msg::fail('Altes Password inkorrekt');
             }
         } else {
-            fail('Daten unvollständig');
+            ovp_msg::fail('Daten unvollständig');
         }
     }
 }
@@ -171,12 +171,12 @@ class post_entry extends poster {
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
                 isset($post['oldroom']) && isset($post['newroom']))) {
-                fail('Daten unvollständig');
+                ovp_msg::fail('Daten unvollständig');
             }
             if ($id = ovp_entry::add($this->db, $post)) {
                 exit($id);
             }
-            fail('Hinzufügen gescheitert');
+            ovp_msg::fail('Hinzufügen gescheitert');
         case 'update':
             if (!(isset($post['id'])    &&
                 isset($post['date'])    && isset($post['teacher'])  &&
@@ -184,23 +184,23 @@ class post_entry extends poster {
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
                 isset($post['oldroom']) && isset($post['newroom']))) {
-                fail('Daten unvollständig');
+                ovp_msg::fail('Daten unvollständig');
             }
             $entry = new ovp_entry($this->db, $post['id']);
             if ($entry->set_values($post)) {
                 exit('updated');
             }
-            fail('Änderung gescheitert');
+            ovp_msg::fail('Änderung gescheitert');
         case 'delete':
             if (!isset($post['id'])) {
-                fail('ID fehlt');
+                ovp_msg::fail('ID fehlt');
             }
             if (ovp_entry::remove($this->db, $post['id'])) {
                 exit('deleted');
             }
-            fail('ID ungültig');
+            ovp_msg::fail('ID ungültig');
         default:
-            fail('Ungültige Anfrage');
+            ovp_msg::fail('Ungültige Anfrage');
         }
     }
 }
@@ -215,7 +215,7 @@ class post_mysql extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['host']) && isset($post['base']) && isset($post['user']) && isset($post['pass']))) {
-            fail('Daten unvollständig');
+            ovp_msg::fail('Daten unvollständig');
         }
         $config = new ovp_config();
         $config->set('DB_HOST', "'".$post['host']."'");
@@ -247,7 +247,7 @@ class post_settings extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
-            fail('Daten unvollständig');
+            ovp_msg::fail('Daten unvollständig');
         }
         $config = new ovp_config();
         $config->set('DEBUG',             $post['debug']);
@@ -275,7 +275,7 @@ class post_account extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['name']) && isset($post['pwd']))) {
-            fail('Daten unvollständig');
+            ovp_msg::fail('Daten unvollständig');
         }
         if (ovp_user::name_exists($this->db, $post['name'])) {
             $user = ovp_user::get_user_by_name($this->db, $post['name']);

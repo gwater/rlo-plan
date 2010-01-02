@@ -50,25 +50,22 @@ class db extends mysqli {
         }
         parent::__construct($host, $user, $pass);
         if ($this->connect_errno) {
-            $this->fail('Keine Verbindung zum DB-Server');
+            ovp_msg::fail('Keine Verbindung zum DB-Server');
         }
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->query("SET time_zone = 'Europe/Berlin'");
         $this->query("SET lc_time_names = 'de_DE'");
         if (!$this->select_db($base)) {
             if (!$this->create_db()) {
-                $this->fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
+                ovp_msg::fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
             }
         }
     }
 
     public function query($query) {
         if (!($result = parent::query($query))) {
-            if (DEBUG) {
-                $this->fail($this->error);
-            } else {
-                $this->fail('SQL-Anfrage ungültig');
-            }
+            ovp_msg::debug($this->error);
+            ovp_msg::fail('SQL-Anfrage ungültig');
         }
         return $result;
     }
@@ -135,11 +132,6 @@ class db extends mysqli {
             `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
             `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
         );
-    }
-
-    // FIXME: maybe use fail() from misc.inc.php instead?
-    private function fail($msg) {
-        die('ERROR: '.$msg);
     }
 }
 ?>
