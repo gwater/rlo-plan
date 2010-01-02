@@ -53,7 +53,8 @@ class db extends mysqli {
             $this->fail('Keine Verbindung zum DB-Server');
         }
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
-        $this->query("SET @@time_zone = 'Europe/Berlin'");
+        $this->query("SET time_zone = 'Europe/Berlin'");
+        $this->query("SET lc_time_names = 'de_DE'");
         if (!$this->select_db($base)) {
             if (!$this->create_db()) {
                 $this->fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
