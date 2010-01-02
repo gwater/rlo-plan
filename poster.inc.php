@@ -128,8 +128,7 @@ class post_login extends poster {
 
     public function evaluate($post) {
         if (isset($post['name']) && isset($post['pwd'])) {
-            $_SESSION['privilege'] = ovp_logger::login($this->db, $post['name'], $post['pwd']);
-            if ($_SESSION['privilege'] != -1) {
+            if (ovp_logger::login($this->db, $post['name'], $post['pwd'])) {
                 ovp_logger::redirect($_GET['continue']);
             }
         }

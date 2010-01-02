@@ -44,24 +44,25 @@ class ovp_logger {
         $this->db = $db;
     }
 
-    public function is_authorized($requiredPrivilege = 1) {
-        if ($requiredPrivilege == self::PRIV_LOGIN) {
+    public function is_authorized($priv_req = 1) {
+        if ($priv_req == self::PRIV_LOGIN) {
             return isset($this->user);
-        } else if ($requiredPrivilege == self::PRIV_LOGOUT) {
+        } else if ($priv_req == self::PRIV_LOGOUT) {
             return !isset($this->user);
-        }
-        if ($requiredPrivilege <= PRIV_DEFAULT) {
+        } else if ($priv_req <= PRIV_DEFAULT) {
             return true;
+        } else if (isset($this->user)) {
+            if ($priv_req <= $this->user->get_privilege()) {
+                return $this->session_ok();
+            }
         }
-        return isset($_SESSION['privilege']) &&
-            $_SESSION['privilege'] >= $requiredPrivilege &&
-            $this->session_ok();
+        return false;
     }
 
-    public function authorize($requiredPrivilege = 1) {
-        if (!$this->is_authorized($requiredPrivilege)) {
-            if ($requiredPrivilege == self::PRIV_LOGOUT) {
-                self::redirect();
+    public function authorize($priv_req = 1) {
+        if (!$this->is_authorized($priv_req)) {
+            if ($priv_req == self::PRIV_LOGOUT) {
+                self::redirect(basename($_SERVER['SCRIPT_NAME']));
             }
             $continue = urlencode(basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING']);
             $link = self::get_source_link('login&continue='.$continue);
@@ -112,14 +113,13 @@ class ovp_logger {
     public static function login(db $db, $name, $pwd) {
         $result = $db->query(
            "SELECT
-                `id`,
-                `privilege`
+                `id`
             FROM `user` WHERE
                 `name`      = '".$db->protect($name)."' AND
                 `pwd_hash`  = '".$db->protect(hash('sha256', $pwd))."'"
         );
         if (!($row = $result->fetch_assoc())) {
-            return -1; // user not found or wrong password
+            return false; // user not found or wrong password
         }
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
@@ -133,7 +133,7 @@ class ovp_logger {
                 `id` = '".$db->protect($row['id'])."'
             LIMIT 1"
         );
-        return $row['privilege']; // privilege is always positive
+        return true;
     }
 
     public static function logout(db $db) {

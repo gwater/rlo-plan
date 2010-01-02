@@ -23,9 +23,12 @@ require_once('html.inc.php');
 require_once('zipper.inc.php');
 require_once('poster.inc.php');
 require_once('logger.inc.php');
+require_once('db.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
+
+session_start();
 
 /* use this variable anywhere you need to decide between wizard usage and
  * general usage (eg redirections to the next wizard page in poster.inc.php)
@@ -51,6 +54,7 @@ if (isset($poster)) {
         exit($poster->evaluate($_POST));
     }
     $poster_vars = get_class_vars(get_class($poster));
+    $db = new db();
     $logger = new ovp_logger($db);
     if (!$logger->is_authorized($poster_vars['priv_req'])) {
         header('HTTP/1.0 401 Unauthorized');
@@ -60,9 +64,6 @@ if (isset($poster)) {
 }
 
 switch ($_GET['source']) {
-    case 'mysql':
-        $source = new ovp_mysql();
-        break;
     case 'settings':
         $source = new ovp_settings();
         break;
@@ -76,10 +77,10 @@ switch ($_GET['source']) {
         ovp_wizard::finalize();
         $source = new ovp_final();
         break;
+    case 'mysql':
     default:
         ovp_wizard::initialize();
-        $link = ovp_logger::get_source_link('mysql');
-        ovp_logger::redirect($link);
+        $source = new ovp_mysql();
 }
 
 $source_vars = get_class_vars(get_class($source));
