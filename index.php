@@ -19,11 +19,16 @@
  * along with RLO-Plan.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once('config.inc.php');
 require_once('logger.inc.php');
 require_once('db.inc.php');
 require_once('html.inc.php');
 require_once('misc.inc.php');
 require_once('poster.inc.php');
+
+if (FIRST_RUN) {
+   ovp_logger::redirect('wizard.php');
+}
 
 date_default_timezone_set('Europe/Berlin');
 setlocale(LC_TIME, 'de_DE.utf8', 'deu');
