@@ -67,23 +67,23 @@ if (isset($poster)) {
 }
 
 switch ($_GET['source']) {
-    case 'settings':
-        $source = new ovp_settings();
-        break;
-    case 'account':
-        $source = new ovp_account();
-        break;
-    case 'login':
-        $source = new ovp_login();
-        break;
-    case 'final':
-        ovp_wizard::finalize();
-        $source = new ovp_final();
-        break;
-    case 'mysql':
-    default:
-        ovp_wizard::initialize();
-        $source = new ovp_mysql();
+case 'settings':
+    $source = new ovp_settings();
+    break;
+case 'account':
+    $source = new ovp_account();
+    break;
+case 'login':
+    $source = new ovp_login();
+    break;
+case 'final':
+    ovp_wizard::finalize();
+    $source = new ovp_final();
+    break;
+case 'mysql':
+default:
+    ovp_wizard::initialize();
+    $source = new ovp_mysql();
 }
 
 $source_vars = get_class_vars(get_class($source));

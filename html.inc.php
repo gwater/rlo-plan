@@ -544,7 +544,7 @@ class ovp_settings extends ovp_source {
 class ovp_final extends ovp_source {
     public static $type = 'final';
     public static $title = 'Konfigurationsabschluss';
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_logger::VIEW_NONE;
 
     public function generate_view() {
         $html = '<div class="ovp_container"><p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p></div>';
@@ -601,6 +601,8 @@ class ovp_navi extends ovp_source {
         $sources[] = get_class_vars('ovp_print');
         $sources[] = get_class_vars('ovp_author');
         $sources[] = get_class_vars('ovp_admin');
+        $sources[] = get_class_vars('ovp_mysql');
+        $sources[] = get_class_vars('ovp_settings');
         $sources[] = get_class_vars('ovp_about');
         $sources[] = get_class_vars('ovp_password');
         $sources[] = get_class_vars('ovp_login');

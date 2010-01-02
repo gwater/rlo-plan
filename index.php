@@ -47,6 +47,12 @@ case 'user':
 case 'entry':
     $poster = new post_entry($db);
     break;
+case 'mysql':
+    $poster = new post_mysql();
+    break;
+case 'settings':
+    $poster = new post_settings();
+    break;
 case 'login':
     $poster = new post_login($db);
     break;
@@ -79,6 +85,12 @@ case 'author':
     break;
 case 'admin':
     $source = new ovp_admin($db);
+    break;
+case 'settings':
+    $source = new ovp_settings();
+    break;
+case 'mysql':
+    $source = new ovp_mysql();
     break;
 case 'login':
     $source = new ovp_login();
