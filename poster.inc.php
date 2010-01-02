@@ -227,9 +227,9 @@ class post_mysql extends poster {
         if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
             $link = ovp_logger::get_source_link('mysql&error='.urlencode($error));
         } else {
-            $db = new db($config);
-            $db->reset_tables();
             if ($this->is_wiz) {
+                $db = new db($config);
+                $db->reset_tables();
                 $link = ovp_logger::get_source_link('settings');
             } else {
                 $link = ovp_logger::get_source_link('mysql');
