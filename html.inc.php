@@ -450,7 +450,8 @@ class ovp_mysql extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {
-        $html = '<div class="ovp_container">';
+        $html = '<div class="ovp_container">
+            <h1>'.self::$title.'</h1>';
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
@@ -471,13 +472,13 @@ class ovp_mysql extends ovp_source {
 
 class ovp_account extends ovp_source {
     public static $type = 'account';
-    public static $title = 'Administrator anlegen';
+    public static $title = 'Administrationskonto anlegen';
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {
         $link = ovp_logger::get_poster_link(self::$type);
-        $html = '
-            <div class="ovp_container">
+        $html = '<div class="ovp_container">
+            <h1>'.self::$title.'</h1>
             <form action="'.$link.'" method="POST"><table>
                 <tr><td>Benutzer</td><td><input type="text" name="name" value="admin">
                 <tr><td>Passwort</td><td><input type="password" name="pwd" value="">
@@ -494,7 +495,8 @@ class ovp_settings extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
 
     public function generate_view() {
-        $html = '<div class="ovp_container">';
+        $html = '<div class="ovp_container">
+            <h1>'.self::$title.'</h1>';
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
@@ -542,11 +544,14 @@ class ovp_settings extends ovp_source {
 
 class ovp_final extends ovp_source {
     public static $type = 'final';
-    public static $title = 'Konfigurationsabschluss';
+    public static $title = 'Konfiguration abgeschlossen';
     public static $priv_req = ovp_logger::VIEW_NONE;
 
     public function generate_view() {
-        $html = '<div class="ovp_container"><p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p></div>';
+        $html = '<div class="ovp_container">
+              <h1>'.self::$title.'</h1>
+              <p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p>
+            </div>';
         return $html;
     }
 }
