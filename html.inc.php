@@ -220,10 +220,12 @@ class ovp_author extends ovp_source {
     }
 
     protected function generate_header() {
+        $link = ovp_logger::get_poster_link('entry');
         $script =
            '<script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
+            var url = "'.$link.'";
             function fill_in_data() {';
         if ($this->entries) {
             $script .= '
@@ -294,15 +296,16 @@ class ovp_login extends ovp_source {
     public static $priv_req = ovp_logger::PRIV_LOGOUT;
 
     protected function generate_view() {
+        if (isset($_GET['continue'])) {
+            $link = ovp_logger::get_poster_link('login&continue='.urlencode($_GET['continue']));
+        } else {
+            $link = $link = ovp_logger::get_poster_link('login');
+        }
         $html =
          '<div class="ovp_container">
           <h1>Login</h1>
           <p>Um diese Seite öffnen zu können, benötigen Sie ein entsprechend autorisiertes Benutzerkonto.</p>
-          <form action="post.php?poster=login';
-        if (isset($_GET['continue'])) {
-            $html .= '&continue='.urlencode($_GET['continue']);
-        }
-        $html .= '" method="POST">
+          <form action="'.$link.'" method="POST">
             <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
@@ -343,10 +346,12 @@ class ovp_admin extends ovp_source {
 
     protected function generate_header() {
         $roles = ovp_user::get_roles();
+        $link = ovp_logger::get_poster_link('user');
         $script = '
             <script type="text/javascript" src="admin.js"></script>
             <script type="text/javascript" src="functions.js"></script>
             <script type="text/javascript">
+            var url = "'.$link.'";
             var roles = [';
         $first = true;
         foreach ($roles as $i => $role) {
@@ -401,10 +406,11 @@ class ovp_password extends ovp_source {
 
     protected function generate_view() {
         // TODO: new password two times?
+        $link = ovp_logger::get_poster_link(self::$type);
         $html =
          '<div class="ovp_container">
           <h1>'.self::$title.'</h1>
-          <form action="post.php?poster=password" method="POST">
+          <form action="'.$link.'" method="POST">
             <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
@@ -620,8 +626,9 @@ class ovp_navi extends ovp_source {
             }
         }
         if ($this->logger->is_authorized(ovp_logger::PRIV_LOGIN)){
+            $link = ovp_logger::get_poster_link('logout');
             $html .= ' |
-                <a href="post.php?poster=logout">Logout</a>';
+                <a href="'.$link.'">Logout</a>';
         }
         $html .= '
               </div>';

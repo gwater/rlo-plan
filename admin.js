@@ -21,8 +21,6 @@ var column_names      = ['name',  'password', 'role'];
 var column_widths     = ['100px', '100px',    '40px'];
 var column_maxLengths = [ 20,      20,         5];
 
-var url = 'post.php?poster=user';
-
 function make_selector(cell) {
     var selector = newElement('select');
     for (var i in roles){

@@ -25,8 +25,6 @@ var column_maxLengths = [ 5,         5,        5,         3,          30,       
 var day_names = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 var relative_day_names = ['heute', 'morgen', 'übermorgen']; // array index corresponds to distance from today
 
-var url = 'post.php?poster=entry';
-
 function modify_entry(button) {
     hide_buttons(button);
     show_buttons(button.nextSibling.nextSibling);
