@@ -45,6 +45,9 @@ case 'settings':
 case 'account':
     $poster = new post_account(new db(), $is_wiz);
     break;
+case 'login':
+    $poster = new post_login(new db());
+    break;
 default:
     // DoNothing (tm)
 }
