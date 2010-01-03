@@ -135,7 +135,7 @@ function save_new_user(button) {
     if (request) {
         if (request.status == 200) {
             row.lastChild.removeChild(status);
-            row.id = 'entry' + request.responseText;
+            row.id = 'user' + request.responseText;
         } else {
             status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
             setTimeout(function() {

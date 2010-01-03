@@ -44,7 +44,7 @@ class post_user extends poster {
         case 'add':
             if (isset($post['name']) && isset($post['password']) && isset($post['role'])) {
                 $id = ovp_user::add($this->db, $post['name'], $post['password'], $post['role']);
-                if ($id){
+                if ($id) {
                     exit($id);
                 } else {
                     ovp_msg::fail('Hinzufügen gescheitert');
