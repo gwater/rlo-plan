@@ -64,8 +64,11 @@ class ovp_logger {
             if ($priv_req == self::PRIV_LOGOUT) {
                 self::redirect(basename($_SERVER['SCRIPT_NAME']));
             }
-            $continue = urlencode(basename($_SERVER['SCRIPT_NAME']).'?'.$_SERVER['QUERY_STRING']);
-            $link = self::get_source_link('login&continue='.$continue);
+            $continue = basename($_SERVER['SCRIPT_NAME']);
+            if ($_SERVER['QUERY_STRING'] != '') {
+                $continue .= '?'.$_SERVER['QUERY_STRING'];
+            }
+            $link = self::get_source_link('login&continue='.urlencode($continue));
             self::redirect($link); // does not return
         }
         return true;
@@ -93,7 +96,7 @@ class ovp_logger {
     }
 
     public static function get_source_link($source = '') {
-        return basename($_SERVER['SCRIPT_NAME']).'?source='.$source;
+        return basename($_SERVER['SCRIPT_NAME']).($source == '' ? '' : '?source='.$source);
     }
 
     public static function get_poster_link($poster = '') {
@@ -105,7 +108,7 @@ class ovp_logger {
             $to = self::get_source_link();
         }
         $server = $_SERVER['SERVER_NAME'];
-        $path = dirname($_SERVER['SCRIPT_NAME']);
+        $path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
         header('Location: http://'.$server.$path.'/'.$to);
         exit;
     }
