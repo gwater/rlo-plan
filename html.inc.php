@@ -61,7 +61,7 @@ abstract class ovp_source {
  */
 class ovp_public extends ovp_source {
     public static $type = 'public';
-    public static $title ='Standardansicht';
+    public static $title ='Online-Vertretungsplan';
     public static $priv_req = ovp_logger::VIEW_PUBLIC;
     private $db;
 
@@ -671,7 +671,7 @@ class ovp_page {
 '<!DOCTYPE html>
 <html>
   <head>
-    <title>RLO Onlinevertretungsplan - '.$this->title.'</title>
+    <title>'.$this->title.' - RLO-Plan</title>
     <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
     '.$this->source->get_header().'
   </head>
