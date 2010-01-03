@@ -147,15 +147,11 @@ class ovp_user extends ovp_asset {
     }
 
     public function check_password($password) {
-        $hash = $this->db->query(
+        $row = $this->db->query(
            "SELECT `pwd_hash` FROM `user`
             WHERE `id` = '".$this->id."'
-            LIMIT 1");
-        if ($hash == hash('sha256', $password)) {
-            return true;
-        } else {
-            return false;
-        }
+            LIMIT 1")->fetch_assoc();
+        return $row['pwd_hash'] == hash('sha256', $password);
     }
 
     public function set_privilege($newpriv) {
