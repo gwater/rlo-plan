@@ -65,8 +65,7 @@ if (isset($poster)) {
     $poster_vars = get_class_vars(get_class($poster));
     $logger = new ovp_logger($db);
     if (!$logger->is_authorized($poster_vars['priv_req'])) {
-        header('HTTP/1.0 401 Unauthorized');
-        exit('you need to log in first');
+        ovp_msg::fail('not logged in');
     }
     exit($poster->evaluate($_POST));
 }
