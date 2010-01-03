@@ -440,7 +440,11 @@ class ovp_about extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_NONE;
 
     public function generate_view() {
-        return file_get_contents('about.inc.html');
+        ob_start();
+        require('about.inc.php');
+        $output = ob_get_contents();
+        ob_end_clean();
+        return $output;
     }
 }
 

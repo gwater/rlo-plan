@@ -22,13 +22,14 @@
 require_once('config.inc.php');
 
 class ovp_zipper {
+    const filename = 'source.zip';
+
     public static function pack_dir() {
         $dir = getcwd();
         $files = self::list_files($dir);
 
         $zip = new ZipArchive;
-        $res = $zip->open('source.zip', ZipArchive::CREATE);
-        if (!$res) {
+        if ($zip->open(self::filename, ZipArchive::OVERWRITE) !== true) {
             return false;
         }
         foreach ($files as $file) {
@@ -43,7 +44,7 @@ class ovp_zipper {
 
         $result = array();
         while (false !== ($file = readdir($handle))) {
-	    if ($file != '.' && $file != '..') {
+            if (!is_dir($file) && $file != self::filename) {
                 $result[] = $file;
             }
         }
