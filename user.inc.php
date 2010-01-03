@@ -49,7 +49,7 @@ class ovp_user extends ovp_asset {
     }
 
     public static function get_all_users(db $db) {
-        $result = $db->query("SELECT `id`, `name` FROM `user`");
+        $result = $db->query("SELECT `id`, `name` FROM `user` ORDER BY `name`");
         $users = array();
         while ($row = $result->fetch_assoc()) {
             $users[] = new ovp_user($db, $row['id']);
