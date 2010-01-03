@@ -63,6 +63,8 @@ function send_msg(msg) {
         request.open('POST', url, false);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         request.send(msg);
+    } else {
+        alert('Diese Funktion erfordert einen neueren Browser.');
     }
     return request;
 }
