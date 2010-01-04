@@ -1,5 +1,6 @@
 .ovp_container, #ovp_navi {
-    font-family: sans-serif;
+    font-family: Arial, sans-serif;
+    font-size: 12px
 }
 
 .ovp_table {
@@ -7,7 +8,7 @@
 }
 
 .ovp_table th {
-    background-color: #999;
+    background-color: #bbb;
 }
 
 .ovp_table, .ovp_table tr, .ovp_table td, .ovp_table th {
