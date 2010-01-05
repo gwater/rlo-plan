@@ -155,6 +155,10 @@ class ovp_user extends ovp_asset {
     }
 
     public function set_privilege($newpriv) {
+        $admin = ovp_logger::get_current_user($this->db);
+        if ($admin->get_id() == $this->id) {
+            ovp_msg::fail('Eigener Account darf nicht gelöscht werden');
+        }
         foreach (self::$roles as $priv => $role) {
             if ($newpriv == $priv) {
                 return $this->db->query(
