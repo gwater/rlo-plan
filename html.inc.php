@@ -448,6 +448,16 @@ class ovp_about extends ovp_source {
     }
 }
 
+class ovp_intro extends ovp_source {
+    public static $type = 'intro';
+    public static $title ='Einführung';
+    public static $priv_req = ovp_logger::VIEW_NONE;
+
+    public function generate_view() {
+        return file_get_contents('intro.inc.html');
+    }
+}
+
 class ovp_mysql extends ovp_source {
     public static $type = 'mysql';
     public static $title = 'MySQL Konfiguration';
@@ -605,6 +615,7 @@ class ovp_navi extends ovp_source {
 
     public function generate_view() {
         $sources = array();
+        $sources[] = get_class_vars('ovp_intro');
         $sources[] = get_class_vars('ovp_public');
         $sources[] = get_class_vars('ovp_print');
         $sources[] = get_class_vars('ovp_author');

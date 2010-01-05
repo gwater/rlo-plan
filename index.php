@@ -100,8 +100,11 @@ case 'about':
     $source = new ovp_about();
     break;
 case 'public':
-default:
     $source = new ovp_public($db);
+    break;
+case 'intro':
+default:
+    $source = new ovp_intro();
 }
 
 $source_vars = get_class_vars(get_class($source));
