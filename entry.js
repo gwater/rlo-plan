@@ -204,7 +204,7 @@ function add_new_entry(button) {
     button_cell.appendChild(cancel_button);
     row.appendChild(button_cell);
 
-    button.parentNode.querySelector('.ovp_table').appendChild(row);
+    button.previousSibling.appendChild(row);
     row.firstChild.firstChild.focus();
 }
 
@@ -282,7 +282,7 @@ function format_date_server(d) {
 
 function get_default_date() {
     var d = new Date();
-    var last_day = document.querySelector('#ovp').lastChild.previousSibling;
+    var last_day = document.getElementById('ovp').lastChild.previousSibling;
     if (last_day) {
         var last_date = parse_date(last_day.firstChild.textContent);
         if (last_date && last_date.getDate() >= d.getDate()) {
@@ -340,7 +340,7 @@ function save_teacher(teacher) {
         return;
     }
     date = format_date_server(date);
-    var rows = teacher.querySelector('.ovp_table').childNodes;
+    var rows = teacher.childNodes[2].childNodes;
     for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         if (row.id) {
@@ -405,7 +405,7 @@ function newTeacher(name, entries) {
     textbox.onblur = function() {
         textbox.style.display = 'none';
         var header = this.previousSibling;
-        var table = this.parentNode.querySelector('.ovp_table');
+        var table = this.nextSibling;
         if (this.value != header.textContent && this.value != '') {
             header.textContent = this.value;
             if (table.childNodes.length > 1) {
@@ -475,18 +475,15 @@ function newDay(title, teachers) {
     }
     textbox.onblur = function() {
         var header = this.previousSibling;
-        var table = this.parentNode.querySelector('.ovp_table');
         if (this.value != '') {
             var new_date = parse_date(this.value);
             if (new_date) {
                 var new_header = format_date_client(new_date);
                 if (header.textContent != new_header) {
                     header.textContent = new_header;
-                    if (table) {
-                        var teachers = this.parentNode.getElementsByTagName('section');
-                        for (var i = 0; i < teachers.length; i++) {
-                            save_teacher(teachers[i]);
-                        }
+                    var teachers = this.parentNode.getElementsByTagName('section');
+                    for (var i = 0; i < teachers.length; i++) {
+                        save_teacher(teachers[i]);
                     }
                 }
             } else {
@@ -495,7 +492,7 @@ function newDay(title, teachers) {
         }
         textbox.style.display = 'none';
         header.style.display = 'block';
-        if (table == null && this['create_teacher_on_first_blur']) {
+        if (this.parentNode.childNodes.length == 3 && this['create_teacher_on_first_blur']) {
             this.parentNode.lastChild.onclick();
         }
     }
