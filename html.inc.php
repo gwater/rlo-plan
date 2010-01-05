@@ -298,7 +298,7 @@ class ovp_login extends ovp_source {
         if (isset($_GET['continue'])) {
             $link = ovp_logger::get_poster_link('login&continue='.urlencode($_GET['continue']));
         } else {
-            $link = $link = ovp_logger::get_poster_link('login');
+            $link = ovp_logger::get_poster_link('login');
         }
         $html =
          '<div class="ovp_container">
