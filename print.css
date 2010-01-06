@@ -2,6 +2,6 @@
     display: none;
 }
 
-.ovp_table {
-    width: 100%;
+.ovp_table, .ovp_container {
+    width: 100% !important;
 }
