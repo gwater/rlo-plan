@@ -166,6 +166,59 @@ class ovp_logger {
         }
         return null;
     }
+
+
+    /**
+     * @brief Adjusts the date by $adjust and SKIP_WEEKEND
+     * @returns for $adjust < 0: a date at least $adjust days before $date
+     *          for $adjust >= 0: a date at least $adjust days after $date
+     *          (additional days compensate weekends if SKIP_WEEKENDS is enabled)
+     */
+    public static function adjust_date(db $db, $date, $adjust = 0) {
+        if ($adjust != 0) {
+            $row = $db->query(
+               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY)
+                    AS 'date' LIMIT 1")->fetch_assoc();
+            $date = $row['date'];
+        }
+        if (SKIP_WEEKENDS) {
+            $row = $db->query(
+               "SELECT DAYOFWEEK('".$date."')
+                    AS 'weekday' LIMIT 1")->fetch_assoc();
+            if ($adjust < 0) {
+                $adjust = 0;
+                if ($row['weekday'] == 7) {
+                    $adjust = -1; // Saturday->Friday
+                } else if ($row['weekday'] == 1) {
+                    $adjust = -2; // Sunday->Friday
+                }
+            } else {
+                $adjust = 0;
+                if ($row['weekday'] == 7) {
+                    $adjust = 2; // Saturday->Monday
+                } else if ($row['weekday'] == 1) {
+                    $adjust = 1; // Sunday->Monday
+                }
+            }
+            $row = $db->query(
+               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY)
+                    AS 'date' LIMIT 1")->fetch_assoc();
+            $date = $row['date'];
+        }
+        return $date;
+    }
+
+    public static function get_today(db $db) {
+        $row = $db->query("SELECT CURDATE() AS 'today' LIMIT 1")->fetch_assoc();
+        return $row['today'];
+    }
+
+    public static function format_date(db $db, $date) {
+        $row = $db->query(
+           "SELECT DATE_FORMAT('".$date."', '%W, %d.%m.%Y')
+                AS 'date' LIMIT 1")->fetch_assoc();
+        return $row['date'];
+    }
 }
 
 ?>

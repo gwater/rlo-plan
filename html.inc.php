@@ -131,21 +131,15 @@ class ovp_print extends ovp_source {
     private $tomorrow;
     private $entries;
 
-    public function __construct(db $db, $date = -1) {
-        if ($date == -1) {
-            $time = time() + 3600; // adjust GMT to CET
-            $date = strftime("%Y-%m-%d", ($time));
-        } else {
-            if (!preg_match('/(\d{4})-(\d\d)-(\d\d)/', $date, $matches)) {
-                exit('lol wut?');
-            }
-            // don't know where the missing two hours went (one is GMT-CET)
-            $time = mktime(0, 0, 0, $matches[2], $matches[3], $matches[1]) + 7200;
+    public function __construct(db $db, $date = false) {
+        if (!$date) {
+            $date = ovp_logger::get_today($db, $date);
         }
-        $this->today = strftime("%A, %d.%m.%y", $time);
-        $this->yesterday = strftime("%Y-%m-%d", $time - 24*60*60);
-        $this->tomorrow = strftime("%Y-%m-%d", $time + 24*60*60);
-        $this->entries = ovp_entry::get_entries_by_teacher($db, $date);
+        $today = ovp_logger::adjust_date($db, $date);
+        $this->tomorrow = ovp_logger::adjust_date($db, $today, 1);
+        $this->yesterday = ovp_logger::adjust_date($db, $today, -1);
+        $this->entries = ovp_entry::get_entries_by_teacher($db, $today);
+        $this->today = ovp_logger::format_date($db, $today);
     }
 
     protected function generate_view() {

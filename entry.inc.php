@@ -167,22 +167,13 @@ class ovp_entry extends ovp_asset {
      * Deletes entries older than DELETE_OLDER_THAN days.
      * @return: the number of deleted entries
      */
-    public static function cleanup($db) {
+    public static function cleanup(db $db) {
         if (DELETE_OLDER_THAN >= 0) {
-            $adjust = 0;
-            if (SKIP_WEEKENDS) {
-                $row = $db->query(
-                   "SELECT DAYOFWEEK(CURDATE()) AS 'weekday'")->fetch_assoc();
-                if ($row['weekday'] == 7) {
-                    $adjust = 1; // Saturday
-                } else if ($row['weekday'] == 1) {
-                    $adjust = 2; // Sunday
-                }
-            }
+            $today = ovp_logger::get_today($db);
+            $oldest_date = ovp_logger::adjust_date($db, $today, -DELETE_OLDER_THAN);
             $db->query(
                "DELETE FROM `entry` WHERE
-                    DATEDIFF(CURDATE(), `date`) > '".$db->protect(DELETE_OLDER_THAN + $adjust)."'"
-            );
+                    DATEDIFF('".$oldest_date."', `date`) >= 0");
             return $db->affected_rows;
         } else {
             return 0;
@@ -263,7 +254,6 @@ class ovp_entry extends ovp_asset {
             WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
         return $row['time'];
     }
-
 }
 
 
