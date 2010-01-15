@@ -24,6 +24,7 @@ require_once('logger.inc.php');
 require_once('db.inc.php');
 require_once('html.inc.php');
 require_once('poster.inc.php');
+require_once('entry.inc.php');
 
 if (FIRST_RUN) {
    ovp_logger::redirect('wizard.php');
@@ -35,6 +36,7 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
 session_start();
 
 $db = new db();
+ovp_entry::cleanup($db);
 
 switch ($_GET['poster']) {
 case 'password':
