@@ -54,19 +54,14 @@ function delete_entry(button) {
     hide_buttons(button.previousSibling);
     var row = button.parentNode.parentNode;
     var msg = 'action=delete&id=' + row.id.substr(5); // remove 'entry' from 'entry123'
-    var status = newElement('span');
-    status.textContent = 'Löschen...';
-    row.lastChild.appendChild(status);
+    var status = newStatus('Löschen...', row.lastChild);
     var request = send_msg(msg);
     if (request) {
         if (request.status == 200) {
             remove_row(row);
         } else {
             show_buttons(button.previousSibling);
-            status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-            setTimeout(function() {
-                fade_out(status);
-            }, 3000, 'JavaScript');
+            remove_status(status, request);
         }
     }
 }
@@ -104,20 +99,7 @@ function save_entry(button) {
     }
     if (contentHasChanged) {
         msg = 'action=update&id=' + row.id.substr(5) + msg;
-        var status = newElement('span');
-        status.textContent = 'Speichern...';
-        row.lastChild.appendChild(status);
-        var request = send_msg(msg);
-        if (request) {
-            if (request.status == 200) {
-                row.lastChild.removeChild(status);
-            } else {
-                status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-                setTimeout(function() {
-                    fade_out(status);
-                }, 3000, 'JavaScript');
-            }
-        }
+        remove_status(newStatus('Speichern...', row.lastChild), send_msg(msg));
     }
     show_buttons(button.previousSibling.previousSibling);
 }
@@ -148,19 +130,13 @@ function save_new_entry(button) {
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     msg = 'action=add' + msg;
-    var status = newElement('span');
-    status.textContent = 'Speichern...';
-    row.lastChild.appendChild(status);
+    var status = newStatus('Speichern...', row.lastChild);
     var request = send_msg(msg);
     if (request) {
+        remove_status(status, request);
         if (request.status == 200) {
-            row.lastChild.removeChild(status);
             row.id = 'entry' + request.responseText;
         } else {
-            status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-            setTimeout(function() {
-                fade_out(status);
-            }, 3000, 'JavaScript');
             row.lastChild.firstChild.onclick();
             return;
         }
@@ -349,21 +325,7 @@ function save_teacher(teacher) {
             for (var j = 0; j < cells.length - 1; j++) {
                 msg += '&' + column_names[j] + '=' + cells[j].textContent;
             }
-            var status = newElement('span');
-            status.textContent = 'Speichern...';
-            row.lastChild.appendChild(status);
-            var request = send_msg(msg);
-            if (request) {
-                if (request.status == 200) {
-                    status.textContent = 'OK';
-                    status.style.background = 'lightgreen';
-                    fade_out(status);
-                } else {
-                    status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-                    status.style.background = 'lightred';
-                    fade_out(status);
-                }
-            }
+            remove_status(newStatus('Speichern...', row.lastChild), send_msg(msg));
         }
     }
 }

@@ -375,10 +375,12 @@ class ovp_admin extends ovp_source {
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
             <table id="ovp_table_users" class="ovp_table">
-            <th>Name</th>
-            <th>Passwort</th>
-            <th>Rolle</th>
-            <th>Aktion</th>
+              <tr>
+                <th>Name</th>
+                <th>Passwort</th>
+                <th>Rolle</th>
+                <th>Aktion</th>
+              </tr>
             </table>
             <img src="1x1.gif" onload="init_admin()">
           </div>';
@@ -397,13 +399,19 @@ class ovp_password extends ovp_source {
         $this->user = ovp_logger::get_current_user($db);
     }
 
+    protected function generate_header() {
+        return '
+            <script type="text/javascript" src="passwd.js"></script>
+            <script type="text/javascript" src="functions.js"></script>';
+    }
+
     protected function generate_view() {
         // TODO: new password two times?
         $link = ovp_logger::get_poster_link(self::$type);
         $html =
          '<div class="ovp_container">
           <h1>'.self::$title.'</h1>
-          <form action="'.$link.'" method="POST">
+          <form action="'.$link.'" method="POST"><input type="hidden" name="xhr" value="false">
             <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
@@ -418,11 +426,16 @@ class ovp_password extends ovp_source {
                 <td><input type="password" name="newpwd"></td>
               </tr>
               <tr>
-                <td></td>
-                <td><input type="submit" value="Bestätigen"></td>
+                <td>Wiederholung:</td>
+                <td><input type="password" name="newpwd2"></td>
+              </tr>
+              <tr>
+                <td id="ovp_status"></td>
+                <td><input type="submit" value="Ändern"></td>
               </tr>
             </table>
           </form>
+          <img src="1x1.gif" onload="init_pwd()">
           </div>';
         return $html;
     }
@@ -635,8 +648,7 @@ class ovp_navi extends ovp_source {
                     $html .= '
                 <a href="'.$link.'">'.$source['title'].'</a>';
                 } else {
-                    $html .= '
-                <span>'.$source['title'].'</span>';
+                    $html .= $source['title'];
                 }
             }
         }

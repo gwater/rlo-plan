@@ -41,6 +41,27 @@ function newButton(caption, action) {
     return button;
 }
 
+function newStatus(text, element) {
+    var status = newElement('span');
+    status.textContent = text;
+    element.appendChild(status);
+    return status;
+}
+
+function remove_status(status, xhr) {
+    var success = false;
+    if (xhr) {
+        success = xhr.status == 200;
+        status.textContent = success ? 'OK' : xhr.responseText;
+    } else {
+        status.textContent = 'Konnte nicht gespeichert werden';
+    }
+    status.style.background = success ? 'lightgreen' : '#FF8888';
+    setTimeout(function() {
+        fade_out(status);
+    }, 3000, 'JavaScript');
+}
+
 function hide_buttons(button) {
     button.style.display = 'none';
     button.nextSibling.style.display = 'none';
@@ -51,22 +72,27 @@ function show_buttons(button) {
     button.nextSibling.style.display = 'inline-block';
 }
 
-function send_msg(msg) {
-    var request = null;
+function newXHR() {
+    var xhr = null;
     if (window.XMLHttpRequest) {
-        request = new XMLHttpRequest();
+        xhr = new XMLHttpRequest();
     } else if (window.ActiveXObject) {
-        request = new ActiveXObject('Microsoft.XMLHTTP');
+        xhr = new ActiveXObject('Microsoft.XMLHTTP');
     }
-    if (request) {
+    return xhr;
+}
+
+function send_msg(msg) {
+    var xhr = newXHR()
+    if (xhr) {
         // url is defined in entry.js and admin.js
-        request.open('POST', url, false);
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.send(msg);
+        xhr.open('POST', url, false);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(msg);
     } else {
         alert('Diese Funktion erfordert einen neueren Browser.');
     }
-    return request;
+    return xhr;
 }
 
 function fade_out(e) {

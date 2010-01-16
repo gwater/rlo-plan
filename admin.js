@@ -57,19 +57,14 @@ function delete_user(button) {
     hide_buttons(button.previousSibling);
     var row = button.parentNode.parentNode;
     var msg = 'action=delete&id=' + row.id.substr(4); // remove 'user' from 'user123'
-    var status = newElement('span');
-    status.textContent = 'Löschen...';
-    row.lastChild.appendChild(status);
+    var status = newStatus('Löschen...', row.lastChild);
     var request = send_msg(msg);
     if (request) {
         if (request.status == 200) {
             remove(row);
         } else {
             show_buttons(button.previousSibling);
-            status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-            setTimeout(function() {
-                fade_out(status);
-            }, 3000, 'JavaScript');
+            remove_status(status, request);
         }
     }
 }
@@ -96,20 +91,7 @@ function save_user(button) {
     }
     if (contentHasChanged) {
         msg = 'action=update&id=' + row.id.substr(4) + msg;
-        var status = newElement('span');
-        status.textContent = 'Speichern...';
-        row.lastChild.appendChild(status);
-        var request = send_msg(msg);
-        if (request) {
-            if (request.status == 200) {
-                row.lastChild.removeChild(status);
-            } else {
-                status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-                setTimeout(function() {
-                    fade_out(status);
-                }, 3000, 'JavaScript');
-            }
-        }
+        remove_status(newStatus('Speichern...', row.lastChild), send_msg(msg));
     }
     show_buttons(button.previousSibling.previousSibling);
 }
@@ -128,19 +110,13 @@ function save_new_user(button) {
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     msg = 'action=add' + msg;
-    var status = newElement('span');
-    status.textContent = 'Speichern...';
-    row.lastChild.appendChild(status);
+    var status = newStatus('Speichern...', row.lastChild);
     var request = send_msg(msg);
     if (request) {
+        remove_status(status, request);
         if (request.status == 200) {
-            row.lastChild.removeChild(status);
             row.id = 'user' + request.responseText;
         } else {
-            status.textContent = request.status + ' - ' + request.statusText + ': ' + request.responseText;
-            setTimeout(function() {
-                fade_out(status);
-            }, 3000, 'JavaScript');
             row.lastChild.firstChild.onclick();
             return;
         }
