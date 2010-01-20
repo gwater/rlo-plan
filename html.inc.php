@@ -260,7 +260,6 @@ class ovp_author extends ovp_source {
     protected function generate_view() {
         $html =
          '<div class="ovp_container">
-            <img src="1x1.gif" onload="init()" style="display: none">
             '.$this->get_tip().'
             <h1>'.self::$title.'</h1>
             <div id="ovp"></div>
@@ -382,7 +381,6 @@ class ovp_admin extends ovp_source {
                 <th>Aktion</th>
               </tr>
             </table>
-            <img src="1x1.gif" onload="init_admin()">
           </div>';
         return $html;
     }
@@ -406,7 +404,6 @@ class ovp_password extends ovp_source {
     }
 
     protected function generate_view() {
-        // TODO: new password two times?
         $link = ovp_logger::get_poster_link(self::$type);
         $html =
          '<div class="ovp_container">
@@ -435,7 +432,6 @@ class ovp_password extends ovp_source {
               </tr>
             </table>
           </form>
-          <img src="1x1.gif" onload="init_pwd()">
           </div>';
         return $html;
     }

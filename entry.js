@@ -489,7 +489,9 @@ function insert_days(days) {
     }
 }
 
-function init() {
+function init_entry() {
     document.getElementById('ovp').appendChild(newButton('+ Tag', add_day));
     fill_in_data();
 }
+
+document.addEventListener("DOMContentLoaded", init_entry, false);

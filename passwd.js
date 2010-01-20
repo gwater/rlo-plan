@@ -1,17 +1,16 @@
 var url;
+var form;
 
 function validate() {
-    form = this;
-    var status = newStatus('', document.getElementById('ovp_status')); // TODO: change "status" to something else
+    var status = newStatus('', document.getElementById('ovp_status'));
     if (form.newpwd.value !== form.newpwd2.value) {
         remove_status(status);
         status.textContent = 'ungleiche Passwörter';
         return false;
     }
-    url = form.action;
-    status.textContent = 'Ändern...';
-    send_msg('xhr=true&oldpwd=' + form.oldpwd.value + '&newpwd=' + form.newpwd.value, function() {
-        remove_status(status, this);
+    status.textContent = 'Wird geändert...';
+    send_msg('xhr=true&oldpwd=' + form.oldpwd.value + '&newpwd=' + form.newpwd.value, function(xhr) {
+        remove_status(status, xhr);
     }, function() {
         form.onsubmit = null;
         form.submit();
@@ -20,5 +19,9 @@ function validate() {
 }
 
 function init_pwd() {
-    document.getElementById('ovp_table_password').parentNode.onsubmit = validate;
+    form = document.getElementById('ovp_table_password').parentNode;
+    form.onsubmit = validate;
+    url = form.action;
 }
+
+document.addEventListener("DOMContentLoaded", init_pwd, false);

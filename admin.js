@@ -211,3 +211,5 @@ function init_admin() {
     table.parentNode.insertBefore(newButton('+ Benutzer', add_new_user), table.nextSibling);
     fill_in_data();
 }
+
+document.addEventListener("DOMContentLoaded", init_admin, false);
