@@ -72,25 +72,33 @@ function show_buttons(button) {
     button.nextSibling.style.display = 'inline-block';
 }
 
-function newXHR() {
-    var xhr = null;
-    if (window.XMLHttpRequest) {
-        xhr = new XMLHttpRequest();
-    } else if (window.ActiveXObject) {
-        xhr = new ActiveXObject('Microsoft.XMLHTTP');
-    }
-    return xhr;
-}
+function send_msg(msg, callback, error_callback) {
 
-function send_msg(msg) {
-    var xhr = newXHR()
+    function newXHR() {
+        var xhr = null;
+        if (window.XMLHttpRequest) {
+            xhr = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+            xhr = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+        return xhr;
+    }
+
+    var xhr = newXHR();
     if (xhr) {
-        // url is defined in entry.js and admin.js
-        xhr.open('POST', url, false);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4) {
+                callback(xhr);
+            }
+        };
+        // "url" is defined in the calling html document
+        // "callback" used as a boolean value here (to prevent not-yet-changed code from breaking)
+        // when done with DEBUG: remove parameter (defaults to "true")
+        xhr.open('POST', url, callback);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.send(msg);
     } else {
-        alert('Diese Funktion erfordert einen neueren Browser.');
+        error_callback ? error_callback() : alert('Diese Funktion erfordert einen neueren Browser.');
     }
     return xhr;
 }

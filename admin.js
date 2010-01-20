@@ -57,16 +57,15 @@ function delete_user(button) {
     hide_buttons(button.previousSibling);
     var row = button.parentNode.parentNode;
     var msg = 'action=delete&id=' + row.id.substr(4); // remove 'user' from 'user123'
-    var status = newStatus('Löschen...', row.lastChild);
-    var request = send_msg(msg);
-    if (request) {
-        if (request.status == 200) {
+    var status = newStatus('Wird gelöscht...', row.lastChild);
+    send_msg(msg, function(xhr) {
+        if (xhr.status == 200) {
             remove(row);
         } else {
             show_buttons(button.previousSibling);
-            remove_status(status, request);
+            remove_status(status, this);
         }
-    }
+    });
 }
 
 function save_user(button) {
@@ -91,9 +90,17 @@ function save_user(button) {
     }
     if (contentHasChanged) {
         msg = 'action=update&id=' + row.id.substr(4) + msg;
-        remove_status(newStatus('Speichern...', row.lastChild), send_msg(msg));
+        var status = newStatus('Wird gespeichert...', row.lastChild);
+        send_msg(msg, function(xhr) {
+            remove_status(status, xhr);
+            show_buttons(button.previousSibling.previousSibling);
+            if (xhr.status != 200) {
+                button.previousSibling.previousSibling.click();
+            }
+        });
+    } else {
+        show_buttons(button.previousSibling.previousSibling);
     }
-    show_buttons(button.previousSibling.previousSibling);
 }
 
 function save_new_user(button) {
@@ -111,25 +118,22 @@ function save_new_user(button) {
     }
     msg = 'action=add' + msg;
     var status = newStatus('Speichern...', row.lastChild);
-    var request = send_msg(msg);
-    if (request) {
-        remove_status(status, request);
-        if (request.status == 200) {
-            row.id = 'user' + request.responseText;
+    send_msg(msg, function(xhr) {
+        remove_status(status, xhr);
+        if (xhr.status == 200) {
+            row.id = 'user' + xhr.responseText;
+            show_buttons(button.previousSibling.previousSibling);
+            button.onclick = function() {
+                save_user(button);
+            }
+            button.nextSibling.innerHTML = 'Abbrechen';
+            button.nextSibling.onclick = function() {
+                cancel_editing(button.nextSibling);
+            }
         } else {
             row.lastChild.firstChild.onclick();
-            return;
         }
-    }
-    show_buttons(button.previousSibling.previousSibling);
-    button.onclick = function() {
-        save_user(button);
-    }
-    button.nextSibling.innerHTML = 'Abbrechen';
-    button.nextSibling.onclick = function() {
-        cancel_editing(button.nextSibling);
-    }
-
+    });
 }
 
 function delete_new_user(button) {
