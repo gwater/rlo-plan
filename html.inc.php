@@ -641,7 +641,7 @@ class ovp_navi extends ovp_source {
                 if($first) {
                     $first = false;
                 } else {
-                    $html .= ' |';
+                    $html .= ' | ';
                 }
                 if ($source['type'] != $this->current) {
                     $link = ovp_logger::get_source_link($source['type']);
