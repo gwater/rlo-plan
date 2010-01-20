@@ -59,7 +59,7 @@ function remove_status(status, xhr) {
     status.style.background = success ? 'lightgreen' : '#FF8888';
     setTimeout(function() {
         fade_out(status);
-    }, 3000, 'JavaScript');
+    }, 2000, 'JavaScript');
 }
 
 function hide_buttons(button) {
