@@ -25,8 +25,8 @@ Weiterentwicklungen von RLO-Plan müssen die gleichen Rechte garantieren.
 
 3. Kontakt
 ----------
-Der Hauptentwicklungszweig befindet sich unter
-    http://github.com/gwater/rlo-plan .
-Hauptentwickler sind
-    Tillmann Karras <tillmann.karras@gmail.com> und
-    Josua Grawitter <josh@greyage.org> .
+Der Hauptentwicklungszweig befindet sich auf
+[GitHub](http://github.com/gwater/rlo-plan).
+
+Hauptentwickler sind [Tillmann Karras](mailto:tillmann.karras@gmail.com) und
+[Josua Grawitter](mailto:josh@greyage.org).
