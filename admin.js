@@ -117,7 +117,7 @@ function save_new_user(button) {
         msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     msg = 'action=add' + msg;
-    var status = newStatus('Speichern...', row.lastChild);
+    var status = newStatus('Wird hinzugefügt...', row.lastChild);
     send_msg(msg, function(xhr) {
         remove_status(status, xhr);
         if (xhr.status == 200) {
