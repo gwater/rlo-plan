@@ -250,7 +250,7 @@ class ovp_entry extends ovp_asset {
 
     public function get_time() {
         $row = $this->db->query(
-           "SELECT TIME_FORMAT(`time`, '%h:%i') AS 'time' FROM `entry`
+           "SELECT TIME_FORMAT(`time`, '%H:%i') AS 'time' FROM `entry`
             WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
         return $row['time'];
     }
