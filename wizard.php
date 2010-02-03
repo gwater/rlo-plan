@@ -98,6 +98,12 @@ exit($page->get_html());
 
 class ovp_wizard {
     public static function initialize() {
+        if (FIRST_RUN) {
+            $config = new ovp_config();
+            if (!$config->create_backup()) {
+                ovp_msg::fail('Erstellen des Konfigurationsbackups gescheitert.');
+            }
+        }
         if (!ovp_zipper::pack_dir()) {
             ovp_msg::fail('Erstellen des Quellarchivs gescheitert');
         }
