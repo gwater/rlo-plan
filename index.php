@@ -103,7 +103,11 @@ case 'about':
     break;
 case 'public':
 default:
-    $source = new ovp_public($db);
+    if (isset($_GET['course'])) {
+        $source = new ovp_public($db, $_GET['course']);
+    } else {
+        $source = new ovp_public($db);
+    }
 }
 
 $source_vars = get_class_vars(get_class($source));

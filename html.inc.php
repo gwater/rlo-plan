@@ -64,16 +64,39 @@ class ovp_public extends ovp_source {
     public static $title ='Online-Vertretungsplan';
     public static $priv_req = ovp_logger::VIEW_PUBLIC;
     private $db;
+    private $course;
 
-    public function __construct(db $db) {
+    public function __construct(db $db, $course = '') {
         $this->db = $db;
+        $this->course = $course;
     }
 
     protected function generate_view() {
-        $entries_by_date = ovp_entry::get_entries_by_date($this->db);
+        if ($this->course == '') {
+            $entries_by_date = ovp_entry::get_entries_by_date($this->db);
+        } else {
+            $entries_by_date = ovp_entry::get_entries_for_course($this->db, $this->course);
+        }
+        $link = ovp_logger::get_source_link('public');
+        $courses = ovp_entry::get_courses($this->db);
         $html = '
           <div class="ovp_container">
-            <h1>'.self::$title.'</h1>';
+            <h1>'.self::$title.'</h1>
+            <form action="'.$link.'" method="GET">
+            <input type="hidden" name="source" value="public">
+            <table><tr>
+            <td>Klasse/Kurs:</td>
+            <td><select name="course">
+                <option value="" '.($this->course == '' ? 'selected="selected"' : '').'>Alle</option>';
+        foreach ($courses as $course) {
+            $html .= '
+                <option value="'.$course.'" '.($course == $this->course ? 'selected="selected"' : '').'>'.$course.'</option>';
+        }
+        $html .= '
+            </select></td>
+            <td><input type="submit" value="Filtern"></td>
+            </tr></table>
+            </form>';
         if ($entries_by_date) {
             foreach($entries_by_date as $entries_today) {
                 foreach ($entries_today as $first_entry) {

@@ -151,6 +151,41 @@ class ovp_entry extends ovp_asset {
         return $entries_by_date;
     }
 
+    public static function get_entries_for_course(db $db, $course) {
+        $dates = self::get_dates($db);
+        if (!$dates) {
+            return false;
+        }
+        $entries_by_date = array();
+        foreach ($dates as $date) {
+            $result = $db->query(
+               "SELECT `id` FROM `entry`
+                WHERE `date` = '".$db->protect($date)."'
+                AND `course` = '".$db->protect($course)."'
+                ORDER BY `time` ASC");
+            $entries = array();
+            while ($row = $result->fetch_assoc()) {
+                $entries[] = new ovp_entry($db, $row['id']);
+            }
+            if (count($entries) > 0) {
+                $entries_by_date[] = $entries;
+            }
+        }
+        return $entries_by_date;
+    }
+
+    public static function get_courses(db $db) {
+        $result = $db->query(
+           "SELECT `course` FROM `entry`
+            GROUP BY `course`
+            ORDER BY `course` ASC");
+        $courses = array();
+        while ($row = $result->fetch_assoc()) {
+            $courses[] = $row['course'];
+        }
+        return $courses;
+    }
+
     public static function get_dates(db $db) {
         $result = $db->query(
            "SELECT `date` FROM `entry`
