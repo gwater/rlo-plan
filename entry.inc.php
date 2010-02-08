@@ -164,7 +164,8 @@ class ovp_entry extends ovp_asset {
                "SELECT `id` FROM `entry`
                 WHERE `date` = '".$db->protect($date)."'
                 AND (`course` = '".$course."'
-                OR `course` = SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1))
+                OR `course` = SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1)
+                OR `course` = 'alle')
                 ORDER BY `time` ASC");
             $entries = array();
             while ($row = $result->fetch_assoc()) {
@@ -195,7 +196,7 @@ class ovp_entry extends ovp_asset {
         foreach ($courses as $key => $course) {
             foreach ($others as $other) {
             // don't show courses like '9' when there are classes like '9.1'
-                if (strstr($other, $course.'.')) {
+                if (strstr($other, $course.'.') || ($course == 'alle')) {
                     unset($courses[$key]);
                 }
             }
