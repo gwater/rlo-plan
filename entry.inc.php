@@ -186,7 +186,22 @@ class ovp_entry extends ovp_asset {
         while ($row = $result->fetch_assoc()) {
             $courses[] = $row['course'];
         }
-        return $courses;
+        return self::clean_courses($courses);
+    }
+
+    private static function clean_courses($courses) {
+        // copy, to avoid conflicts
+        $others = $courses;
+        foreach ($courses as $key => $course) {
+            foreach ($others as $other) {
+            // don't show courses like '9' when there are classes like '9.1'
+                if (strstr($other, $course.'.')) {
+                    unset($courses[$key]);
+                }
+            }
+        }
+        // repair the array
+        return array_values($courses);
     }
 
     public static function get_dates(db $db) {
