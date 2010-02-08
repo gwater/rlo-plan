@@ -151,17 +151,20 @@ class ovp_entry extends ovp_asset {
         return $entries_by_date;
     }
 
+    // used by ovp_public?course=...
     public static function get_entries_for_course(db $db, $course) {
         $dates = self::get_dates($db);
         if (!$dates) {
             return false;
         }
+        $course = $db->protect($course);
         $entries_by_date = array();
         foreach ($dates as $date) {
             $result = $db->query(
                "SELECT `id` FROM `entry`
                 WHERE `date` = '".$db->protect($date)."'
-                AND `course` = '".$db->protect($course)."'
+                AND (`course` = '".$course."'
+                OR `course` = SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1))
                 ORDER BY `time` ASC");
             $entries = array();
             while ($row = $result->fetch_assoc()) {
