@@ -35,18 +35,15 @@ setlocale(LC_TIME, 'de_DE.utf8', 'deu');
 
 session_start();
 
-$db = new db();
-ovp_entry::cleanup($db);
-
 switch ($_GET['poster']) {
 case 'password':
-    $poster = new post_password($db);
+    $poster = new post_password();
     break;
 case 'user':
-    $poster = new post_user($db);
+    $poster = new post_user();
     break;
 case 'entry':
-    $poster = new post_entry($db);
+    $poster = new post_entry();
     break;
 case 'mysql':
     $poster = new post_mysql();
@@ -55,18 +52,19 @@ case 'settings':
     $poster = new post_settings();
     break;
 case 'login':
-    $poster = new post_login($db);
+    $poster = new post_login();
     break;
 case 'logout':
-    $poster = new post_logout($db);
+    $poster = new post_logout();
     break;
 default:
     // DoNothing (tm)
 }
 if (isset($poster)) {
     $poster_vars = get_class_vars(get_class($poster));
-    $logger = new ovp_logger($db);
-    if (!$logger->is_authorized($poster_vars['priv_req'])) {
+    $manager = ovp_user_manager::get_singleton();
+    $user = $manager->get_current_user();
+    if (!$user->is_authorized($poster_vars['priv_req'])) {
         ovp_msg::fail('not logged in');
     }
     exit($poster->evaluate($_POST));
@@ -75,16 +73,16 @@ if (isset($poster)) {
 switch ($_GET['source']) {
 case 'print':
     if (isset($_GET['date'])) {
-        $source = new ovp_print($db, $_GET['date']);
+        $source = new ovp_print($_GET['date']);
     } else {
-        $source = new ovp_print($db);
+        $source = new ovp_print();
     }
     break;
 case 'author':
-    $source = new ovp_author($db);
+    $source = new ovp_author();
     break;
 case 'admin':
-    $source = new ovp_admin($db);
+    $source = new ovp_admin();
     break;
 case 'settings':
     $source = new ovp_settings();
@@ -96,7 +94,7 @@ case 'login':
     $source = new ovp_login();
     break;
 case 'password':
-    $source = new ovp_password($db);
+    $source = new ovp_password();
     break;
 case 'about':
     $source = new ovp_about();
@@ -104,16 +102,17 @@ case 'about':
 case 'public':
 default:
     if (isset($_GET['course'])) {
-        $source = new ovp_public($db, $_GET['course']);
+        $source = new ovp_public($_GET['course']);
     } else {
-        $source = new ovp_public($db);
+        $source = new ovp_public();
     }
 }
 
 $source_vars = get_class_vars(get_class($source));
-$logger = new ovp_logger($db);
-$logger->authorize($source_vars['priv_req']);
-$navi = new ovp_navi($logger, $source_vars['type']);
+$manager = ovp_user_manager::get_singleton();
+$user = $manager->get_current_user();
+$user->authorize($source_vars['priv_req']);
+$navi = new ovp_navi($source_vars['type']);
 $page = new ovp_page($source, $navi);
 exit($page->get_html());
 

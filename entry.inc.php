@@ -23,7 +23,9 @@ require_once('db.inc.php');
 require_once('interfaces.inc.php');
 require_once('logger.inc.php');
 
-class ovp_entry extends ovp_asset {
+class ovp_entry {
+    private $db;
+    private $id;
     private static $attributes = array('date', 'teacher', 'time', 'course',
                                        'subject', 'duration', 'sub',
                                        'change', 'oldroom', 'newroom');
@@ -36,214 +38,20 @@ class ovp_entry extends ovp_asset {
         return $time - ($time % (60 * 60 * 24));
     }
 
-    /**
-     * Adds an entry to the database.
-     * @return: id of the new entry
-     */
-    public function add(db $db, $values) {
-        $db->query(
-           "INSERT INTO `entry` VALUES (
-                NULL,
-                '".$db->protect($values['date'])    ."',
-                '".$db->protect($values['teacher']) ."',
-                '".$db->protect($values['time'])    ."',
-                '".$db->protect($values['course'])  ."',
-                '".$db->protect($values['subject']) ."',
-                '".$db->protect($values['duration'])."',
-                '".$db->protect($values['sub'])     ."',
-                '".$db->protect($values['change'])  ."',
-                '".$db->protect($values['oldroom']) ."',
-                '".$db->protect($values['newroom']) ."'
-            )"
-        );
-        $row = $db->query(
-            "SELECT `id` FROM `entry` WHERE
-                `date`     = '".$db->protect($values['date'])    ."' AND
-                `teacher`  = '".$db->protect($values['teacher']) ."' AND
-                `time`     = '".$db->protect($values['time'])    ."' AND
-                `course`   = '".$db->protect($values['course'])  ."' AND
-                `subject`  = '".$db->protect($values['subject']) ."' AND
-                `duration` = '".$db->protect($values['duration'])."' AND
-                `sub`      = '".$db->protect($values['sub'])     ."' AND
-                `change`   = '".$db->protect($values['change'])  ."' AND
-                `oldroom`  = '".$db->protect($values['oldroom']) ."' AND
-                `newroom`  = '".$db->protect($values['newroom']) ."'
-            LIMIT 1")->fetch_assoc();
-        return $row['id'];
-    }
-
-    /**
-     * Deletes the entry referenced by the id $id.
-     * @return: true if the entry was found and deleted
-     */
-    public function remove(db $db, $id) {
-        $db->query(
-           "DELETE FROM `entry` WHERE
-                `id` = '".$db->protect($id)."'
-            LIMIT 1");
-        return $db->affected_rows == 1;
-    }
-
-    // used by ovp_print
-    public static function get_entries_by_teacher(db $db, $date) {
-        $result = $db->query(
-           "SELECT `teacher` FROM `entry`
-            WHERE `date` = '".$db->protect($date)."'
-            GROUP BY `teacher`
-            ORDER BY SUBSTRING(`teacher`, 6) ASC");
-        $teachers = array();
-        while ($row = $result->fetch_assoc()) {
-            $teachers[] = $row['teacher'];
-        }
-        $entries_by_teacher = array();
-        foreach ($teachers as $teacher) {
-            $result = $db->query(
-               "SELECT
-                    `id`
-                FROM `entry`
-                WHERE `date` = '".$db->protect($date)."'
-                AND `teacher` = '".$db->protect($teacher)."'
-                ORDER BY `time` ASC");
-                $entries = array();
-                while ($row = $result->fetch_assoc()) {
-                    $entries[] = new ovp_entry($db, $row['id']);
-                }
-                $entries_by_teacher[$teacher] = $entries;
-        }
-        return $entries_by_teacher;
-    }
-
-    // used by ovp_author
-    public static function get_entries_by_teacher_and_date(db $db) {
-        $dates = self::get_dates($db);
-        if (!$dates) {
-            return false;
-        }
-        $entries_by_date = array();
-        foreach ($dates as $date) {
-            if ($entries_by_teacher = self::get_entries_by_teacher($db, $date)) {
-                $entries_by_date[] = $entries_by_teacher;
-            }
-        }
-        return $entries_by_date;
-    }
-
-    // used by ovp_public
-    public static function get_entries_by_date(db $db) {
-        $dates = self::get_dates($db);
-        if (!$dates) {
-            return false;
-        }
-        $entries_by_date = array();
-        foreach ($dates as $date) {
-            $result = $db->query(
-               "SELECT `id` FROM `entry`
-                WHERE `date` = '".$db->protect($date)."'
-                ORDER BY `time` ASC");
-            $entries = array();
-            while ($row = $result->fetch_assoc()) {
-                $entries[] = new ovp_entry($db, $row['id']);
-            }
-            if (count($entries) > 0) {
-                $entries_by_date[] = $entries;
-            }
-        }
-        return $entries_by_date;
-    }
-
-    // used by ovp_public?course=...
-    public static function get_entries_for_course(db $db, $course) {
-        $dates = self::get_dates($db);
-        if (!$dates) {
-            return false;
-        }
-        $course = $db->protect($course);
-        $entries_by_date = array();
-        foreach ($dates as $date) {
-            $result = $db->query(
-               "SELECT `id` FROM `entry`
-                WHERE `date` = '".$db->protect($date)."'
-                AND (`course` = '".$course."'
-                OR `course` = SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1)
-                OR `course` = 'alle')
-                ORDER BY `time` ASC");
-            $entries = array();
-            while ($row = $result->fetch_assoc()) {
-                $entries[] = new ovp_entry($db, $row['id']);
-            }
-            if (count($entries) > 0) {
-                $entries_by_date[] = $entries;
-            }
-        }
-        return $entries_by_date;
-    }
-
-    public static function get_courses(db $db) {
-        $result = $db->query(
-           "SELECT `course` FROM `entry`
-            GROUP BY `course`
-            ORDER BY `course` ASC");
-        $courses = array();
-        while ($row = $result->fetch_assoc()) {
-            $courses[] = $row['course'];
-        }
-        return self::clean_courses($courses);
-    }
-
-    private static function clean_courses($courses) {
-        // copy, to avoid conflicts
-        $others = $courses;
-        foreach ($courses as $key => $course) {
-            foreach ($others as $other) {
-            // don't show courses like '9' when there are classes like '9.1'
-                if (strstr($other, $course.'.') || ($course == 'alle')) {
-                    unset($courses[$key]);
-                }
-            }
-        }
-        // repair the array
-        return array_values($courses);
-    }
-
-    public static function get_dates(db $db) {
-        $result = $db->query(
-           "SELECT `date` FROM `entry`
-            GROUP BY `date`
-            ORDER BY `date` ASC");
-        $dates = array();
-        while ($row = $result->fetch_assoc()) {
-            $dates[] = $row['date'];
-        }
-        return $dates;
-    }
-
-    /**
-     * Deletes entries older than DELETE_OLDER_THAN days.
-     * @return: the number of deleted entries
-     */
-    public static function cleanup(db $db) {
-        if (DELETE_OLDER_THAN >= 0) {
-            $today = ovp_logger::get_today($db);
-            $oldest_date = ovp_logger::adjust_date($db, $today, -DELETE_OLDER_THAN);
-            $db->query(
-               "DELETE FROM `entry` WHERE
-                    DATEDIFF('".$oldest_date."', `date`) >= 0");
-            return $db->affected_rows;
-        } else {
-            return 0;
-        }
-    }
-
-
-    public function __construct(db $db, $id) {
-        $result = $db->query(
+    public function __construct($id) {
+        $this->db = ovp_db::get_singleton();
+        $result = $this->db->query(
            "SELECT `id` FROM `entry`
-            WHERE `id` = '".$db->protect($id)."'
+            WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1");
         if ($result->num_rows != 1) {
             ovp_msg::fail('ID ungültig');
         }
-        parent::__construct($db, $id);
+        $this->id = $id;
+    }
+
+    public function get_id() {
+        return $this->id;
     }
 
     public function get_values() {
@@ -308,6 +116,274 @@ class ovp_entry extends ovp_asset {
             WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
         return $row['time'];
     }
+}
+
+class ovp_entry_manager {
+    private static $singleton;
+    private $db;
+
+    private function __construct() {
+        $this->db = ovp_db::get_singleton();
+        $this->cleanup();
+    }
+
+    public static function get_singleton() {
+        if (self::$singleton === null) {
+            self::$singleton = new self;
+        }
+        return self::$singleton;
+    }
+
+    /**
+     * Adds an entry to the database.
+     * @return: id of the new entry
+     */
+    public function add($values) {
+        $this->db->query(
+           "INSERT INTO `entry` VALUES (
+                NULL,
+                '".$this->db->protect($values['date'])    ."',
+                '".$this->db->protect($values['teacher']) ."',
+                '".$this->db->protect($values['time'])    ."',
+                '".$this->db->protect($values['course'])  ."',
+                '".$this->db->protect($values['subject']) ."',
+                '".$this->db->protect($values['duration'])."',
+                '".$this->db->protect($values['sub'])     ."',
+                '".$this->db->protect($values['change'])  ."',
+                '".$this->db->protect($values['oldroom']) ."',
+                '".$this->db->protect($values['newroom']) ."'
+            )"
+        );
+        $row = $this->db->query(
+            "SELECT `id` FROM `entry` WHERE
+                `date`     = '".$this->db->protect($values['date'])    ."' AND
+                `teacher`  = '".$this->db->protect($values['teacher']) ."' AND
+                `time`     = '".$this->db->protect($values['time'])    ."' AND
+                `course`   = '".$this->db->protect($values['course'])  ."' AND
+                `subject`  = '".$this->db->protect($values['subject']) ."' AND
+                `duration` = '".$this->db->protect($values['duration'])."' AND
+                `sub`      = '".$this->db->protect($values['sub'])     ."' AND
+                `change`   = '".$this->db->protect($values['change'])  ."' AND
+                `oldroom`  = '".$this->db->protect($values['oldroom']) ."' AND
+                `newroom`  = '".$this->db->protect($values['newroom']) ."'
+            LIMIT 1")->fetch_assoc();
+        return $row['id'];
+    }
+
+    /**
+     * Deletes the entry referenced by the id $id.
+     * @return: true if the entry was found and deleted
+     */
+    public function remove($id) {
+        $this->db->query(
+           "DELETE FROM `entry` WHERE
+                `id` = '".$this->db->protect($id)."'
+            LIMIT 1");
+        return $this->db->affected_rows == 1;
+    }
+
+    // used by ovp_print
+    public function get_entries_by_teacher($date) {
+        $result = $this->db->query(
+           "SELECT `teacher` FROM `entry`
+            WHERE `date` = '".$this->db->protect($date)."'
+            GROUP BY `teacher`
+            ORDER BY SUBSTRING(`teacher`, 6) ASC");
+        $teachers = array();
+        while ($row = $result->fetch_assoc()) {
+            $teachers[] = $row['teacher'];
+        }
+        $entries_by_teacher = array();
+        foreach ($teachers as $teacher) {
+            $result = $this->db->query(
+               "SELECT
+                    `id`
+                FROM `entry`
+                WHERE `date` = '".$this->db->protect($date)."'
+                AND `teacher` = '".$this->db->protect($teacher)."'
+                ORDER BY `time` ASC");
+                $entries = array();
+                while ($row = $result->fetch_assoc()) {
+                    $entries[] = new ovp_entry($row['id']);
+                }
+                $entries_by_teacher[$teacher] = $entries;
+        }
+        return $entries_by_teacher;
+    }
+
+    // used by ovp_author
+    public function get_entries_by_teacher_and_date() {
+        $dates = $this->get_dates();
+        if (!$dates) {
+            return false;
+        }
+        $entries_by_date = array();
+        foreach ($dates as $date) {
+            if ($entries_by_teacher = $this->get_entries_by_teacher($date)) {
+                $entries_by_date[] = $entries_by_teacher;
+            }
+        }
+        return $entries_by_date;
+    }
+
+    // used by ovp_public
+    public function get_entries_by_date() {
+        $dates = $this->get_dates();
+        if (!$dates) {
+            return false;
+        }
+        $entries_by_date = array();
+        foreach ($dates as $date) {
+            $result = $this->db->query(
+               "SELECT `id` FROM `entry`
+                WHERE `date` = '".$this->db->protect($date)."'
+                ORDER BY `time` ASC");
+            $entries = array();
+            while ($row = $result->fetch_assoc()) {
+                $entries[] = new ovp_entry($row['id']);
+            }
+            if (count($entries) > 0) {
+                $entries_by_date[] = $entries;
+            }
+        }
+        return $entries_by_date;
+    }
+
+    // used by ovp_public?course=...
+    public function get_entries_for_course($course) {
+        $dates = $this->get_dates();
+        if (!$dates) {
+            return false;
+        }
+        $course = $this->db->protect($course);
+        $entries_by_date = array();
+        foreach ($dates as $date) {
+            $result = $this->db->query(
+               "SELECT `id` FROM `entry`
+                WHERE `date` = '".$this->db->protect($date)."'
+                AND (`course` = '".$course."'
+                OR `course` = SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1)
+                OR `course` = 'alle')
+                ORDER BY `time` ASC");
+            $entries = array();
+            while ($row = $result->fetch_assoc()) {
+                $entries[] = new ovp_entry($row['id']);
+            }
+            if (count($entries) > 0) {
+                $entries_by_date[] = $entries;
+            }
+        }
+        return $entries_by_date;
+    }
+
+    public function get_courses() {
+        $result = $this->db->query(
+           "SELECT `course` FROM `entry`
+            GROUP BY `course`
+            ORDER BY `course` ASC");
+        $courses = array();
+        while ($row = $result->fetch_assoc()) {
+            $courses[] = $row['course'];
+        }
+        return self::clean_courses($courses);
+    }
+
+    private static function clean_courses($courses) {
+        // copy, to avoid conflicts
+        $others = $courses;
+        foreach ($courses as $key => $course) {
+            foreach ($others as $other) {
+            // don't show courses like '9' when there are classes like '9.1'
+                if (strstr($other, $course.'.') || ($course == 'alle')) {
+                    unset($courses[$key]);
+                }
+            }
+        }
+        // repair the array
+        return array_values($courses);
+    }
+
+    public function get_dates() {
+        $result = $this->db->query(
+           "SELECT `date` FROM `entry`
+            GROUP BY `date`
+            ORDER BY `date` ASC");
+        $dates = array();
+        while ($row = $result->fetch_assoc()) {
+            $dates[] = $row['date'];
+        }
+        return $dates;
+    }
+
+    /**
+     * Deletes entries older than DELETE_OLDER_THAN days.
+     * @return: the number of deleted entries
+     */
+    public function cleanup() {
+        if (DELETE_OLDER_THAN >= 0) {
+            $today = ovp_logger::get_today($this->db);
+            $oldest_date = ovp_logger::adjust_date($this->db, $today, -DELETE_OLDER_THAN);
+            $this->db->query(
+               "DELETE FROM `entry` WHERE
+                    DATEDIFF('".$oldest_date."', `date`) >= 0");
+            return $this->db->affected_rows;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * @brief Adjusts the date by $adjust and SKIP_WEEKEND
+     * @returns for $adjust < 0: a date at least $adjust days before $date
+     *          for $adjust >= 0: a date at least $adjust days after $date
+     *          (additional days compensate weekends if SKIP_WEEKENDS is enabled)
+     */
+    public function adjust_date($date, $adjust = 0) {
+        if ($adjust != 0) {
+            $row = $this->db->query(
+               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY)
+                    AS 'date' LIMIT 1")->fetch_assoc();
+            $date = $row['date'];
+        }
+        if (SKIP_WEEKENDS) {
+            $row = $this->db->query(
+               "SELECT DAYOFWEEK('".$date."')
+                    AS 'weekday' LIMIT 1")->fetch_assoc();
+            if ($adjust < 0) {
+                $adjust = 0;
+                if ($row['weekday'] == 7) {
+                    $adjust = -1; // Saturday->Friday
+                } else if ($row['weekday'] == 1) {
+                    $adjust = -2; // Sunday->Friday
+                }
+            } else {
+                $adjust = 0;
+                if ($row['weekday'] == 7) {
+                    $adjust = 2; // Saturday->Monday
+                } else if ($row['weekday'] == 1) {
+                    $adjust = 1; // Sunday->Monday
+                }
+            }
+            $row = $this->db->query(
+               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY)
+                    AS 'date' LIMIT 1")->fetch_assoc();
+            $date = $row['date'];
+        }
+        return $date;
+    }
+
+    public function get_today() {
+        $row = $this->db->query("SELECT CURDATE() AS 'today' LIMIT 1")->fetch_assoc();
+        return $row['today'];
+    }
+
+    public function format_date($date) {
+        $row = $this->db->query(
+           "SELECT DATE_FORMAT('".$date."', '%W, %d.%m.%Y')
+                AS 'date' LIMIT 1")->fetch_assoc();
+        return $row['date'];
+    }
+
 }
 
 

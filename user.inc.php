@@ -22,22 +22,10 @@
 require_once('interfaces.inc.php');
 require_once('logger.inc.php');
 
-abstract class ovp_asset {
-    protected $id;
-    protected $db;
+class ovp_user {
+    private $id;
+    private $db;
 
-    public function __construct(db $db, $id) {
-        $this->db = $db;
-        $this->id = $db->protect($id);
-    }
-
-    public function get_id() {
-        return $this->id;
-    }
-
-}
-
-class ovp_user extends ovp_asset {
     private static $roles = array(ovp_logger::VIEW_NONE   => 'none',
                                   ovp_logger::VIEW_PUBLIC => 'public',
                                   ovp_logger::VIEW_PRINT  => 'print',
@@ -46,23 +34,6 @@ class ovp_user extends ovp_asset {
 
     public final static function get_roles() {
         return self::$roles;
-    }
-
-    public static function get_all_users(db $db) {
-        $result = $db->query("SELECT `id`, `name` FROM `user` ORDER BY `name`");
-        $users = array();
-        while ($row = $result->fetch_assoc()) {
-            $users[] = new ovp_user($db, $row['id']);
-        }
-        return $users;
-    }
-
-    public static function get_user_by_name(db $db, $name) {
-        $result = $db->query("SELECT `id` FROM `user` WHERE `name` = '".$db->protect($name)."'");
-        if ($row = $result->fetch_assoc()) {
-            return new ovp_user($db, $row['id']);
-        }
-        return NULL;
     }
 
     public static function role_to_privilege($newrole) {
@@ -74,60 +45,24 @@ class ovp_user extends ovp_asset {
         return ovp_logger::VIEW_NONE;
     }
 
-    public static function name_exists(db $db, $name) {
-        $result = $db->query(
-           "SELECT `id` FROM `user`
-            WHERE `name` = '".$db->protect($name)."'");
-        return $result->num_rows != 0;
-    }
-
-    public static function add(db $db, $name, $password, $role) {
-        if (self::name_exists($db, $name)) {
-            return false;
+    public function __construct($id = 'guest') {
+        $this->db = ovp_db::get_singleton();
+        if ($id == 'guest') {
+            $this->id = $id;
+            return;
         }
-        $hash = hash('sha256', $password);
-        $privilege = self::role_to_privilege($role);
-        $db->query(
-           "INSERT INTO `user` (
-                `name`,
-                `pwd_hash`,
-                `privilege`
-            ) VALUES (
-                '".$db->protect($name)."',
-                '".$db->protect($hash)."',
-                '".$db->protect($privilege)."'
-            )"
-        );
-        $row = $db->query(
-           "SELECT `id` FROM `user` WHERE
-                `name`      = '".$db->protect($name)."' AND
-                `pwd_hash`  = '".$db->protect($hash)."' AND
-                `privilege` = '".$db->protect($privilege)."'
-            LIMIT 1")->fetch_assoc();
-        return $row['id'];
-    }
-
-    public static function remove(db $db, $id) {
-        $user = ovp_logger::get_current_user($db);
-        if ($user->get_id() == $id) {
-            ovp_msg::fail('Eigener Account darf nicht gelöscht werden');
-        }
-        $db->query(
-           "DELETE FROM `user`
-            WHERE `id` = '".$db->protect($id)."'
-            LIMIT 1");
-        return $db->affected_rows == 1;
-    }
-
-    public function __construct(db $db, $id) {
-        $result = $db->query(
+        $result = $this->db->query(
            "SELECT `id` FROM `user`
-            WHERE `id` = '".$db->protect($id)."'
+            WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1");
         if ($result->num_rows != 1) {
             ovp_msg::fail('ID ungültig');
         }
-        parent::__construct($db, $id);
+        $this->id = $id;
+    }
+
+    public function get_id() {
+        return $this->id;
     }
 
     public function get_privilege() {
@@ -176,7 +111,7 @@ class ovp_user extends ovp_asset {
     }
 
     public function set_name($name) {
-        if (self::name_exists($this->db, $name)) {
+        if (ovp_user_manager::name_exists($this->db, $name)) {
             return false;
         }
         return $this->db->query(
@@ -191,6 +126,190 @@ class ovp_user extends ovp_asset {
            "UPDATE `user`
             SET `pwd_hash` = '".$this->db->protect($hash)."'
             WHERE `id` = '".$this->id."' LIMIT 1");
+    }
+
+    public function is_authorized($priv_req = 1) {
+        $logged_in = !($this->id == 'guest');
+        if ($priv_req == ovp_logger::PRIV_LOGIN) {
+            return $logged_in;
+        } else if ($priv_req == ovp_logger::PRIV_LOGOUT) {
+            return !$logged_in;
+        } else if ($priv_req <= PRIV_DEFAULT) {
+            return true;
+        } else if ($logged_in) {
+            if ($priv_req <= $this->get_privilege()) {
+                return $this->session_ok();
+            }
+        }
+        return false;
+    }
+
+    public function authorize($priv_req = 1) {
+        if (!$this->is_authorized($priv_req)) {
+            if ($priv_req == self::PRIV_LOGOUT) {
+                ovp_logger::redirect(basename($_SERVER['SCRIPT_NAME']));
+            }
+            $continue = basename($_SERVER['SCRIPT_NAME']);
+            if ($_SERVER['QUERY_STRING'] != '') {
+                $continue .= '?'.$_SERVER['QUERY_STRING'];
+            }
+            $link = ovp_logger::get_source_link('login&continue='.urlencode($continue));
+            ovp_logger::redirect($link); // does not return
+        }
+        return true;
+    }
+
+    // checks if the current user's ip address matches the one in the database
+    public function session_ok() {
+        $result = $this->db->query(
+           "SELECT
+                `ip1`,
+                `ip2`
+            FROM `user` WHERE
+                `sid`  = '".$this->db->protect(session_id())."'
+            LIMIT 1"
+        );
+        if (!($row = $result->fetch_assoc())) {
+            return false;
+        }
+        if ($row['ip2'] != NULL) {
+            $ip = ($row['ip2'] << 64) + $row['ip1'];
+        } else {
+            $ip = $row['ip1'];
+        }
+        return $ip == ip2long($_SERVER['REMOTE_ADDR']);
+    }
+}
+
+class ovp_user_manager {
+    private static $singleton;
+    private $db;
+
+    private function __construct() {
+        $this->db = ovp_db::get_singleton();
+    }
+
+    public static function get_singleton() {
+        if (self::$singleton === null) {
+            self::$singleton = new self;
+        }
+        return self::$singleton;
+    }
+
+    public function get_all_users() {
+        $result = $this->db->query("SELECT `id`, `name` FROM `user` ORDER BY `name`");
+        $users = array();
+        while ($row = $result->fetch_assoc()) {
+            $users[] = new ovp_user($row['id']);
+        }
+        return $users;
+    }
+
+    public function get_user_by_name($name) {
+        $result = $this->db->query("SELECT `id` FROM `user` WHERE `name` = '".$this->db->protect($name)."'");
+        if ($row = $result->fetch_assoc()) {
+            return new ovp_user($row['id']);
+        }
+        return NULL;
+    }
+
+    public function name_exists($name) {
+        $result = $this->db->query(
+           "SELECT `id` FROM `user`
+            WHERE `name` = '".$this->db->protect($name)."'");
+        return $result->num_rows != 0;
+    }
+
+    public function add($name, $password, $role) {
+        if (self::name_exists($name)) {
+            return false;
+        }
+        $hash = hash('sha256', $password);
+        $privilege = ovp_user::role_to_privilege($role);
+        $this->db->query(
+           "INSERT INTO `user` (
+                `name`,
+                `pwd_hash`,
+                `privilege`
+            ) VALUES (
+                '".$this->db->protect($name)."',
+                '".$this->db->protect($hash)."',
+                '".$this->db->protect($privilege)."'
+            )"
+        );
+        $row = $this->db->query(
+           "SELECT `id` FROM `user` WHERE
+                `name`      = '".$this->db->protect($name)."' AND
+                `pwd_hash`  = '".$this->db->protect($hash)."' AND
+                `privilege` = '".$this->db->protect($privilege)."'
+            LIMIT 1")->fetch_assoc();
+        return $row['id'];
+    }
+
+    public function remove($id) {
+        $user = ovp_logger::get_current_user($db);
+        if ($user->get_id() == $id) {
+            ovp_msg::fail('Eigener Account darf nicht gelöscht werden');
+        }
+        $this->db->query(
+           "DELETE FROM `user`
+            WHERE `id` = '".$this->db->protect($id)."'
+            LIMIT 1");
+        return $this->db->affected_rows == 1;
+    }
+
+    public function login($name, $pwd) {
+        $result = $this->db->query(
+           "SELECT
+                `id`
+            FROM `user` WHERE
+                `name`      = '".$this->db->protect($name)."' AND
+                `pwd_hash`  = '".$this->db->protect(hash('sha256', $pwd))."'"
+        );
+        if (!($row = $result->fetch_assoc())) {
+            return false; // user not found or wrong password
+        }
+        $ip = ip2long($_SERVER['REMOTE_ADDR']);
+        $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
+        $ip2 = $ip >> 64;
+        $this->db->query(
+           "UPDATE `user` SET
+                `ip1` = '".$this->db->protect($ip1)."',
+                `ip2` = '".$this->db->protect($ip2)."',
+                `sid` = '".$this->db->protect(session_id())."'
+            WHERE
+                `id` = '".$this->db->protect($row['id'])."'
+            LIMIT 1"
+        );
+        return true;
+    }
+
+    public function logout() {
+        $this->db->query(
+           "UPDATE `user` SET
+                `ip1` = NULL,
+                `ip2` = NULL,
+                `sid` = NULL
+            WHERE
+                `sid` = '".$this->db->protect(session_id())."'
+            LIMIT 1"
+        );
+        return $this->db->affected_rows == 1;
+    }
+
+    public function get_current_user() {
+        $ip = ip2long($_SERVER['REMOTE_ADDR']);
+        $result = $this->db->query(
+           "SELECT `id` FROM `user`
+            WHERE
+                `ip1` = '".$this->db->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
+                `ip2` = '".$this->db->protect($ip >> 64)."' AND
+                `sid` = '".$this->db->protect(session_id())."'
+            LIMIT 1")->fetch_assoc();
+        if ($uid = $result['id']) {
+            return new ovp_user($uid);
+        }
+        return new ovp_user('guest');
     }
 }
 

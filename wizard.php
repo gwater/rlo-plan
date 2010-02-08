@@ -44,10 +44,10 @@ case 'settings':
     $poster = new post_settings($is_wiz);
     break;
 case 'account':
-    $poster = new post_account(new db(), $is_wiz);
+    $poster = new post_account($is_wiz);
     break;
 case 'login':
-    $poster = new post_login(new db());
+    $poster = new post_login();
     break;
 default:
     // DoNothing (tm)
@@ -58,9 +58,9 @@ if (isset($poster)) {
         exit($poster->evaluate($_POST));
     }
     $poster_vars = get_class_vars(get_class($poster));
-    $db = new db();
-    $logger = new ovp_logger($db);
-    if (!$logger->is_authorized($poster_vars['priv_req'])) {
+    $manager = ovp_user_manager::get_singleton();
+    $user = $manager->get_current_user();
+    if (!$user->is_authorized($poster_vars['priv_req'])) {
         ovp_msg::fail('not logged in');
     }
     exit($poster->evaluate($_POST));
@@ -88,9 +88,9 @@ default:
 
 $source_vars = get_class_vars(get_class($source));
 if (!FIRST_RUN) {
-    $db = new db();
-    $logger = new ovp_logger($db);
-    $logger->authorize($source_vars['priv_req']);
+    $manager = ovp_user_manager::get_singleton();
+    $user = $manager->get_current_user();
+    $user->authorize($source_vars['priv_req']);
 }
 $navi = new ovp_navi_wizard($source_vars['type']);
 $page = new ovp_page($source, $navi);

@@ -22,7 +22,15 @@
 require_once('config.inc.php');
 require_once('user.inc.php');
 
-class db extends mysqli {
+class ovp_db extends mysqli {
+    private static $singleton;
+
+    public static function get_singleton() {
+        if (self::$singleton === null) {
+            self::$singleton = new self;
+        }
+        return self::$singleton;
+    }
 
     public static function check_creds($host, $base, $user, $pass) {
         $temp = new mysqli();
@@ -36,7 +44,8 @@ class db extends mysqli {
         return NULL;
     }
 
-    public function __construct($config = null) {
+    // only use when you need a config-hack
+    public function __construct($config = false) {
         if ($config) {
             $host = $config->get('DB_HOST');
             $user = $config->get('DB_USER');

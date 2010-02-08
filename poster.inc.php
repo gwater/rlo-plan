@@ -28,22 +28,21 @@ require_once('logger.inc.php');
 abstract class poster {
     public static $priv_req;
     abstract public function evaluate($post);
-
 }
 
 class post_user extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
-    private $db;
+    private $manager;
 
-    public function __construct(db $db) {
-        $this->db = $db;
+    public function __construct() {
+        $this->manager = ovp_user_manager::get_singleton();
     }
 
     public function evaluate($post) {
         switch ($post['action']) {
         case 'add':
             if (isset($post['name']) && isset($post['password']) && isset($post['role'])) {
-                $id = ovp_user::add($this->db, $post['name'], $post['password'], $post['role']);
+                $id = $this->manager->add($post['name'], $post['password'], $post['role']);
                 if ($id) {
                     exit($id);
                 } else {
@@ -55,7 +54,7 @@ class post_user extends poster {
             if (!isset($post['id'])) {
                 ovp_msg::fail('ID fehlt');
             }
-            $user = new ovp_user($this->db, $post['id']);
+            $user = new ovp_user($post['id']);
             $result = true;
             foreach ($post as $key => $value) {
                 switch ($key) {
@@ -82,7 +81,7 @@ class post_user extends poster {
         case 'delete':
             if (!isset($post['id'])) {
                 ovp_msg::fail('ID fehlt');
-            } else if (ovp_user::remove($this->db, $post['id'])) {
+            } else if ($this->manager->remove($post['id'])) {
                 exit('deleted');
             }
             ovp_msg::fail('ID ungültig');
@@ -94,17 +93,17 @@ class post_user extends poster {
 
 class post_password extends poster {
     public static $priv_req = ovp_logger::PRIV_LOGIN;
-    private $db;
+    private $user;
 
-    public function __construct(db $db) {
-        $this->db = $db;
+    public function __construct() {
+        $manager = ovp_user_manager::get_singleton();
+        $this->user = $manager->get_current_user();
     }
 
     public function evaluate($post) {
         if (isset($post['newpwd']) && isset($post['oldpwd'])) {
-            $user = ovp_logger::get_current_user($this->db);
-            if ($user->check_password($post['oldpwd'])) {
-                if ($user->set_password($post['newpwd'])) {
+            if ($this->user->check_password($post['oldpwd'])) {
+                if ($this->user->set_password($post['newpwd'])) {
                     exit('updated');
                 } else {
                     ovp_msg::fail('Passwort ändern gescheitert');
@@ -120,15 +119,15 @@ class post_password extends poster {
 
 class post_login extends poster {
     public static $priv_req = ovp_logger::PRIV_LOGOUT;
-    private $db;
+    private $manager;
 
-    public function __construct(db $db) {
-        $this->db = $db;
+    public function __construct() {
+        $this->manager = ovp_user_manager::get_singleton();
     }
 
     public function evaluate($post) {
         if (isset($post['name']) && isset($post['pwd'])) {
-            if (ovp_logger::login($this->db, $post['name'], $post['pwd'])) {
+            if ($this->manager->login($post['name'], $post['pwd'])) {
                 ovp_logger::redirect($_GET['continue']);
             }
         }
@@ -139,14 +138,14 @@ class post_login extends poster {
 
 class post_logout extends poster {
     public static $priv_req = ovp_logger::PRIV_LOGIN;
-    private $db;
+    private $manager;
 
-    public function __construct(db $db) {
-        $this->db = $db;
+    public function __construct() {
+        $this->manager = ovp_user_manager::get_singleton();
     }
 
     public function evaluate($post) {
-        ovp_logger::logout($this->db);
+        $this->manager->logout();
         $_SESSION = array();
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
@@ -157,10 +156,10 @@ class post_logout extends poster {
 
 class post_entry extends poster {
     public static $priv_req = ovp_logger::VIEW_AUTHOR;
-    private $db;
+    private $manager;
 
-    public function __construct(db $db) {
-        $this->db = $db;
+    public function __construct() {
+        $this->manager = ovp_entry_manager::get_singleton();
     }
 
     public function evaluate($post) {
@@ -173,7 +172,7 @@ class post_entry extends poster {
                 isset($post['oldroom']) && isset($post['newroom']))) {
                 ovp_msg::fail('Daten unvollständig');
             }
-            if ($id = ovp_entry::add($this->db, $post)) {
+            if ($id = $this->manager->add($post)) {
                 exit($id);
             }
             ovp_msg::fail('Hinzufügen gescheitert');
@@ -186,7 +185,7 @@ class post_entry extends poster {
                 isset($post['oldroom']) && isset($post['newroom']))) {
                 ovp_msg::fail('Daten unvollständig');
             }
-            $entry = new ovp_entry($this->db, $post['id']);
+            $entry = new ovp_entry($post['id']);
             if ($entry->set_values($post)) {
                 exit('updated');
             }
@@ -195,7 +194,7 @@ class post_entry extends poster {
             if (!isset($post['id'])) {
                 ovp_msg::fail('ID fehlt');
             }
-            if (ovp_entry::remove($this->db, $post['id'])) {
+            if ($this->manager->remove($post['id'])) {
                 exit('deleted');
             }
             ovp_msg::fail('ID ungültig');
@@ -222,11 +221,11 @@ class post_mysql extends poster {
         $config->set('DB_BASE', "'".$post['base']."'");
         $config->set('DB_USER', "'".$post['user']."'");
         $config->set('DB_PASS', "'".$post['pass']."'");
-        if ($error = db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
+        if ($error = ovp_db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
             $link = ovp_logger::get_source_link('mysql&error='.urlencode($error));
         } else {
             if ($this->is_wiz) {
-                $db = new db($config);
+                $db = new ovp_db($config);
                 $db->reset_tables();
                 $link = ovp_logger::get_source_link('settings');
             } else {
@@ -265,11 +264,11 @@ class post_settings extends poster {
 
 class post_account extends poster {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
-    private $db;
+    private $manager;
     private $is_wiz;
 
-    public function __construct(db $db, $is_wiz = false) {
-        $this->db = $db;
+    public function __construct($is_wiz = false) {
+        $this->manager = ovp_user_manager::get_singleton();
         $this->is_wiz = $is_wiz;
     }
 
@@ -277,11 +276,11 @@ class post_account extends poster {
         if (!(isset($post['name']) && isset($post['pwd']))) {
             ovp_msg::fail('Daten unvollständig');
         }
-        if (ovp_user::name_exists($this->db, $post['name'])) {
-            $user = ovp_user::get_user_by_name($this->db, $post['name']);
+        if ($this->manager->name_exists($post['name'])) {
+            $user = $this->manager->get_user_by_name($post['name']);
             $user->set_password($post['pwd']);
         } else {
-            ovp_user::add($this->db, $post['name'], $post['pwd'], 'admin');
+            $this->manager->add($post['name'], $post['pwd'], 'admin');
         }
         if ($this->is_wiz) {
             $link = ovp_logger::get_source_link('final');

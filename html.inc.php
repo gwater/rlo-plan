@@ -63,22 +63,23 @@ class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Online-Vertretungsplan';
     public static $priv_req = ovp_logger::VIEW_PUBLIC;
-    private $db;
     private $course;
+    private $courses;
+    private $entries;
 
-    public function __construct(db $db, $course = '') {
-        $this->db = $db;
+    public function __construct($course = '') {
+        $manager = ovp_entry_manager::get_singleton();
+        if ($this->course == '') {
+            $this->entries = $manager->get_entries_by_date();
+        } else {
+            $this->entries = $manager->get_entries_for_course($course);
+        }
+        $this->courses = $manager->get_courses();
         $this->course = $course;
     }
 
     protected function generate_view() {
-        if ($this->course == '') {
-            $entries_by_date = ovp_entry::get_entries_by_date($this->db);
-        } else {
-            $entries_by_date = ovp_entry::get_entries_for_course($this->db, $this->course);
-        }
         $link = ovp_logger::get_source_link('public');
-        $courses = ovp_entry::get_courses($this->db);
         $html = '
           <div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -88,7 +89,7 @@ class ovp_public extends ovp_source {
             <td>Klasse/Kurs:</td>
             <td><select name="course">
                 <option value="" '.($this->course == '' ? 'selected="selected"' : '').'>Alle</option>';
-        foreach ($courses as $course) {
+        foreach ($this->courses as $course) {
             $html .= '
                 <option value="'.$course.'" '.($course == $this->course ? 'selected="selected"' : '').'>'.$course.'</option>';
         }
@@ -97,8 +98,8 @@ class ovp_public extends ovp_source {
             <td><input type="submit" value="Filtern"></td>
             </tr></table>
             </form>';
-        if ($entries_by_date) {
-            foreach($entries_by_date as $entries_today) {
+        if ($this->entries) {
+            foreach($this->entries as $entries_today) {
                 foreach ($entries_today as $first_entry) {
                     break;
                 }
@@ -154,15 +155,16 @@ class ovp_print extends ovp_source {
     private $tomorrow;
     private $entries;
 
-    public function __construct(db $db, $date = false) {
+    public function __construct($date = false) {
+        $manager = ovp_entry_manager::get_singleton();
         if (!$date) {
-            $date = ovp_logger::get_today($db, $date);
+            $date = $manager->get_today($date);
         }
-        $today = ovp_logger::adjust_date($db, $date);
-        $this->tomorrow = ovp_logger::adjust_date($db, $today, 1);
-        $this->yesterday = ovp_logger::adjust_date($db, $today, -1);
-        $this->entries = ovp_entry::get_entries_by_teacher($db, $today);
-        $this->today = ovp_logger::format_date($db, $today);
+        $today = $manager->adjust_date($date);
+        $this->tomorrow = $manager->adjust_date($today, 1);
+        $this->yesterday = $manager->adjust_date($today, -1);
+        $this->entries = $manager->get_entries_by_teacher($today);
+        $this->today = $manager->format_date($today);
     }
 
     protected function generate_view() {
@@ -232,8 +234,9 @@ class ovp_author extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_AUTHOR;
     private $entries;
 
-    public function __construct(db $db) {
-        $this->entries = ovp_entry::get_entries_by_teacher_and_date($db);
+    public function __construct() {
+        $manager = ovp_entry_manager::get_singleton();
+        $this->entries = $manager->get_entries_by_teacher_and_date();
     }
 
     protected function generate_header() {
@@ -355,8 +358,9 @@ class ovp_admin extends ovp_source {
     public static $priv_req = ovp_logger::VIEW_ADMIN;
     protected $users;
 
-    public function __construct(db $db) {
-        $this->users = ovp_user::get_all_users($db);
+    public function __construct() {
+        $manager = ovp_user_manager::get_singleton();
+        $this->users = $manager->get_all_users();
     }
 
     protected function generate_header() {
@@ -416,8 +420,9 @@ class ovp_password extends ovp_source {
     private $user;
 
 
-    public function __construct(db $db) {
-        $this->user = ovp_logger::get_current_user($db);
+    public function __construct() {
+        $manager = ovp_user_manager::get_singleton();
+        $this->user = $manager->get_current_user();
     }
 
     protected function generate_header() {
@@ -622,11 +627,12 @@ class ovp_navi extends ovp_source {
     public static $title ='Navigationsleiste';
     public static $priv_req = ovp_logger::VIEW_NONE;
     private $current;
-    private $logger;
+    private $user;
 
-    public function __construct($logger, $current) {
+    public function __construct($current) {
         $this->current = $current;
-        $this->logger = $logger;
+        $manager = ovp_user_manager::get_singleton();
+        $this->user = $manager->get_current_user();
     }
 
     public function generate_view() {
@@ -645,7 +651,7 @@ class ovp_navi extends ovp_source {
              '<div id="ovp_navi">';
         $first = true;
         foreach ($sources as $source) {
-            if ($this->logger->is_authorized($source['priv_req'])) {
+            if ($this->user->is_authorized($source['priv_req'])) {
                 if($first) {
                     $first = false;
                 } else {
@@ -660,7 +666,7 @@ class ovp_navi extends ovp_source {
                 }
             }
         }
-        if ($this->logger->is_authorized(ovp_logger::PRIV_LOGIN)){
+        if ($this->user->is_authorized(ovp_logger::PRIV_LOGIN)){
             $link = ovp_logger::get_poster_link('logout');
             $html .= ' |
                 <a href="'.$link.'">Logout</a>';
