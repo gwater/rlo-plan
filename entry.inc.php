@@ -160,11 +160,21 @@ class ovp_entry extends ovp_asset {
         $course = $db->protect($course);
         $entries_by_date = array();
         foreach ($dates as $date) {
+            if (strstr('.', $course)) {
+                $row = $db->query("SELECT
+                    SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1)
+                    AS 'year' LIMIT 1")->fetch_assoc();
+                $year = $row['year'];
+            } else {
+                $year = $course;
+            }
             $result = $db->query(
                "SELECT `id` FROM `entry`
                 WHERE `date` = '".$db->protect($date)."'
                 AND (`course` = '".$course."'
-                OR `course` = SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1)
+                OR `course` = '".$year."'
+                OR SUBSTR(`course`, 1, LOCATE('/', `course`)-1) = '".$year."'
+                OR SUBSTR(`course`, LOCATE('/', `course`)+1) = '".$year."'
                 OR `course` = 'alle')
                 ORDER BY `time` ASC");
             $entries = array();
@@ -194,10 +204,14 @@ class ovp_entry extends ovp_asset {
         // copy, to avoid conflicts
         $others = $courses;
         foreach ($courses as $key => $course) {
-            foreach ($others as $other) {
-            // don't show courses like '9' when there are classes like '9.1'
-                if (strstr($other, $course.'.') || ($course == 'alle')) {
-                    unset($courses[$key]);
+            if (strstr($course, '/')) {
+                unset($courses[$key]);
+            } else if (!strstr($course,'.')) {
+                // don't show courses like '9' when there are classes like '9.1'
+                foreach ($others as $other) {
+                    if (strstr($other, $course.'.') || ($course == 'alle')) {
+                        unset($courses[$key]);
+                    }
                 }
             }
         }
