@@ -37,7 +37,7 @@ class ovp_zipper {
                 $config = new ovp_config();
                 $content = $config->get_backup();
                 if (!$content) {
-                    ovp_msg::fail('Konfigurationsbackup konnten icht gelesen werden');
+                    ovp_http::fail('Konfigurationsbackup konnten icht gelesen werden');
                 }
                 $zip->addFromString('config.inc.php', $content);
             } else {
@@ -69,7 +69,7 @@ class ovp_config {
         if (file_exists($file)) {
             $this->file = $file;
         } else {
-            ovp_msg::fail('Konfigurationsdatei nicht gefunden');
+            ovp_http::fail('Konfigurationsdatei nicht gefunden');
         }
     }
 
@@ -87,7 +87,7 @@ class ovp_config {
         if (file_put_contents($this->file, $text)) {
             return true;
         } else {
-            ovp_msg::fail('Ändern der Konfigurationsdatei gescheitert');
+            ovp_http::fail('Ändern der Konfigurationsdatei gescheitert');
         }
     }
 
@@ -101,7 +101,7 @@ class ovp_config {
     }
 }
 
-class ovp_msg {
+class ovp_http {
     // TODO: add $code as parameter
     public static function fail($msg) {
         header('HTTP/1.0 400 Bad Request');
@@ -112,6 +112,24 @@ class ovp_msg {
         if (DEBUG) {
             print($msg);
         }
+    }
+
+    public static function get_source_link($source = '') {
+        return basename($_SERVER['SCRIPT_NAME']).($source == '' ? '' : '?source='.$source);
+    }
+
+    public static function get_poster_link($poster = '') {
+        return basename($_SERVER['SCRIPT_NAME']).'?poster='.$poster;
+    }
+
+    public static function redirect($to = false) {
+        if (!$to) {
+            $to = self::get_source_link();
+        }
+        $server = $_SERVER['SERVER_NAME'];
+        $path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        header('Location: http://'.$server.$path.'/'.$to);
+        exit;
     }
 }
 

@@ -21,7 +21,6 @@
 
 require_once('db.inc.php');
 require_once('interfaces.inc.php');
-require_once('logger.inc.php');
 
 class ovp_entry {
     private $db;
@@ -45,7 +44,7 @@ class ovp_entry {
             WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1");
         if ($result->num_rows != 1) {
-            ovp_msg::fail('ID ungültig');
+            ovp_http::fail('ID ungültig');
         }
         $this->id = $id;
     }
@@ -335,8 +334,8 @@ class ovp_entry_manager {
      */
     public function cleanup() {
         if (DELETE_OLDER_THAN >= 0) {
-            $today = ovp_logger::get_today($this->db);
-            $oldest_date = ovp_logger::adjust_date($this->db, $today, -DELETE_OLDER_THAN);
+            $today = $this->get_today();
+            $oldest_date = $this->adjust_date($today, -DELETE_OLDER_THAN);
             $this->db->query(
                "DELETE FROM `entry` WHERE
                     DATEDIFF('".$oldest_date."', `date`) >= 0");

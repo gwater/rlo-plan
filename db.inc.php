@@ -20,7 +20,7 @@
  */
 
 require_once('config.inc.php');
-require_once('user.inc.php');
+require_once('interfaces.inc.php');
 
 class ovp_db extends mysqli {
     private static $singleton;
@@ -59,22 +59,22 @@ class ovp_db extends mysqli {
         }
         parent::__construct($host, $user, $pass);
         if ($this->connect_errno) {
-            ovp_msg::fail('Keine Verbindung zum DB-Server');
+            ovp_http::fail('Keine Verbindung zum DB-Server');
         }
         $this->query("SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");
         $this->query("SET time_zone = '+1:00'");
         $this->query("SET lc_time_names = 'de_DE'");
         if (!$this->select_db($base)) {
             if (!$this->create_db()) {
-                ovp_msg::fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
+                ovp_http::fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
             }
         }
     }
 
     public function query($query) {
         if (!($result = parent::query($query))) {
-            ovp_msg::debug($this->error);
-            ovp_msg::fail('SQL-Anfrage ungültig');
+            ovp_http::debug($this->error);
+            ovp_http::fail('SQL-Anfrage ungültig');
         }
         return $result;
     }

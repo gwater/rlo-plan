@@ -23,7 +23,6 @@ require_once('db.inc.php');
 require_once('user.inc.php');
 require_once('interfaces.inc.php');
 require_once('entry.inc.php');
-require_once('logger.inc.php');
 
 abstract class poster {
     public static $priv_req;
@@ -31,7 +30,7 @@ abstract class poster {
 }
 
 class post_user extends poster {
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
     private $manager;
 
     public function __construct() {
@@ -46,13 +45,13 @@ class post_user extends poster {
                 if ($id) {
                     exit($id);
                 } else {
-                    ovp_msg::fail('Hinzufügen gescheitert');
+                    ovp_http::fail('Hinzufügen gescheitert');
                 }
             }
-            ovp_msg::fail('Daten unvollständig');
+            ovp_http::fail('Daten unvollständig');
         case 'update':
             if (!isset($post['id'])) {
-                ovp_msg::fail('ID fehlt');
+                ovp_http::fail('ID fehlt');
             }
             $user = new ovp_user($post['id']);
             $result = true;
@@ -74,25 +73,25 @@ class post_user extends poster {
                     // DoNothing (tm)
                 }
                 if (!($result)) {
-                    ovp_msg::fail('Änderung gescheitert');
+                    ovp_http::fail('Änderung gescheitert');
                 }
             }
             exit('updated');
         case 'delete':
             if (!isset($post['id'])) {
-                ovp_msg::fail('ID fehlt');
+                ovp_http::fail('ID fehlt');
             } else if ($this->manager->remove($post['id'])) {
                 exit('deleted');
             }
-            ovp_msg::fail('ID ungültig');
+            ovp_http::fail('ID ungültig');
         default:
-            ovp_msg::fail('Ungültige Anfrage');
+            ovp_http::fail('Ungültige Anfrage');
         }
     }
 }
 
 class post_password extends poster {
-    public static $priv_req = ovp_logger::PRIV_LOGIN;
+    public static $priv_req = ovp_user::PRIV_LOGIN;
     private $user;
 
     public function __construct() {
@@ -106,19 +105,19 @@ class post_password extends poster {
                 if ($this->user->set_password($post['newpwd'])) {
                     exit('updated');
                 } else {
-                    ovp_msg::fail('Passwort ändern gescheitert');
+                    ovp_http::fail('Passwort ändern gescheitert');
                 }
             } else {
-                ovp_msg::fail('Altes Password inkorrekt');
+                ovp_http::fail('Altes Password inkorrekt');
             }
         } else {
-            ovp_msg::fail('Daten unvollständig');
+            ovp_http::fail('Daten unvollständig');
         }
     }
 }
 
 class post_login extends poster {
-    public static $priv_req = ovp_logger::PRIV_LOGOUT;
+    public static $priv_req = ovp_user::PRIV_LOGOUT;
     private $manager;
 
     public function __construct() {
@@ -128,16 +127,16 @@ class post_login extends poster {
     public function evaluate($post) {
         if (isset($post['name']) && isset($post['pwd'])) {
             if ($this->manager->login($post['name'], $post['pwd'])) {
-                ovp_logger::redirect($_GET['continue']);
+                ovp_http::redirect($_GET['continue']);
             }
         }
-        $link = ovp_logger::get_source_link('login&attempt=failed&continue='.urlencode($_GET['continue']));
-        ovp_logger::redirect($link);
+        $link = ovp_http::get_source_link('login&attempt=failed&continue='.urlencode($_GET['continue']));
+        ovp_http::redirect($link);
     }
 }
 
 class post_logout extends poster {
-    public static $priv_req = ovp_logger::PRIV_LOGIN;
+    public static $priv_req = ovp_user::PRIV_LOGIN;
     private $manager;
 
     public function __construct() {
@@ -150,12 +149,12 @@ class post_logout extends poster {
         $params = session_get_cookie_params();
         setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
         session_destroy();
-        ovp_logger::redirect();
+        ovp_http::redirect();
     }
 }
 
 class post_entry extends poster {
-    public static $priv_req = ovp_logger::VIEW_AUTHOR;
+    public static $priv_req = ovp_user::VIEW_AUTHOR;
     private $manager;
 
     public function __construct() {
@@ -170,12 +169,12 @@ class post_entry extends poster {
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
                 isset($post['oldroom']) && isset($post['newroom']))) {
-                ovp_msg::fail('Daten unvollständig');
+                ovp_http::fail('Daten unvollständig');
             }
             if ($id = $this->manager->add($post)) {
                 exit($id);
             }
-            ovp_msg::fail('Hinzufügen gescheitert');
+            ovp_http::fail('Hinzufügen gescheitert');
         case 'update':
             if (!(isset($post['id'])    &&
                 isset($post['date'])    && isset($post['teacher'])  &&
@@ -183,29 +182,29 @@ class post_entry extends poster {
                 isset($post['subject']) && isset($post['duration']) &&
                 isset($post['sub'])     && isset($post['change'])   &&
                 isset($post['oldroom']) && isset($post['newroom']))) {
-                ovp_msg::fail('Daten unvollständig');
+                ovp_http::fail('Daten unvollständig');
             }
             $entry = new ovp_entry($post['id']);
             if ($entry->set_values($post)) {
                 exit('updated');
             }
-            ovp_msg::fail('Änderung gescheitert');
+            ovp_http::fail('Änderung gescheitert');
         case 'delete':
             if (!isset($post['id'])) {
-                ovp_msg::fail('ID fehlt');
+                ovp_http::fail('ID fehlt');
             }
             if ($this->manager->remove($post['id'])) {
                 exit('deleted');
             }
-            ovp_msg::fail('ID ungültig');
+            ovp_http::fail('ID ungültig');
         default:
-            ovp_msg::fail('Ungültige Anfrage');
+            ovp_http::fail('Ungültige Anfrage');
         }
     }
 }
 
 class post_mysql extends poster {
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
     private $is_wiz;
 
     public function __construct($is_wiz = false) {
@@ -214,7 +213,7 @@ class post_mysql extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['host']) && isset($post['base']) && isset($post['user']) && isset($post['pass']))) {
-            ovp_msg::fail('Daten unvollständig');
+            ovp_http::fail('Daten unvollständig');
         }
         $config = new ovp_config();
         $config->set('DB_HOST', "'".$post['host']."'");
@@ -222,22 +221,22 @@ class post_mysql extends poster {
         $config->set('DB_USER', "'".$post['user']."'");
         $config->set('DB_PASS', "'".$post['pass']."'");
         if ($error = ovp_db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
-            $link = ovp_logger::get_source_link('mysql&error='.urlencode($error));
+            $link = ovp_http::get_source_link('mysql&error='.urlencode($error));
         } else {
             if ($this->is_wiz) {
                 $db = new ovp_db($config);
                 $db->reset_tables();
-                $link = ovp_logger::get_source_link('settings');
+                $link = ovp_http::get_source_link('settings');
             } else {
-                $link = ovp_logger::get_source_link('mysql');
+                $link = ovp_http::get_source_link('mysql');
             }
         }
-        ovp_logger::redirect($link);
+        ovp_http::redirect($link);
     }
 }
 
 class post_settings extends poster {
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
     private $is_wiz;
 
     public function __construct($is_wiz = false) {
@@ -246,7 +245,7 @@ class post_settings extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
-            ovp_msg::fail('Daten unvollständig');
+            ovp_http::fail('Daten unvollständig');
         }
         $config = new ovp_config();
         $config->set('DEBUG',             $post['debug']);
@@ -254,16 +253,16 @@ class post_settings extends poster {
         $config->set('SKIP_WEEKENDS',     $post['skipweekends']);
         $config->set('PRIV_DEFAULT',      $post['privdefault']);
         if ($this->is_wiz) {
-            $link = ovp_logger::get_source_link('account');
+            $link = ovp_http::get_source_link('account');
         } else {
-            $link = ovp_logger::get_source_link('settings');
+            $link = ovp_http::get_source_link('settings');
         }
-        ovp_logger::redirect($link);
+        ovp_http::redirect($link);
     }
 }
 
 class post_account extends poster {
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
     private $manager;
     private $is_wiz;
 
@@ -274,7 +273,7 @@ class post_account extends poster {
 
     public function evaluate($post) {
         if (!(isset($post['name']) && isset($post['pwd']))) {
-            ovp_msg::fail('Daten unvollständig');
+            ovp_http::fail('Daten unvollständig');
         }
         if ($this->manager->name_exists($post['name'])) {
             $user = $this->manager->get_user_by_name($post['name']);
@@ -283,11 +282,11 @@ class post_account extends poster {
             $this->manager->add($post['name'], $post['pwd'], 'admin');
         }
         if ($this->is_wiz) {
-            $link = ovp_logger::get_source_link('final');
+            $link = ovp_http::get_source_link('final');
         } else {
-            $link = ovp_logger::get_source_link('account');
+            $link = ovp_http::get_source_link('account');
         }
-        ovp_logger::redirect($link);
+        ovp_http::redirect($link);
     }
 }
 

@@ -19,11 +19,9 @@
  * along with RLO-Plan.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('db.inc.php');
 require_once('config.inc.php');
 require_once('user.inc.php');
 require_once('entry.inc.php');
-require_once('logger.inc.php');
 
 /**
  * This is the basic API for all content provided by rlo-plan
@@ -62,7 +60,7 @@ abstract class ovp_source {
 class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Online-Vertretungsplan';
-    public static $priv_req = ovp_logger::VIEW_PUBLIC;
+    public static $priv_req = ovp_user::VIEW_PUBLIC;
     private $course;
     private $courses;
     private $entries;
@@ -79,7 +77,7 @@ class ovp_public extends ovp_source {
     }
 
     protected function generate_view() {
-        $link = ovp_logger::get_source_link('public');
+        $link = ovp_http::get_source_link('public');
         $html = '
           <div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -149,7 +147,7 @@ class ovp_public extends ovp_source {
 class ovp_print extends ovp_source {
     public static $type = 'print';
     public static $title ='Aushang';
-    public static $priv_req = ovp_logger::VIEW_PRINT;
+    public static $priv_req = ovp_user::VIEW_PRINT;
     private $today;
     private $yesterday;
     private $tomorrow;
@@ -168,8 +166,8 @@ class ovp_print extends ovp_source {
     }
 
     protected function generate_view() {
-        $yesterday_link = ovp_logger::get_source_link(self::$type.'&date='.$this->yesterday);
-        $tomorrow_link = ovp_logger::get_source_link(self::$type.'&date='.$this->tomorrow);
+        $yesterday_link = ovp_http::get_source_link(self::$type.'&date='.$this->yesterday);
+        $tomorrow_link = ovp_http::get_source_link(self::$type.'&date='.$this->tomorrow);
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -231,7 +229,7 @@ class ovp_print extends ovp_source {
 class ovp_author extends ovp_source {
     public static $type = 'author';
     public static $title ='Einträge verwalten';
-    public static $priv_req = ovp_logger::VIEW_AUTHOR;
+    public static $priv_req = ovp_user::VIEW_AUTHOR;
     private $entries;
 
     public function __construct() {
@@ -240,7 +238,7 @@ class ovp_author extends ovp_source {
     }
 
     protected function generate_header() {
-        $link = ovp_logger::get_poster_link('entry');
+        $link = ovp_http::get_poster_link('entry');
         $script =
            '<script type="text/javascript" src="entry.js"></script>
             <script type="text/javascript" src="functions.js"></script>
@@ -311,13 +309,13 @@ class ovp_author extends ovp_source {
 class ovp_login extends ovp_source {
     public static $type = 'login';
     public static $title ='Login';
-    public static $priv_req = ovp_logger::PRIV_LOGOUT;
+    public static $priv_req = ovp_user::PRIV_LOGOUT;
 
     protected function generate_view() {
         if (isset($_GET['continue'])) {
-            $link = ovp_logger::get_poster_link('login&continue='.urlencode($_GET['continue']));
+            $link = ovp_http::get_poster_link('login&continue='.urlencode($_GET['continue']));
         } else {
-            $link = ovp_logger::get_poster_link('login');
+            $link = ovp_http::get_poster_link('login');
         }
         $html =
          '<div class="ovp_container">
@@ -355,7 +353,7 @@ class ovp_login extends ovp_source {
 class ovp_admin extends ovp_source {
     public static $type = 'admin';
     public static $title ='Benutzer verwalten';
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
     protected $users;
 
     public function __construct() {
@@ -365,7 +363,7 @@ class ovp_admin extends ovp_source {
 
     protected function generate_header() {
         $roles = ovp_user::get_roles();
-        $link = ovp_logger::get_poster_link('user');
+        $link = ovp_http::get_poster_link('user');
         $script = '
             <script type="text/javascript" src="admin.js"></script>
             <script type="text/javascript" src="functions.js"></script>
@@ -416,7 +414,7 @@ class ovp_admin extends ovp_source {
 class ovp_password extends ovp_source {
     public static $type = 'password';
     public static $title ='Passwort ändern';
-    public static $priv_req = ovp_logger::PRIV_LOGIN;
+    public static $priv_req = ovp_user::PRIV_LOGIN;
     private $user;
 
 
@@ -432,7 +430,7 @@ class ovp_password extends ovp_source {
     }
 
     protected function generate_view() {
-        $link = ovp_logger::get_poster_link(self::$type);
+        $link = ovp_http::get_poster_link(self::$type);
         $html =
          '<div class="ovp_container">
           <h1>'.self::$title.'</h1>
@@ -468,7 +466,7 @@ class ovp_password extends ovp_source {
 class ovp_about extends ovp_source {
     public static $type = 'about';
     public static $title ='Über RLO-Plan';
-    public static $priv_req = ovp_logger::VIEW_NONE;
+    public static $priv_req = ovp_user::VIEW_NONE;
 
     public function generate_view() {
         ob_start();
@@ -482,7 +480,7 @@ class ovp_about extends ovp_source {
 class ovp_mysql extends ovp_source {
     public static $type = 'mysql';
     public static $title = 'MySQL Konfiguration';
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
 
     public function generate_view() {
         $html = '<div class="ovp_container">
@@ -491,7 +489,7 @@ class ovp_mysql extends ovp_source {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
         $config = new ovp_config();
-        $link = ovp_logger::get_poster_link(self::$type);
+        $link = ovp_http::get_poster_link(self::$type);
         $html .= '
             <form action="'.$link.'" method="POST"><table>
                 <tr><td>Server</td><td><input type="text" name="host" value="'.$config->get('DB_HOST').'"></td></tr>
@@ -508,10 +506,10 @@ class ovp_mysql extends ovp_source {
 class ovp_account extends ovp_source {
     public static $type = 'account';
     public static $title = 'Administrationskonto anlegen';
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
 
     public function generate_view() {
-        $link = ovp_logger::get_poster_link(self::$type);
+        $link = ovp_http::get_poster_link(self::$type);
         $html = '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
             <form action="'.$link.'" method="POST"><table>
@@ -527,7 +525,7 @@ class ovp_account extends ovp_source {
 class ovp_settings extends ovp_source {
     public static $type = 'settings';
     public static $title = 'Konfiguration';
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
 
     public function generate_view() {
         $html = '<div class="ovp_container">
@@ -535,7 +533,7 @@ class ovp_settings extends ovp_source {
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
-        $link = ovp_logger::get_poster_link(self::$type);
+        $link = ovp_http::get_poster_link(self::$type);
         $config = new ovp_config();
         $debug         = $config->get('DEBUG');
         $skip_weekends = $config->get('SKIP_WEEKENDS');
@@ -580,7 +578,7 @@ class ovp_settings extends ovp_source {
 class ovp_final extends ovp_source {
     public static $type = 'final';
     public static $title = 'Konfiguration abgeschlossen';
-    public static $priv_req = ovp_logger::VIEW_NONE;
+    public static $priv_req = ovp_user::VIEW_NONE;
 
     public function generate_view() {
         $html = '<div class="ovp_container">
@@ -594,7 +592,7 @@ class ovp_final extends ovp_source {
 class ovp_navi_wizard extends ovp_source {
     public static $type = 'navi_wizard';
     public static $title = 'Installationsnavigator';
-    public static $priv_req = ovp_logger::VIEW_ADMIN;
+    public static $priv_req = ovp_user::VIEW_ADMIN;
     private $current;
 
     public function __construct($current) {
@@ -613,7 +611,7 @@ class ovp_navi_wizard extends ovp_source {
             if ($this->current == $source['type']) {
                 $html .= '<li>'.$source['title'].'</li><br>';
             } else {
-                $link = ovp_logger::get_source_link($source['type']);
+                $link = ovp_http::get_source_link($source['type']);
                 $html .= '<li><a href="'.$link.'">'.$source['title'].'</a></li><br>';
             }
         }
@@ -625,7 +623,7 @@ class ovp_navi_wizard extends ovp_source {
 class ovp_navi extends ovp_source {
     public static $type = 'navi';
     public static $title ='Navigationsleiste';
-    public static $priv_req = ovp_logger::VIEW_NONE;
+    public static $priv_req = ovp_user::VIEW_NONE;
     private $current;
     private $user;
 
@@ -658,7 +656,7 @@ class ovp_navi extends ovp_source {
                     $html .= ' | ';
                 }
                 if ($source['type'] != $this->current) {
-                    $link = ovp_logger::get_source_link($source['type']);
+                    $link = ovp_http::get_source_link($source['type']);
                     $html .= '
                 <a href="'.$link.'">'.$source['title'].'</a>';
                 } else {
@@ -666,8 +664,8 @@ class ovp_navi extends ovp_source {
                 }
             }
         }
-        if ($this->user->is_authorized(ovp_logger::PRIV_LOGIN)){
-            $link = ovp_logger::get_poster_link('logout');
+        if ($this->user->is_authorized(ovp_user::PRIV_LOGIN)){
+            $link = ovp_http::get_poster_link('logout');
             $html .= ' |
                 <a href="'.$link.'">Logout</a>';
         }

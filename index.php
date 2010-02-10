@@ -20,14 +20,13 @@
  */
 
 require_once('config.inc.php');
-require_once('logger.inc.php');
 require_once('db.inc.php');
 require_once('html.inc.php');
 require_once('poster.inc.php');
 require_once('entry.inc.php');
 
 if (FIRST_RUN) {
-   ovp_logger::redirect('wizard.php');
+   ovp_http::redirect('wizard.php');
 }
 
 date_default_timezone_set('Europe/Berlin');
@@ -65,7 +64,7 @@ if (isset($poster)) {
     $manager = ovp_user_manager::get_singleton();
     $user = $manager->get_current_user();
     if (!$user->is_authorized($poster_vars['priv_req'])) {
-        ovp_msg::fail('not logged in');
+        ovp_http::fail('not logged in');
     }
     exit($poster->evaluate($_POST));
 }

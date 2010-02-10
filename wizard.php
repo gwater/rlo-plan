@@ -22,8 +22,6 @@
 require_once('config.inc.php');
 require_once('html.inc.php');
 require_once('poster.inc.php');
-require_once('logger.inc.php');
-require_once('db.inc.php');
 require_once('interfaces.inc.php');
 
 date_default_timezone_set('Europe/Berlin');
@@ -61,7 +59,7 @@ if (isset($poster)) {
     $manager = ovp_user_manager::get_singleton();
     $user = $manager->get_current_user();
     if (!$user->is_authorized($poster_vars['priv_req'])) {
-        ovp_msg::fail('not logged in');
+        ovp_http::fail('not logged in');
     }
     exit($poster->evaluate($_POST));
 }
@@ -101,11 +99,11 @@ class ovp_wizard {
         if (FIRST_RUN) {
             $config = new ovp_config();
             if (!$config->create_backup()) {
-                ovp_msg::fail('Erstellen des Konfigurationsbackups gescheitert.');
+                ovp_http::fail('Erstellen des Konfigurationsbackups gescheitert.');
             }
         }
         if (!ovp_zipper::pack_dir()) {
-            ovp_msg::fail('Erstellen des Quellarchivs gescheitert');
+            ovp_http::fail('Erstellen des Quellarchivs gescheitert');
         }
         return true;
     }

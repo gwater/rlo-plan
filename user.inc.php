@@ -20,17 +20,24 @@
  */
 
 require_once('interfaces.inc.php');
-require_once('logger.inc.php');
 
 class ovp_user {
     private $id;
     private $db;
+    // user privilege levels to authorize access to specific sources and posters
+    const PRIV_LOGOUT = -2; // user is logged out
+    const PRIV_LOGIN  = -1; // user is logged in
+    const VIEW_NONE   =  0; // user has no privileges (account frozen)
+    const VIEW_PUBLIC =  1; // user may see public data
+    const VIEW_PRINT  =  2; // user may see sensitive data
+    const VIEW_AUTHOR =  3; // user may add, remove and edit entries
+    const VIEW_ADMIN  =  4; // user may add, remove and edit accounts
 
-    private static $roles = array(ovp_logger::VIEW_NONE   => 'none',
-                                  ovp_logger::VIEW_PUBLIC => 'public',
-                                  ovp_logger::VIEW_PRINT  => 'print',
-                                  ovp_logger::VIEW_AUTHOR => 'author',
-                                  ovp_logger::VIEW_ADMIN  => 'admin');
+    private static $roles = array(self::VIEW_NONE   => 'none',
+                                  self::VIEW_PUBLIC => 'public',
+                                  self::VIEW_PRINT  => 'print',
+                                  self::VIEW_AUTHOR => 'author',
+                                  self::VIEW_ADMIN  => 'admin');
 
     public final static function get_roles() {
         return self::$roles;
@@ -42,7 +49,7 @@ class ovp_user {
                 return $priv;
             }
         }
-        return ovp_logger::VIEW_NONE;
+        return ovp_user::VIEW_NONE;
     }
 
     public function __construct($id = 'guest') {
@@ -56,7 +63,7 @@ class ovp_user {
             WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1");
         if ($result->num_rows != 1) {
-            ovp_msg::fail('ID ungültig');
+            ovp_http::fail('ID ungültig');
         }
         $this->id = $id;
     }
@@ -90,9 +97,10 @@ class ovp_user {
     }
 
     public function set_privilege($newpriv) {
-        $admin = ovp_logger::get_current_user($this->db);
+        $manager = ovp_user_manager::get_singleton();
+        $admin = $manager->get_current_user();
         if ($admin->get_id() == $this->id) {
-            ovp_msg::fail('Eigener Account darf nicht degradiert werden');
+            ovp_http::fail('Eigener Account darf nicht degradiert werden');
         }
         foreach (self::$roles as $priv => $role) {
             if ($newpriv == $priv) {
@@ -130,9 +138,9 @@ class ovp_user {
 
     public function is_authorized($priv_req = 1) {
         $logged_in = !($this->id == 'guest');
-        if ($priv_req == ovp_logger::PRIV_LOGIN) {
+        if ($priv_req == self::PRIV_LOGIN) {
             return $logged_in;
-        } else if ($priv_req == ovp_logger::PRIV_LOGOUT) {
+        } else if ($priv_req == self::PRIV_LOGOUT) {
             return !$logged_in;
         } else if ($priv_req <= PRIV_DEFAULT) {
             return true;
@@ -147,14 +155,14 @@ class ovp_user {
     public function authorize($priv_req = 1) {
         if (!$this->is_authorized($priv_req)) {
             if ($priv_req == self::PRIV_LOGOUT) {
-                ovp_logger::redirect(basename($_SERVER['SCRIPT_NAME']));
+                ovp_http::redirect(basename($_SERVER['SCRIPT_NAME']));
             }
             $continue = basename($_SERVER['SCRIPT_NAME']);
             if ($_SERVER['QUERY_STRING'] != '') {
                 $continue .= '?'.$_SERVER['QUERY_STRING'];
             }
-            $link = ovp_logger::get_source_link('login&continue='.urlencode($continue));
-            ovp_logger::redirect($link); // does not return
+            $link = ovp_http::get_source_link('login&continue='.urlencode($continue));
+            ovp_http::redirect($link); // does not return
         }
         return true;
     }
@@ -247,9 +255,9 @@ class ovp_user_manager {
     }
 
     public function remove($id) {
-        $user = ovp_logger::get_current_user($db);
+        $user = $this->get_current_user();
         if ($user->get_id() == $id) {
-            ovp_msg::fail('Eigener Account darf nicht gelöscht werden');
+            ovp_http::fail('Eigener Account darf nicht gelöscht werden');
         }
         $this->db->query(
            "DELETE FROM `user`
