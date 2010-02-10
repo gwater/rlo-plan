@@ -132,6 +132,10 @@ class ovp_sub extends ovp_source {
     }
 }
 
+/**
+ * This source provides the public view for students
+ * Sensitive information like teachers names is not included.
+ */
 class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Online-Vertretungsplan';
