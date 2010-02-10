@@ -19,8 +19,8 @@
 
 var column_titles     = ['Uhrzeit', 'Klasse', 'Fach',    'Dauer',    'Vertretung', 'Änderung', 'Alter Raum', 'Neuer Raum'];
 var column_names      = ['time',    'course', 'subject', 'duration', 'sub',        'change',   'oldroom',    'newroom'];
-var column_widths     = ['40px',    '40px',   '40px',    '25px',     '150px',      '245px',    '40px',       '40px'];
-var column_maxLengths = [ 5,         5,        5,         3,          30,           40,         5,            5];
+var column_widths     = ['40px',    '40px',   '45px',    '25px',     '150px',      '245px',    '40px',       '40px'];
+var column_maxLengths = [ 5,         5,        6,         3,          30,           40,         5,            5];
 
 var day_names = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 var relative_day_names = ['heute', 'morgen', 'übermorgen']; // array index corresponds to distance from today

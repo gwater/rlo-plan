@@ -131,7 +131,7 @@ class ovp_db extends mysqli {
                 `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
                 `time`     TIME              NULL     DEFAULT NULL,
                 `course`   VARCHAR(5)        NULL     DEFAULT NULL,
-                `subject`  VARCHAR(5)        NULL     DEFAULT NULL,
+                `subject`  VARCHAR(6)        NULL     DEFAULT NULL,
                 `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
                 `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
                 `change`   VARCHAR(40)       NULL     DEFAULT NULL,
