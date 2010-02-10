@@ -70,6 +70,11 @@ if (isset($poster)) {
 }
 
 switch ($_GET['source']) {
+case 'sub':
+    if (isset($_GET['sub'])) {
+        $source = new ovp_sub($_GET['sub']);
+        break;
+    } // else display ovp_print
 case 'print':
     if (isset($_GET['date'])) {
         $source = new ovp_print($_GET['date']);

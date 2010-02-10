@@ -53,10 +53,85 @@ abstract class ovp_source {
     }
 }
 
-/**
- * This source provides the public view for students
- * Sensitive information like teachers names is not included.
- */
+class ovp_sub extends ovp_source {
+    public static $type = 'sub';
+    public static $title ='Online-Vertreterplan';
+    public static $priv_req = ovp_user::VIEW_PRINT;
+    private $sub;
+    private $subs;
+    private $entries;
+
+    public function __construct($sub) {
+        if ($sub == '') { // No filter selected -> display all
+            $link = ovp_http::get_source_link('print');
+            ovp_http::redirect($link);
+        }
+        $manager = ovp_entry_manager::get_singleton();
+        $this->entries = $manager->get_entries_for_sub($sub);
+        $this->subs = $manager->get_subs();
+        $this->sub = $sub;
+    }
+
+    protected function generate_view() {
+        $link = ovp_http::get_source_link('sub');
+        $html = '
+          <div class="ovp_container">
+            <h1>'.self::$title.'</h1>
+            <form action="'.$link.'" method="GET">
+            <input type="hidden" name="source" value="sub">
+            <table><tr>
+            <td>Vertretungslehrer:</td>
+            <td><select name="sub">
+                <option value="" '.($this->sub == '' ? 'selected="selected"' : '').'>Alle</option>';
+        foreach ($this->subs as $sub) {
+            $html .= '
+                <option value="'.$sub.'" '.($sub == $this->sub ? 'selected="selected"' : '').'>'.$sub.'</option>';
+        }
+        $html .= '
+            </select></td>
+            <td><input type="submit" value="Filtern"></td>
+            </tr></table>
+            </form>';
+        if ($this->entries) {
+            foreach($this->entries as $entries_today) {
+                foreach ($entries_today as $first_entry) {
+                    break;
+                }
+                $html .= '
+                <h2>'.$first_entry->get_date().'</h2>
+                <table class="ovp_table" id="ovp_table_'.self::$type.'">
+                  <tr>
+                    <th>Uhrzeit</th>
+                    <th>Dauer</th>
+                    <th>Raum</th>
+                    <th>Klasse</th>
+                    <th>Fach</th>
+                    <th>Änderung</th>
+                  </tr>';
+                foreach ($entries_today as $entry) {
+                    $values = $entry->get_values();
+                    $html .= '
+                  <tr>
+                    <td>'.$entry->get_time(). '</td>
+                    <td>'.$values['duration'].'</td>
+                    <td>'.$values['newroom']. '</td>
+                    <td>'.$values['course'].  '</td>
+                    <td>'.$values['subject']. '</td>
+                    <td>'.$values['change'].  '</td>
+                  </tr>';
+                }
+                $html .= '
+                </table>';
+            }
+        } else {
+            $html .= '<p>Es sind keine Einträge vorhanden.</p>';
+        }
+        $html .= '
+          </div>';
+        return $html;
+    }
+}
+
 class ovp_public extends ovp_source {
     public static $type = 'public';
     public static $title ='Online-Vertretungsplan';
@@ -152,6 +227,7 @@ class ovp_print extends ovp_source {
     private $yesterday;
     private $tomorrow;
     private $entries;
+    private $subs;
 
     public function __construct($date = false) {
         $manager = ovp_entry_manager::get_singleton();
@@ -163,14 +239,31 @@ class ovp_print extends ovp_source {
         $this->yesterday = $manager->adjust_date($today, -1);
         $this->entries = $manager->get_entries_by_teacher($today);
         $this->today = $manager->format_date($today);
+        $this->subs = $manager->get_subs();
     }
 
     protected function generate_view() {
         $yesterday_link = ovp_http::get_source_link(self::$type.'&date='.$this->yesterday);
         $tomorrow_link = ovp_http::get_source_link(self::$type.'&date='.$this->tomorrow);
+        $sub_link = ovp_http::get_source_link('sub');
         $html =
          '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
+            <form action="'.$sub_link.'" method="GET">
+            <input type="hidden" name="source" value="sub">
+            <table><tr>
+            <td>Vertretungslehrer:</td>
+            <td><select name="sub">
+                <option value="" selected="selected">Alle</option>';
+        foreach ($this->subs as $sub) {
+            $html .= '
+                <option value="'.$sub.'">'.$sub.'</option>';
+        }
+        $html .= '
+            </select></td>
+            <td><input type="submit" value="Filtern"></td>
+            </tr></table>
+            </form>
             <div class="ovp_day_links">
               <a href="'.$yesterday_link.'">Einen Tag zurück</a>
               <a href="'.$tomorrow_link.'">Einen Tag weiter</a>

@@ -285,6 +285,30 @@ class ovp_entry_manager {
         return $entries_by_date;
     }
 
+    public function get_entries_for_sub($sub) {
+        $dates = $this->get_dates();
+        if (!$dates) {
+            return false;
+        }
+        $sub = $this->db->protect($sub);
+        $entries_by_date = array();
+        foreach ($dates as $date) {
+            $result = $this->db->query(
+               "SELECT `id` FROM `entry`
+                WHERE `date` = '".$this->db->protect($date)."'
+                AND `sub` = '".$sub."'
+                ORDER BY `time` ASC");
+            $entries = array();
+            while ($row = $result->fetch_assoc()) {
+                $entries[] = new ovp_entry($row['id']);
+            }
+            if (count($entries) > 0) {
+                $entries_by_date[] = $entries;
+            }
+        }
+        return $entries_by_date;
+    }
+
     public function get_courses() {
         $result = $this->db->query(
            "SELECT `course` FROM `entry`
@@ -319,13 +343,23 @@ class ovp_entry_manager {
     public function get_dates() {
         $result = $this->db->query(
            "SELECT `date` FROM `entry`
-            GROUP BY `date`
-            ORDER BY `date` ASC");
+            GROUP BY `date`");
         $dates = array();
         while ($row = $result->fetch_assoc()) {
             $dates[] = $row['date'];
         }
         return $dates;
+    }
+
+    public function get_subs() {
+        $result = $this->db->query(
+           "SELECT `sub` FROM `entry`
+            GROUP BY `sub`");
+        $subs = array();
+        while ($row = $result->fetch_assoc()) {
+            $subs[] = $row['sub'];
+        }
+        return $subs;
     }
 
     /**
