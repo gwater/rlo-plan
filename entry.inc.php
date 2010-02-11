@@ -372,7 +372,7 @@ class ovp_entry_manager {
             $oldest_date = $this->adjust_date($today, -DELETE_OLDER_THAN);
             $this->db->query(
                "DELETE FROM `entry` WHERE
-                    DATEDIFF('".$oldest_date."', `date`) >= 0");
+                    DATEDIFF('".$oldest_date."', `date`) > 0");
             return $this->db->affected_rows;
         } else {
             return 0;
