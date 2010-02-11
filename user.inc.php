@@ -181,24 +181,14 @@ class ovp_user {
         return true;
     }
 
-    // checks if the current user's ip address matches the one in the database
+    // checks if the current user's session id exists in the database
     public function session_ok() {
-        if (!($row = $this->db->query(
-           "SELECT
-                `ip1`,
-                `ip2`
+        return ($row = $this->db->query(
+           "SELECT COUNT(*) AS 'count'
             FROM `user`
             WHERE `sid`  = '".$this->db->protect(session_id())."'
             LIMIT 1"
-        )->fetch_assoc())) {
-            return false;
-        }
-        if ($row['ip2'] != NULL) {
-            $ip = ($row['ip2'] << 64) + $row['ip1'];
-        } else {
-            $ip = $row['ip1'];
-        }
-        return $ip == ip2long($_SERVER['REMOTE_ADDR']);
+        )->fetch_assoc()) && $row['count'] == 1;
     }
 }
 
@@ -305,15 +295,9 @@ class ovp_user_manager {
         )->fetch_assoc())) {
             return false; // user not found or wrong password
         }
-        $ip = ip2long($_SERVER['REMOTE_ADDR']);
-        $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
-        $ip2 = $ip >> 64;
         $this->db->query(
            "UPDATE `user`
-            SET
-                `ip1` = '".$this->db->protect($ip1)."',
-                `ip2` = '".$this->db->protect($ip2)."',
-                `sid` = '".$this->db->protect(session_id())."'
+            SET `sid` = '".$this->db->protect(session_id())."'
             WHERE `id` = '".$this->db->protect($row['id'])."'
             LIMIT 1"
         );
@@ -322,10 +306,8 @@ class ovp_user_manager {
 
     public function logout() {
         $this->db->query(
-           "UPDATE `user` SET
-                `ip1` = NULL,
-                `ip2` = NULL,
-                `sid` = NULL
+           "UPDATE `user`
+            SET `sid` = NULL
             WHERE `sid` = '".$this->db->protect(session_id())."'
             LIMIT 1"
         );
@@ -333,14 +315,10 @@ class ovp_user_manager {
     }
 
     public function get_current_user() {
-        $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $this->db->query(
            "SELECT `id`
             FROM `user`
-            WHERE
-                `ip1` = '".$this->db->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
-                `ip2` = '".$this->db->protect($ip >> 64)."' AND
-                `sid` = '".$this->db->protect(session_id())."'
+            WHERE `sid` = '".$this->db->protect(session_id())."'
             LIMIT 1"
         )->fetch_assoc();
         if ($uid = $result['id']) {

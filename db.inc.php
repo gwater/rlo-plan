@@ -102,7 +102,6 @@ class ovp_db extends mysqli {
                      2 - view all data (teachers)
                      3 - view all data, and modify entries (Mrs. Lange I)
                      4 - view all data, modify entries, and add new users (root)
-        ip1, ip2: the current IPv6 address if the user is logged in
         */
         $this->query("DROP TABLE IF EXISTS `user`");
         $this->query(
@@ -111,8 +110,6 @@ class ovp_db extends mysqli {
                 `name`      VARCHAR(20)      NOT NULL,
                 `pwd_hash`  CHAR(64)         NOT NULL,
                 `privilege` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-                `ip1`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
-                `ip2`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
                 `sid`       INT UNSIGNED     NULL     DEFAULT NULL
             )"
         );
