@@ -40,9 +40,11 @@ class ovp_entry {
     public function __construct($id) {
         $this->db = ovp_db::get_singleton();
         $result = $this->db->query(
-           "SELECT `id` FROM `entry`
+           "SELECT `id`
+            FROM `entry`
             WHERE `id` = '".$this->db->protect($id)."'
-            LIMIT 1");
+            LIMIT 1"
+        );
         if ($result->num_rows != 1) {
             ovp_http::fail('ID ungültig');
         }
@@ -55,18 +57,20 @@ class ovp_entry {
 
     public function get_values() {
         $row = $this->db->query(
-           "SELECT  `date`
-                    `teacher`,
-                    `time`,
-                    `course`,
-                    `subject`,
-                    `duration`,
-                    `sub`,
-                    `change`,
-                    `oldroom`,
-                    `newroom`
+           "SELECT `date`
+                   `teacher`,
+                   `time`,
+                   `course`,
+                   `subject`,
+                   `duration`,
+                   `sub`,
+                   `change`,
+                   `oldroom`,
+                   `newroom`
             FROM `entry`
-            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        )->fetch_assoc();
         return $row;
     }
 
@@ -86,8 +90,11 @@ class ovp_entry {
 
     private function get_value($attribute) {
         $row = $this->db->query(
-           "SELECT `".$this->db->protect($attribute)."` FROM `entry`
-            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+           "SELECT `".$this->db->protect($attribute)."`
+            FROM `entry`
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        )->fetch_assoc();
         return $row[$attribute];
     }
 
@@ -98,21 +105,29 @@ class ovp_entry {
         $this->db->query(
            "UPDATE `entry`
             SET `".$this->db->protect($attribute)."` = '".$this->db->protect($value)."'
-            WHERE `id` = '".$this->id."' LIMIT 1");
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        );
         return $this->db->affected_rows == 1;
     }
 
     public function get_date() {
         $row = $this->db->query(
-           "SELECT DATE_FORMAT(`date`, '%W, %d.%m.%Y') AS 'date' FROM `entry`
-            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+           "SELECT DATE_FORMAT(`date`, '%W, %d.%m.%Y') AS 'date'
+            FROM `entry`
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['date'];
     }
 
     public function get_time() {
         $row = $this->db->query(
-           "SELECT TIME_FORMAT(`time`, '%H:%i') AS 'time' FROM `entry`
-            WHERE `id` = '".$this->id."' LIMIT 1")->fetch_assoc();
+           "SELECT TIME_FORMAT(`time`, '%H:%i') AS 'time'
+            FROM `entry`
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['time'];
     }
 }
@@ -154,7 +169,9 @@ class ovp_entry_manager {
             )"
         );
         $row = $this->db->query(
-            "SELECT `id` FROM `entry` WHERE
+            "SELECT `id`
+             FROM `entry`
+             WHERE
                 `date`     = '".$this->db->protect($values['date'])    ."' AND
                 `teacher`  = '".$this->db->protect($values['teacher']) ."' AND
                 `time`     = '".$this->db->protect($values['time'])    ."' AND
@@ -165,7 +182,8 @@ class ovp_entry_manager {
                 `change`   = '".$this->db->protect($values['change'])  ."' AND
                 `oldroom`  = '".$this->db->protect($values['oldroom']) ."' AND
                 `newroom`  = '".$this->db->protect($values['newroom']) ."'
-            LIMIT 1")->fetch_assoc();
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['id'];
     }
 
@@ -175,19 +193,22 @@ class ovp_entry_manager {
      */
     public function remove($id) {
         $this->db->query(
-           "DELETE FROM `entry` WHERE
-                `id` = '".$this->db->protect($id)."'
-            LIMIT 1");
+           "DELETE FROM `entry`
+            WHERE `id` = '".$this->db->protect($id)."'
+            LIMIT 1"
+        );
         return $this->db->affected_rows == 1;
     }
 
     // used by ovp_print
     public function get_entries_by_teacher($date) {
         $result = $this->db->query(
-           "SELECT `teacher` FROM `entry`
+           "SELECT `teacher`
+            FROM `entry`
             WHERE `date` = '".$this->db->protect($date)."'
             GROUP BY `teacher`
-            ORDER BY SUBSTRING(`teacher`, 6) ASC");
+            ORDER BY SUBSTRING(`teacher`, 6)"
+        );
         $teachers = array();
         while ($row = $result->fetch_assoc()) {
             $teachers[] = $row['teacher'];
@@ -195,17 +216,17 @@ class ovp_entry_manager {
         $entries_by_teacher = array();
         foreach ($teachers as $teacher) {
             $result = $this->db->query(
-               "SELECT
-                    `id`
+               "SELECT `id`
                 FROM `entry`
                 WHERE `date` = '".$this->db->protect($date)."'
                 AND `teacher` = '".$this->db->protect($teacher)."'
-                ORDER BY `time` ASC");
-                $entries = array();
-                while ($row = $result->fetch_assoc()) {
-                    $entries[] = new ovp_entry($row['id']);
-                }
-                $entries_by_teacher[$teacher] = $entries;
+                ORDER BY `time`"
+            );
+            $entries = array();
+            while ($row = $result->fetch_assoc()) {
+                $entries[] = new ovp_entry($row['id']);
+            }
+            $entries_by_teacher[$teacher] = $entries;
         }
         return $entries_by_teacher;
     }
@@ -234,9 +255,11 @@ class ovp_entry_manager {
         $entries_by_date = array();
         foreach ($dates as $date) {
             $result = $this->db->query(
-               "SELECT `id` FROM `entry`
+               "SELECT `id`
+                FROM `entry`
                 WHERE `date` = '".$this->db->protect($date)."'
-                ORDER BY `time` ASC");
+                ORDER BY `time`"
+            );
             $entries = array();
             while ($row = $result->fetch_assoc()) {
                 $entries[] = new ovp_entry($row['id']);
@@ -258,22 +281,26 @@ class ovp_entry_manager {
         $entries_by_date = array();
         foreach ($dates as $date) {
             if (strstr('.', $course)) {
-                $row = $this->db->query("SELECT
-                    SUBSTR('".$course."', 1, LOCATE('.', '".$course."')-1)
-                    AS 'year' LIMIT 1")->fetch_assoc();
+                $row = $this->db->query(
+                   "SELECT SUBSTR('".$course."', 1, LOCATE('.', '".$course."') - 1) AS 'year' LIMIT 1"
+                )->fetch_assoc();
                 $year = $row['year'];
             } else {
                 $year = $course;
             }
             $result = $this->db->query(
-               "SELECT `id` FROM `entry`
-                WHERE `date` = '".$this->db->protect($date)."'
-                AND (`course` = '".$course."'
-                OR `course` = '".$year."'
-                OR SUBSTR(`course`, 1, LOCATE('/', `course`)-1) = '".$year."'
-                OR SUBSTR(`course`, LOCATE('/', `course`)+1) = '".$year."'
-                OR `course` = 'alle')
-                ORDER BY `time` ASC");
+               "SELECT `id`
+                FROM `entry`
+                WHERE
+                    `date` = '".$this->db->protect($date)."' AND (
+                        `course` = '".$course."' OR
+                        `course` = '".$year."' OR
+                        SUBSTR(`course`, 1, LOCATE('/', `course`) - 1) = '".$year."' OR
+                        SUBSTR(`course`, LOCATE('/', `course`) + 1) = '".$year."' OR
+                        `course` = 'alle'
+                    )
+                ORDER BY `time`"
+            );
             $entries = array();
             while ($row = $result->fetch_assoc()) {
                 $entries[] = new ovp_entry($row['id']);
@@ -294,10 +321,13 @@ class ovp_entry_manager {
         $entries_by_date = array();
         foreach ($dates as $date) {
             $result = $this->db->query(
-               "SELECT `id` FROM `entry`
-                WHERE `date` = '".$this->db->protect($date)."'
-                AND `sub` = '".$sub."'
-                ORDER BY `time` ASC");
+               "SELECT `id`
+                FROM `entry`
+                WHERE
+                    `date` = '".$this->db->protect($date)."' AND
+                    `sub` = '".$sub."'
+                ORDER BY `time`"
+            );
             $entries = array();
             while ($row = $result->fetch_assoc()) {
                 $entries[] = new ovp_entry($row['id']);
@@ -311,9 +341,10 @@ class ovp_entry_manager {
 
     public function get_courses() {
         $result = $this->db->query(
-           "SELECT `course` FROM `entry`
-            GROUP BY `course`
-            ORDER BY `course` ASC");
+           "SELECT `course`
+            FROM `entry`
+            GROUP BY `course`"
+        );
         $courses = array();
         while ($row = $result->fetch_assoc()) {
             $courses[] = $row['course'];
@@ -342,8 +373,10 @@ class ovp_entry_manager {
 
     public function get_dates() {
         $result = $this->db->query(
-           "SELECT `date` FROM `entry`
-            GROUP BY `date`");
+           "SELECT `date`
+            FROM `entry`
+            GROUP BY `date`"
+        );
         $dates = array();
         while ($row = $result->fetch_assoc()) {
             $dates[] = $row['date'];
@@ -353,8 +386,10 @@ class ovp_entry_manager {
 
     public function get_subs() {
         $result = $this->db->query(
-           "SELECT `sub` FROM `entry`
-            GROUP BY `sub`");
+           "SELECT `sub`
+            FROM `entry`
+            GROUP BY `sub`"
+        );
         $subs = array();
         while ($row = $result->fetch_assoc()) {
             $subs[] = $row['sub'];
@@ -371,8 +406,9 @@ class ovp_entry_manager {
             $today = $this->get_today();
             $oldest_date = $this->adjust_date($today, -DELETE_OLDER_THAN);
             $this->db->query(
-               "DELETE FROM `entry` WHERE
-                    DATEDIFF('".$oldest_date."', `date`) > 0");
+               "DELETE FROM `entry`
+                WHERE DATEDIFF('".$oldest_date."', `date`) > 0"
+            );
             return $this->db->affected_rows;
         } else {
             return 0;
@@ -388,14 +424,16 @@ class ovp_entry_manager {
     public function adjust_date($date, $adjust = 0) {
         if ($adjust != 0) {
             $row = $this->db->query(
-               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY)
-                    AS 'date' LIMIT 1")->fetch_assoc();
+               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY) AS 'date'
+                LIMIT 1"
+            )->fetch_assoc();
             $date = $row['date'];
         }
         if (SKIP_WEEKENDS) {
             $row = $this->db->query(
-               "SELECT DAYOFWEEK('".$date."')
-                    AS 'weekday' LIMIT 1")->fetch_assoc();
+               "SELECT DAYOFWEEK('".$date."') AS 'weekday'
+                LIMIT 1"
+            )->fetch_assoc();
             if ($adjust < 0) {
                 $adjust = 0;
                 if ($row['weekday'] == 7) {
@@ -412,26 +450,30 @@ class ovp_entry_manager {
                 }
             }
             $row = $this->db->query(
-               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY)
-                    AS 'date' LIMIT 1")->fetch_assoc();
+               "SELECT DATE_ADD('".$date."', INTERVAL '".$adjust."' DAY) AS 'date'
+                LIMIT 1"
+            )->fetch_assoc();
             $date = $row['date'];
         }
         return $date;
     }
 
     public function get_today() {
-        $row = $this->db->query("SELECT CURDATE() AS 'today' LIMIT 1")->fetch_assoc();
+        $row = $this->db->query(
+           "SELECT CURDATE() AS 'today'
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['today'];
     }
 
     public function format_date($date) {
         $row = $this->db->query(
-           "SELECT DATE_FORMAT('".$date."', '%W, %d.%m.%Y')
-                AS 'date' LIMIT 1")->fetch_assoc();
+           "SELECT DATE_FORMAT('".$date."', '%W, %d.%m.%Y') AS 'date'
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['date'];
     }
 
 }
-
 
 ?>

@@ -105,14 +105,16 @@ class ovp_db extends mysqli {
         ip1, ip2: the current IPv6 address if the user is logged in
         */
         $this->query("DROP TABLE IF EXISTS `user`");
-        $this->query("CREATE TABLE `user` (
-            `id`        INT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            `name`      VARCHAR(20)      NOT NULL,
-            `pwd_hash`  CHAR(64)         NOT NULL,
-            `privilege` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-            `ip1`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
-            `ip2`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
-            `sid`       INT UNSIGNED     NULL     DEFAULT NULL)"
+        $this->query(
+           "CREATE TABLE `user` (
+                `id`        INT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `name`      VARCHAR(20)      NOT NULL,
+                `pwd_hash`  CHAR(64)         NOT NULL,
+                `privilege` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+                `ip1`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
+                `ip2`       BIGINT UNSIGNED  NULL     DEFAULT NULL,
+                `sid`       INT UNSIGNED     NULL     DEFAULT NULL
+            )"
         );
 
         /*
@@ -128,18 +130,20 @@ class ovp_db extends mysqli {
         change:   what class takes place [where] instead (e.g. 'Geschichte H0-2' or 'Ausfall')
         */
         $this->query("DROP TABLE IF EXISTS `entry`");
-        $this->query("CREATE TABLE `entry` (
-            `id`       INT UNSIGNED      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            `date`     DATE              NULL     DEFAULT NULL,
-            `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
-            `time`     TIME              NULL     DEFAULT NULL,
-            `course`   VARCHAR(5)        NULL     DEFAULT NULL,
-            `subject`  VARCHAR(5)        NULL     DEFAULT NULL,
-            `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
-            `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
-            `change`   VARCHAR(40)       NULL     DEFAULT NULL,
-            `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
-            `newroom`  VARCHAR(5)        NULL     DEFAULT NULL)"
+        $this->query(
+           "CREATE TABLE `entry` (
+                `id`       INT UNSIGNED      NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                `date`     DATE              NULL     DEFAULT NULL,
+                `teacher`  VARCHAR(30)       NULL     DEFAULT NULL,
+                `time`     TIME              NULL     DEFAULT NULL,
+                `course`   VARCHAR(5)        NULL     DEFAULT NULL,
+                `subject`  VARCHAR(5)        NULL     DEFAULT NULL,
+                `duration` SMALLINT UNSIGNED NULL     DEFAULT NULL,
+                `sub`      VARCHAR(30)       NULL     DEFAULT NULL,
+                `change`   VARCHAR(40)       NULL     DEFAULT NULL,
+                `oldroom`  VARCHAR(5)        NULL     DEFAULT NULL,
+                `newroom`  VARCHAR(5)        NULL     DEFAULT NULL
+            )"
         );
     }
 }

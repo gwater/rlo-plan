@@ -59,9 +59,11 @@ class ovp_user {
             return;
         }
         $result = $this->db->query(
-           "SELECT `id` FROM `user`
+           "SELECT `id`
+            FROM `user`
             WHERE `id` = '".$this->db->protect($id)."'
-            LIMIT 1");
+            LIMIT 1"
+        );
         if ($result->num_rows != 1) {
             ovp_http::fail('ID ungültig');
         }
@@ -74,25 +76,31 @@ class ovp_user {
 
     public function get_privilege() {
         $result = $this->db->query(
-            "SELECT `privilege` FROM `user`
-             WHERE `id` = '".$this->id."'
-             LIMIT 1")->fetch_assoc();
+           "SELECT `privilege`
+            FROM `user`
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        )->fetch_assoc();
         return $result['privilege'];
     }
 
     public function get_name() {
         $result = $this->db->query(
-           "SELECT `name` FROM `user`
+           "SELECT `name`
+            FROM `user`
             WHERE `id` = '".$this->id."'
-            LIMIT 1")->fetch_assoc();
+            LIMIT 1"
+        )->fetch_assoc();
         return $result['name'];
     }
 
     public function check_password($password) {
         $row = $this->db->query(
-           "SELECT `pwd_hash` FROM `user`
+           "SELECT `pwd_hash`
+            FROM `user`
             WHERE `id` = '".$this->id."'
-            LIMIT 1")->fetch_assoc();
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['pwd_hash'] == hash('sha256', $password);
     }
 
@@ -107,7 +115,9 @@ class ovp_user {
                 return $this->db->query(
                    "UPDATE `user`
                     SET `privilege` = '".$this->db->protect($newpriv)."'
-                    WHERE `id` = '".$this->id."' LIMIT 1");
+                    WHERE `id` = '".$this->id."'
+                    LIMIT 1"
+                );
             }
         }
         return false;
@@ -125,7 +135,9 @@ class ovp_user {
         return $this->db->query(
            "UPDATE `user`
             SET `name` = '".$this->db->protect($name)."'
-            WHERE `id` = '".$this->id."' LIMIT 1");
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        );
     }
 
     public function set_password($password) {
@@ -133,11 +145,13 @@ class ovp_user {
         return $this->db->query(
            "UPDATE `user`
             SET `pwd_hash` = '".$this->db->protect($hash)."'
-            WHERE `id` = '".$this->id."' LIMIT 1");
+            WHERE `id` = '".$this->id."'
+            LIMIT 1"
+        );
     }
 
     public function is_authorized($priv_req = 1) {
-        $logged_in = !($this->id == 'guest');
+        $logged_in = $this->id != 'guest';
         if ($priv_req == self::PRIV_LOGIN) {
             return $logged_in;
         } else if ($priv_req == self::PRIV_LOGOUT) {
@@ -169,15 +183,14 @@ class ovp_user {
 
     // checks if the current user's ip address matches the one in the database
     public function session_ok() {
-        $result = $this->db->query(
+        if (!($row = $this->db->query(
            "SELECT
                 `ip1`,
                 `ip2`
-            FROM `user` WHERE
-                `sid`  = '".$this->db->protect(session_id())."'
+            FROM `user`
+            WHERE `sid`  = '".$this->db->protect(session_id())."'
             LIMIT 1"
-        );
-        if (!($row = $result->fetch_assoc())) {
+        )->fetch_assoc())) {
             return false;
         }
         if ($row['ip2'] != NULL) {
@@ -205,7 +218,11 @@ class ovp_user_manager {
     }
 
     public function get_all_users() {
-        $result = $this->db->query("SELECT `id`, `name` FROM `user` ORDER BY `name`");
+        $result = $this->db->query(
+           "SELECT `id`
+            FROM `user`
+            ORDER BY `name`"
+        );
         $users = array();
         while ($row = $result->fetch_assoc()) {
             $users[] = new ovp_user($row['id']);
@@ -214,8 +231,12 @@ class ovp_user_manager {
     }
 
     public function get_user_by_name($name) {
-        $result = $this->db->query("SELECT `id` FROM `user` WHERE `name` = '".$this->db->protect($name)."'");
-        if ($row = $result->fetch_assoc()) {
+        if ($row = $this->db->query(
+           "SELECT `id`
+            FROM `user`
+            WHERE `name` = '".$this->db->protect($name)."'
+            LIMIT 1"
+        )->fetch_assoc()) {
             return new ovp_user($row['id']);
         }
         return NULL;
@@ -223,8 +244,11 @@ class ovp_user_manager {
 
     public function name_exists($name) {
         $result = $this->db->query(
-           "SELECT `id` FROM `user`
-            WHERE `name` = '".$this->db->protect($name)."'");
+           "SELECT `id`
+            FROM `user`
+            WHERE `name` = '".$this->db->protect($name)."'
+            LIMIT 1"
+        );
         return $result->num_rows != 0;
     }
 
@@ -246,11 +270,14 @@ class ovp_user_manager {
             )"
         );
         $row = $this->db->query(
-           "SELECT `id` FROM `user` WHERE
+           "SELECT `id`
+            FROM `user`
+            WHERE
                 `name`      = '".$this->db->protect($name)."' AND
                 `pwd_hash`  = '".$this->db->protect($hash)."' AND
                 `privilege` = '".$this->db->protect($privilege)."'
-            LIMIT 1")->fetch_assoc();
+            LIMIT 1"
+        )->fetch_assoc();
         return $row['id'];
     }
 
@@ -262,31 +289,32 @@ class ovp_user_manager {
         $this->db->query(
            "DELETE FROM `user`
             WHERE `id` = '".$this->db->protect($id)."'
-            LIMIT 1");
+            LIMIT 1"
+        );
         return $this->db->affected_rows == 1;
     }
 
     public function login($name, $pwd) {
-        $result = $this->db->query(
-           "SELECT
-                `id`
-            FROM `user` WHERE
+        if (!($row = $this->db->query(
+           "SELECT `id`
+            FROM `user`
+            WHERE
                 `name`      = '".$this->db->protect($name)."' AND
-                `pwd_hash`  = '".$this->db->protect(hash('sha256', $pwd))."'"
-        );
-        if (!($row = $result->fetch_assoc())) {
+                `pwd_hash`  = '".$this->db->protect(hash('sha256', $pwd))."'
+            LIMIT 1"
+        )->fetch_assoc())) {
             return false; // user not found or wrong password
         }
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $ip1 = $ip & 0xFFFFFFFFFFFFFFFF;
         $ip2 = $ip >> 64;
         $this->db->query(
-           "UPDATE `user` SET
+           "UPDATE `user`
+            SET
                 `ip1` = '".$this->db->protect($ip1)."',
                 `ip2` = '".$this->db->protect($ip2)."',
                 `sid` = '".$this->db->protect(session_id())."'
-            WHERE
-                `id` = '".$this->db->protect($row['id'])."'
+            WHERE `id` = '".$this->db->protect($row['id'])."'
             LIMIT 1"
         );
         return true;
@@ -298,8 +326,7 @@ class ovp_user_manager {
                 `ip1` = NULL,
                 `ip2` = NULL,
                 `sid` = NULL
-            WHERE
-                `sid` = '".$this->db->protect(session_id())."'
+            WHERE `sid` = '".$this->db->protect(session_id())."'
             LIMIT 1"
         );
         return $this->db->affected_rows == 1;
@@ -308,12 +335,14 @@ class ovp_user_manager {
     public function get_current_user() {
         $ip = ip2long($_SERVER['REMOTE_ADDR']);
         $result = $this->db->query(
-           "SELECT `id` FROM `user`
+           "SELECT `id`
+            FROM `user`
             WHERE
                 `ip1` = '".$this->db->protect($ip & 0xFFFFFFFFFFFFFFFF)."' AND
                 `ip2` = '".$this->db->protect($ip >> 64)."' AND
                 `sid` = '".$this->db->protect(session_id())."'
-            LIMIT 1")->fetch_assoc();
+            LIMIT 1"
+        )->fetch_assoc();
         if ($uid = $result['id']) {
             return new ovp_user($uid);
         }
