@@ -280,7 +280,7 @@ class ovp_entry_manager {
         $course = $this->db->protect($course);
         $entries_by_date = array();
         foreach ($dates as $date) {
-            if (strstr('.', $course)) {
+            if (strpos($course, '.') !== false) {
                 $row = $this->db->query(
                    "SELECT SUBSTR('".$course."', 1, LOCATE('.', '".$course."') - 1) AS 'year' LIMIT 1"
                 )->fetch_assoc();
@@ -356,12 +356,12 @@ class ovp_entry_manager {
         // copy, to avoid conflicts
         $others = $courses;
         foreach ($courses as $key => $course) {
-            if (strstr($course, '/')) {
+            if (strpos($course, '/') !== false) {
                 unset($courses[$key]);
-            } else if (!strstr($course,'.')) {
+            } else if (strpos($course, '.') === false) {
                 // don't show courses like '9' when there are classes like '9.1'
                 foreach ($others as $other) {
-                    if (strstr($other, $course.'.') || ($course == 'alle')) {
+                    if (strpos($other, $course.'.') !== false || ($course == 'alle')) {
                         unset($courses[$key]);
                     }
                 }
