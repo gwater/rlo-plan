@@ -25,6 +25,7 @@ class ovp_config {
     const FILENAME = 'config.xml';
     private static $singleton;
     private $root;
+    private $document;
 
     private function __construct() {
         if (!file_exists(self::FILENAME)) {
@@ -34,12 +35,12 @@ class ovp_config {
         $document = new DOMDocument('1.0', 'UTF8');
         $document->loadXML($content);
         $this->root = $document->getElementById('root');
+	$this->document = $document;
     }
 
-    private function __destruct() {
-        $document = new DOMDocument('1.0', 'UTF8');
-        $document->appendChild($this->root);
-        file_put_contents(self::FILENAME, $document->saveXML());
+    public function __destruct() {
+        $this->document->appendChild($this->root);
+        file_put_contents(self::FILENAME, $this->document->saveXML());
     }
 
     public static function get_singleton() {
