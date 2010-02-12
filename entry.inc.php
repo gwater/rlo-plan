@@ -280,7 +280,7 @@ class ovp_entry_manager {
         $course = $this->db->protect($course);
         $entries_by_date = array();
         foreach ($dates as $date) {
-            if (!($year = strstr($course, '.', true))) {
+            if (!($year = substr($course, 0, strpos($course, '.')))) {
                 $year = $course;
             }
             $result = $this->db->query(
