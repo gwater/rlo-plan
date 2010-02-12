@@ -156,13 +156,17 @@ class ovp_user {
             return $logged_in;
         } else if ($priv_req == self::PRIV_LOGOUT) {
             return !$logged_in;
-        } else if ($priv_req <= PRIV_DEFAULT) {
+        }
+        $config = ovp_config::get_singleton();
+        $priv_default = $config->get('PRIV_DEFAULT');
+        if ($priv_req <= $priv_default) {
             return true;
-        } else if ($logged_in) {
+        }
+        if ($logged_in) {
             if ($priv_req <= $this->get_privilege()) {
                 return $this->session_ok();
+                }
             }
-        }
         return false;
     }
 

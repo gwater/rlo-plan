@@ -215,16 +215,16 @@ class post_mysql extends poster {
         if (!(isset($post['host']) && isset($post['base']) && isset($post['user']) && isset($post['pass']))) {
             ovp_http::fail('Daten unvollständig');
         }
-        $config = new ovp_config();
-        $config->set('DB_HOST', "'".$post['host']."'");
-        $config->set('DB_BASE', "'".$post['base']."'");
-        $config->set('DB_USER', "'".$post['user']."'");
-        $config->set('DB_PASS', "'".$post['pass']."'");
+        $config = ovp_config::get_singleton();
+        $config->set('DB_HOST', $post['host']);
+        $config->set('DB_BASE', $post['base']);
+        $config->set('DB_USER', $post['user']);
+        $config->set('DB_PASS', $post['pass']);
         if ($error = ovp_db::check_creds($post['host'], $post['base'], $post['user'], $post['pass'])) {
             $link = ovp_http::get_source_link('mysql&error='.urlencode($error));
         } else {
             if ($this->is_wiz) {
-                $db = new ovp_db($config);
+                $db = ovp_db::get_singleton();
                 $db->reset_tables();
                 $link = ovp_http::get_source_link('settings');
             } else {
@@ -247,7 +247,7 @@ class post_settings extends poster {
         if (!(isset($post['debug']) && isset($post['delold']) && isset($post['skipweekends']) && isset($post['privdefault']))) {
             ovp_http::fail('Daten unvollständig');
         }
-        $config = new ovp_config();
+        $config = ovp_config::get_singleton();
         $config->set('DEBUG',             $post['debug']);
         $config->set('DELETE_OLDER_THAN', $post['delold']);
         $config->set('SKIP_WEEKENDS',     $post['skipweekends']);

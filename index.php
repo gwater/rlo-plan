@@ -25,7 +25,8 @@ require_once('html.inc.php');
 require_once('poster.inc.php');
 require_once('entry.inc.php');
 
-if (FIRST_RUN) {
+$config = ovp_config::get_singleton();
+if ($config->get('FIRST_RUN')) {
    ovp_http::redirect('wizard.php');
 }
 

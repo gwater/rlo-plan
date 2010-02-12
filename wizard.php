@@ -33,6 +33,7 @@ session_start();
  * general usage (eg redirections to the next wizard page in poster.inc.php)
  */
 $is_wiz = true;
+$config = ovp_config::get_singleton();
 
 switch ($_GET['poster']) {
 case 'mysql':
@@ -52,7 +53,7 @@ default:
 }
 
 if (isset($poster)) {
-    if (FIRST_RUN) {
+    if ($config->get('FIRST_RUN')) {
         exit($poster->evaluate($_POST));
     }
     $poster_vars = get_class_vars(get_class($poster));
@@ -75,17 +76,19 @@ case 'login':
     $source = new ovp_login();
     break;
 case 'final':
-    ovp_wizard::finalize();
+    $config->set('FIRST_RUN', false);
     $source = new ovp_final();
     break;
 case 'mysql':
 default:
-    ovp_wizard::initialize();
+    if (!ovp_zipper::pack_dir()) {
+        ovp_http::fail('Erstellen des Quellarchivs gescheitert');
+    }
     $source = new ovp_mysql();
 }
 
 $source_vars = get_class_vars(get_class($source));
-if (!FIRST_RUN) {
+if (!$config->get('FIRST_RUN')) {
     $manager = ovp_user_manager::get_singleton();
     $user = $manager->get_current_user();
     $user->authorize($source_vars['priv_req']);
@@ -93,25 +96,5 @@ if (!FIRST_RUN) {
 $navi = new ovp_navi_wizard($source_vars['type']);
 $page = new ovp_page($source, $navi);
 exit($page->get_html());
-
-class ovp_wizard {
-    public static function initialize() {
-        if (FIRST_RUN) {
-            $config = new ovp_config();
-            if (!$config->create_backup()) {
-                ovp_http::fail('Erstellen des Konfigurationsbackups gescheitert.');
-            }
-        }
-        if (!ovp_zipper::pack_dir()) {
-            ovp_http::fail('Erstellen des Quellarchivs gescheitert');
-        }
-        return true;
-    }
-
-    public static function finalize() {
-        $config = new ovp_config();
-        $config->set('FIRST_RUN', 'false');
-    }
-}
 
 ?>

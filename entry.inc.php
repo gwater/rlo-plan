@@ -397,9 +397,11 @@ class ovp_entry_manager {
      * @return: the number of deleted entries
      */
     public function cleanup() {
-        if (DELETE_OLDER_THAN >= 0) {
+        $config = ovp_config::get_singleton();
+        $delete_older_than = $config->get('DELETE_OLDER_THAN');
+        if ($delete_older_than >= 0) {
             $today = $this->get_today();
-            $oldest_date = $this->adjust_date($today, -DELETE_OLDER_THAN);
+            $oldest_date = $this->adjust_date($today, -$delete_older_than);
             $this->db->query(
                "DELETE FROM `entry`
                 WHERE DATEDIFF('".$oldest_date."', `date`) > 0"
@@ -424,7 +426,9 @@ class ovp_entry_manager {
             )->fetch_assoc();
             $date = $row['date'];
         }
-        if (SKIP_WEEKENDS) {
+        $config = ovp_config::get_singleton();
+        $skip = $config->get('SKIP_WEEKENDS');
+        if ($skip) {
             $row = $this->db->query(
                "SELECT DAYOFWEEK('".$date."') AS 'weekday'
                 LIMIT 1"

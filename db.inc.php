@@ -45,18 +45,12 @@ class ovp_db extends mysqli {
     }
 
     // only use when you need a config-hack
-    public function __construct($config = false) {
-        if ($config) {
-            $host = $config->get('DB_HOST');
-            $user = $config->get('DB_USER');
-            $pass = $config->get('DB_PASS');
-            $base = $config->get('DB_BASE');
-        } else {
-            $host = DB_HOST;
-            $user = DB_USER;
-            $pass = DB_PASS;
-            $base = DB_BASE;
-        }
+    private function __construct() {
+        $config = ovp_config::get_singleton();
+        $host = $config->get('DB_HOST');
+        $user = $config->get('DB_USER');
+        $pass = $config->get('DB_PASS');
+        $base = $config->get('DB_BASE');
         parent::__construct($host, $user, $pass);
         if ($this->connect_errno) {
             ovp_http::fail('Keine Verbindung zum DB-Server');
@@ -65,7 +59,7 @@ class ovp_db extends mysqli {
         $this->query("SET time_zone = '+1:00'");
         $this->query("SET lc_time_names = 'de_DE'");
         if (!$this->select_db($base)) {
-            if (!$this->create_db()) {
+            if (!$this->create_db($base)) {
                 ovp_http::fail('Datenbank kann nicht erstellt werden'); // need database or rights to create it
             }
         }
@@ -83,11 +77,11 @@ class ovp_db extends mysqli {
         return $this->escape_string(htmlspecialchars($str));
     }
 
-    private function create_db() {
-        if ($this->query("CREATE DATABASE `".$this->protect(DB_BASE)."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'") === false) {
+    private function create_db($base) {
+        if ($this->query("CREATE DATABASE `".$this->protect($base)."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'") === false) {
             return false;
         }
-        return $this->select_db(DB_BASE);
+        return $this->select_db($base);
     }
 
     public function reset_tables() {

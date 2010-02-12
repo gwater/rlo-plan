@@ -585,7 +585,7 @@ class ovp_mysql extends ovp_source {
         if (isset($_GET['error'])) {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
-        $config = new ovp_config();
+        $config = ovp_config::get_singleton();
         $link = ovp_http::get_poster_link(self::$type);
         $html .= '
             <form action="'.$link.'" method="POST"><table>
@@ -631,38 +631,39 @@ class ovp_settings extends ovp_source {
             $html .= '<p><span class="ovp_error">ERROR: '.$_GET['error'].'</span></p>';
         }
         $link = ovp_http::get_poster_link(self::$type);
-        $config = new ovp_config();
+        $config = ovp_config::get_singleton();
         $debug         = $config->get('DEBUG');
         $skip_weekends = $config->get('SKIP_WEEKENDS');
         $priv_default  = $config->get('PRIV_DEFAULT');
+        $older = $config->get('DELETE_OLDER_THAN');
         $html .= '
             <form action="'.$link.'" method="POST"><table>
                 <tr>
                   <td>Sollen detaillierte Fehlermeldungen angezeigt werden?</td>
                   <td><select name="debug">
-                    <option value="true"'.($debug == 'true' ? ' selected="selected"' : '').'>Ja</option>
-                    <option value="false"'.($debug == 'false' ? ' selected="selected"' : '').'>Nein</option>
+                    <option value="'.true.'"'.($debug == true ? ' selected="selected"' : '').'>Ja</option>
+                    <option value="'.false.'"'.($debug == false ? ' selected="selected"' : '').'>Nein</option>
                   </select></td>
                 </tr>
                 <tr>
                   <td>Nach wie vielen Tagen sollen alte Einträge automatisch gelöscht werden? (-1 = nie)</td>
-                  <td><input type="text" name="delold" value="'.$config->get('DELETE_OLDER_THAN').'"></td>
+                  <td><input type="text" name="delold" value="'.$older.'"></td>
                 </tr>
                 <tr>
                   <td>Sollen Wochenenden dabei <i>nicht</i> mitzählen?</td>
                   <td><select name="skipweekends">
-                    <option value="true"'.($skip_weekends == 'true' ? ' selected="selected"' : '').'>Ja</option>
-                    <option value="false"'.($skip_weekends == 'false' ? ' selected="selected"' : '').'>Nein</option>
+                    <option value="'.true.'"'.($skip_weekends == true ? ' selected="selected"' : '').'>Ja</option>
+                    <option value="'.false.'"'.($skip_weekends == false ? ' selected="selected"' : '').'>Nein</option>
                   </select></td>
                 </tr>
                 <tr>
                   <td>Welches Privileg sollen unangemeldete Besucher besitzen?</td>
                   <td><select name="privdefault">
-                    <option value="0"'.($priv_default == '0' ? ' selected="selected"' : '').'>Keins</option>
-                    <option value="1"'.($priv_default == '1' ? ' selected="selected"' : '').'>Public</option>
-                    <option value="2"'.($priv_default == '2' ? ' selected="selected"' : '').'>Print</option>
-                    <option value="3"'.($priv_default == '3' ? ' selected="selected"' : '').'>Autor</option>
-                    <option value="4"'.($priv_default == '4' ? ' selected="selected"' : '').'>Admin</option>
+                    <option value="'.ovp_user::VIEW_NONE  .'"'.($priv_default == ovp_user::VIEW_NONE   ? ' selected="selected"' : '').'>Keins</option>
+                    <option value="'.ovp_user::VIEW_PUBLIC.'"'.($priv_default == ovp_user::VIEW_PUBLIC ? ' selected="selected"' : '').'>Public</option>
+                    <option value="'.ovp_user::VIEW_PRINT .'"'.($priv_default == ovp_user::VIEW_PRINT  ? ' selected="selected"' : '').'>Print</option>
+                    <option value="'.ovp_user::VIEW_AUTHOR.'"'.($priv_default == ovp_user::VIEW_AUTHOR ? ' selected="selected"' : '').'>Autor</option>
+                    <option value="'.ovp_user::VIEW_ADMIN .'"'.($priv_default == ovp_user::VIEW_ADMIN  ? ' selected="selected"' : '').'>Admin</option>
                   </select></td>
                 </tr>
                 <tr><td></td><td><input type="submit" value="Speichern und weiter"></td></tr>

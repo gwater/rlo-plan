@@ -33,14 +33,7 @@ class ovp_zipper {
             return false;
         }
         foreach ($files as $file) {
-            if ($file == 'config.inc.php') {
-                $config = new ovp_config();
-                $content = $config->get_backup();
-                if (!$content) {
-                    ovp_http::fail('Konfigurationsbackup konnten icht gelesen werden');
-                }
-                $zip->addFromString('config.inc.php', $content);
-            } else {
+            if ($file != ovp_config::FILENAME) {
                 $zip->addFile($file);
             }
         }
@@ -62,45 +55,6 @@ class ovp_zipper {
     }
 }
 
-class ovp_config {
-    private $file;
-
-    public function __construct($file = 'config.inc.php') {
-        if (file_exists($file)) {
-            $this->file = $file;
-        } else {
-            ovp_http::fail('Konfigurationsdatei nicht gefunden');
-        }
-    }
-
-    public function get($define) {
-        $text = file_get_contents($this->file);
-        if (preg_match('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $text, $matches) == 0) {
-            die('ERROR: define ' + $define  + ' not found');
-        }
-        return trim($matches[0], "'");
-    }
-
-    public function set($define, $value) {
-        $text = file_get_contents($this->file);
-        $text = preg_replace('/(?<=define\(\''.$define.'\', ).+?(?=\);)/i', $value, $text, 1);
-        if (file_put_contents($this->file, $text)) {
-            return true;
-        } else {
-            ovp_http::fail('Ändern der Konfigurationsdatei gescheitert');
-        }
-    }
-
-    public function create_backup() {
-        $content = file_get_contents($this->file);
-        return file_put_contents($this->file.'.orig', $content);
-    }
-
-    public function get_backup() {
-        return file_get_contents($this->file.'.orig');
-    }
-}
-
 class ovp_http {
     // TODO: add $code as parameter
     public static function fail($msg) {
@@ -109,7 +63,9 @@ class ovp_http {
     }
 
     public static function debug($msg) {
-        if (DEBUG) {
+        $config = ovp_config::get_singleton();
+        $debug = $config->get('DEBUG');
+        if ($debug) {
             print($msg);
         }
     }
