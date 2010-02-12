@@ -17,4 +17,7 @@ define('SKIP_WEEKENDS', true);         // true: weekends are skipped when calcul
                                        // false: weekends are just like every other day (this would suck for obvious reasons)
 define('PRIV_DEFAULT', 1);             // default privilege level for logged out visitors, ovp_logger::PRIV_DEFAULT
 
+ini_set('session.hash_function', '1');
+ini_set('session.hash_bits_per_character', '6');
+
 ?>

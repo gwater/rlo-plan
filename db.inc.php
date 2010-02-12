@@ -92,16 +92,22 @@ class ovp_db extends mysqli {
 
     public function reset_tables() {
         /*
+        This table holds all active sessions and relates them with their account.
+        */
+        $this->query("DROP TABLE IF EXISTS `session`");
+        $this->query(
+           "CREATE TABLE `session` (
+                `sid`     CHAR(27)     NOT NULL PRIMARY KEY,
+                `user_id` INT UNSIGNED NOT NULL
+            )"
+        );
+
+        /*
         This table holds the user data of all the students who have access.
         id:        unique user id used to identify user during their session
         name:      user name, e.g. 'jdoe' FIXME: Unique?
         pwd_hash:  sha256-hashed password
-        privilege: privilege level
-                     0 - no rights whatsoever (useful for suspending accounts)
-                     1 - view all data except for teacher names, default (students)
-                     2 - view all data (teachers)
-                     3 - view all data, and modify entries (Mrs. Lange I)
-                     4 - view all data, modify entries, and add new users (root)
+        privilege: privilege level (see ovp_user::XYZ)
         */
         $this->query("DROP TABLE IF EXISTS `user`");
         $this->query(
@@ -109,8 +115,7 @@ class ovp_db extends mysqli {
                 `id`        INT UNSIGNED     NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 `name`      VARCHAR(20)      NOT NULL,
                 `pwd_hash`  CHAR(64)         NOT NULL,
-                `privilege` TINYINT UNSIGNED NOT NULL DEFAULT 1,
-                `sid`       INT UNSIGNED     NULL     DEFAULT NULL
+                `privilege` TINYINT UNSIGNED NOT NULL DEFAULT 0
             )"
         );
 

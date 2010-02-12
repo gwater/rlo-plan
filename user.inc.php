@@ -185,7 +185,7 @@ class ovp_user {
     public function session_ok() {
         return ($row = $this->db->query(
            "SELECT COUNT(*) AS 'count'
-            FROM `user`
+            FROM `session`
             WHERE `sid`  = '".$this->db->protect(session_id())."'
             LIMIT 1"
         )->fetch_assoc()) && $row['count'] == 1;
@@ -296,18 +296,20 @@ class ovp_user_manager {
             return false; // user not found or wrong password
         }
         $this->db->query(
-           "UPDATE `user`
-            SET `sid` = '".$this->db->protect(session_id())."'
-            WHERE `id` = '".$this->db->protect($row['id'])."'
-            LIMIT 1"
+           "REPLACE `session` (
+                `sid`,
+                `user_id`
+            ) VALUES (
+                '".$this->db->protect(session_id())."',
+                '".$this->db->protect($row['id'])."'
+            )"
         );
         return true;
     }
 
     public function logout() {
         $this->db->query(
-           "UPDATE `user`
-            SET `sid` = NULL
+           "DELETE FROM `session`
             WHERE `sid` = '".$this->db->protect(session_id())."'
             LIMIT 1"
         );
@@ -316,9 +318,13 @@ class ovp_user_manager {
 
     public function get_current_user() {
         $result = $this->db->query(
-           "SELECT `id`
-            FROM `user`
-            WHERE `sid` = '".$this->db->protect(session_id())."'
+           "SELECT `user`.`id`
+            FROM
+                `user`,
+                `session`
+            WHERE
+                `session`.`sid` = '".$this->db->protect(session_id())."' AND
+                `session`.`user_id` = `user`.`id`
             LIMIT 1"
         )->fetch_assoc();
         if ($uid = $result['id']) {
