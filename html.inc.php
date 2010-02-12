@@ -146,7 +146,7 @@ class ovp_public extends ovp_source {
 
     public function __construct($course = '') {
         $manager = ovp_entry_manager::get_singleton();
-        if ($this->course == '') {
+        if ($course == '') {
             $this->entries = $manager->get_entries_by_date();
         } else {
             $this->entries = $manager->get_entries_for_course($course);
