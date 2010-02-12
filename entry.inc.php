@@ -280,12 +280,7 @@ class ovp_entry_manager {
         $course = $this->db->protect($course);
         $entries_by_date = array();
         foreach ($dates as $date) {
-            if (strpos($course, '.') !== false) {
-                $row = $this->db->query(
-                   "SELECT SUBSTR('".$course."', 1, LOCATE('.', '".$course."') - 1) AS 'year' LIMIT 1"
-                )->fetch_assoc();
-                $year = $row['year'];
-            } else {
+            if (!($year = strstr($course, '.', true))) {
                 $year = $course;
             }
             $result = $this->db->query(
