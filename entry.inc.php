@@ -332,6 +332,7 @@ class ovp_entry_manager {
         $result = $this->db->query(
            "SELECT `course`
             FROM `entry`
+            WHERE `course` IS NOT NULL
             GROUP BY `course`"
         );
         $courses = array();
@@ -377,7 +378,7 @@ class ovp_entry_manager {
         $result = $this->db->query(
            "SELECT `sub`
             FROM `entry`
-            WHERE `sub` <> NULL
+            WHERE `sub` IS NOT NULL
             GROUP BY `sub`"
         );
         $subs = array();
