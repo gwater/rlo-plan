@@ -77,6 +77,16 @@ class ovp_db extends mysqli {
         return $this->escape_string(htmlspecialchars($str));
     }
 
+    public function prepare($str) {
+        $str = $this->protect($str);
+        if ($str === '') {
+            $str = 'NULL';
+        } else {
+            $str = "'".$str."'";
+        }
+        return $str;
+    }
+
     private function create_db($base) {
         if ($this->query("CREATE DATABASE `".$this->protect($base)."` CHARACTER SET 'utf8' COLLATE 'utf8_unicode_ci'") === false) {
             return false;

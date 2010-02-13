@@ -104,7 +104,7 @@ class ovp_entry {
         }
         $this->db->query(
            "UPDATE `entry`
-            SET `".$this->db->protect($attribute)."` = '".$this->db->protect($value)."'
+            SET `".$this->db->protect($attribute)."` = ".$this->db->prepare($value)."
             WHERE `id` = '".$this->id."'
             LIMIT 1"
         );
@@ -154,37 +154,31 @@ class ovp_entry_manager {
      */
     public function add($values) {
         $this->db->query(
-           "INSERT INTO `entry` VALUES (
-                NULL,
-                '".$this->db->protect($values['date'])    ."',
-                '".$this->db->protect($values['teacher']) ."',
-                '".$this->db->protect($values['time'])    ."',
-                '".$this->db->protect($values['course'])  ."',
-                '".$this->db->protect($values['subject']) ."',
-                '".$this->db->protect($values['duration'])."',
-                '".$this->db->protect($values['sub'])     ."',
-                '".$this->db->protect($values['change'])  ."',
-                '".$this->db->protect($values['oldroom']) ."',
-                '".$this->db->protect($values['newroom']) ."'
+           "INSERT INTO `entry` (
+                `date`,
+                `teacher`,
+                `time`,
+                `course`,
+                `subject`,
+                `duration`,
+                `sub`,
+                `change`,
+                `oldroom`,
+                `newroom`
+            ) VALUES (
+                ".$this->db->prepare($values['date'])    .",
+                ".$this->db->prepare($values['teacher']) .",
+                ".$this->db->prepare($values['time'])    .",
+                ".$this->db->prepare($values['course'])  .",
+                ".$this->db->prepare($values['subject']) .",
+                ".$this->db->prepare($values['duration']).",
+                ".$this->db->prepare($values['sub'])     .",
+                ".$this->db->prepare($values['change'])  .",
+                ".$this->db->prepare($values['oldroom']) .",
+                ".$this->db->prepare($values['newroom']) ."
             )"
         );
-        $row = $this->db->query(
-            "SELECT `id`
-             FROM `entry`
-             WHERE
-                `date`     = '".$this->db->protect($values['date'])    ."' AND
-                `teacher`  = '".$this->db->protect($values['teacher']) ."' AND
-                `time`     = '".$this->db->protect($values['time'])    ."' AND
-                `course`   = '".$this->db->protect($values['course'])  ."' AND
-                `subject`  = '".$this->db->protect($values['subject']) ."' AND
-                `duration` = '".$this->db->protect($values['duration'])."' AND
-                `sub`      = '".$this->db->protect($values['sub'])     ."' AND
-                `change`   = '".$this->db->protect($values['change'])  ."' AND
-                `oldroom`  = '".$this->db->protect($values['oldroom']) ."' AND
-                `newroom`  = '".$this->db->protect($values['newroom']) ."'
-            LIMIT 1"
-        )->fetch_assoc();
-        return $row['id'];
+        return $this->db->insert_id;
     }
 
     /**
