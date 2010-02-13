@@ -20,6 +20,7 @@
  */
 
 require_once('interfaces.inc.php');
+require_once('db.inc.php');
 
 class ovp_user {
     private $id;
@@ -49,7 +50,7 @@ class ovp_user {
                 return $priv;
             }
         }
-        return ovp_user::VIEW_NONE;
+        return self::VIEW_NONE;
     }
 
     public function __construct($id = 'guest') {
@@ -94,14 +95,27 @@ class ovp_user {
         return $result['name'];
     }
 
-    public function check_password($password) {
+    public function get_pwd_hash() {
+        $user_manager = ovp_user_manager::get_singleton();
+        $current_user = $user_manager->get_current_user();
+        if ($current_user->is_authorized(self::VIEW_ADMIN)) {
+            return $this->_get_pwd_hash();
+        }
+        return false;
+    }
+
+    private function _get_pwd_hash() {
         $row = $this->db->query(
            "SELECT `pwd_hash`
             FROM `user`
             WHERE `id` = '".$this->id."'
             LIMIT 1"
         )->fetch_assoc();
-        return $row['pwd_hash'] == hash('sha256', $password);
+        return $row['pwd_hash'];
+    }
+
+    public function check_password($password) {
+        return $this->_get_pwd_hash() == hash('sha256', $password);
     }
 
     public function set_privilege($newpriv) {
@@ -165,8 +179,8 @@ class ovp_user {
         if ($logged_in) {
             if ($priv_req <= $this->get_privilege()) {
                 return $this->session_ok();
-                }
             }
+        }
         return false;
     }
 
@@ -179,7 +193,7 @@ class ovp_user {
             if ($_SERVER['QUERY_STRING'] != '') {
                 $continue .= '?'.$_SERVER['QUERY_STRING'];
             }
-            $link = ovp_http::get_source_link('login&continue='.urlencode($continue));
+            $link = 'index.php?source=login&continue='.urlencode($continue);
             ovp_http::redirect($link); // does not return
         }
         return true;
