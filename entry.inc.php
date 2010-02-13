@@ -377,6 +377,7 @@ class ovp_entry_manager {
         $result = $this->db->query(
            "SELECT `sub`
             FROM `entry`
+            WHERE `sub` <> NULL
             GROUP BY `sub`"
         );
         $subs = array();
