@@ -96,17 +96,6 @@ class ovp_db extends mysqli {
 
     public function reset_tables() {
         /*
-        This table holds all active sessions and relates them with their account.
-        */
-        $this->query("DROP TABLE IF EXISTS `session`");
-        $this->query(
-           "CREATE TABLE `session` (
-                `sid`     CHAR(27)     NOT NULL PRIMARY KEY,
-                `user_id` INT UNSIGNED NOT NULL
-            )"
-        );
-
-        /*
         This table holds the user data of all the students who have access.
         id:        unique user id used to identify user during their session
         name:      user name, e.g. 'jdoe' FIXME: Unique?

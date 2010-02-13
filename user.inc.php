@@ -185,14 +185,9 @@ class ovp_user {
         return true;
     }
 
-    // checks if the current user's session id exists in the database
+    // checks if the current user's ip address matches the one in the session
     public function session_ok() {
-        return ($row = $this->db->query(
-           "SELECT COUNT(*) AS 'count'
-            FROM `session`
-            WHERE `sid`  = '".$this->db->protect(session_id())."'
-            LIMIT 1"
-        )->fetch_assoc()) && $row['count'] == 1;
+        return $_SERVER['REMOTE_ADDR'] == $_SESSION['ip'];
     }
 }
 
@@ -276,8 +271,7 @@ class ovp_user_manager {
     }
 
     public function remove($id) {
-        $user = $this->get_current_user();
-        if ($user->get_id() == $id) {
+        if ($_SESSION['uid'] == $id) {
             ovp_http::fail('Eigener Account darf nicht gelöscht werden');
         }
         $this->db->query(
@@ -299,40 +293,19 @@ class ovp_user_manager {
         )->fetch_assoc())) {
             return false; // user not found or wrong password
         }
-        $this->db->query(
-           "REPLACE `session` (
-                `sid`,
-                `user_id`
-            ) VALUES (
-                '".$this->db->protect(session_id())."',
-                '".$this->db->protect($row['id'])."'
-            )"
-        );
+        $_SESSION['uid'] = $row['id'];
+        $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
         return true;
     }
 
     public function logout() {
-        $this->db->query(
-           "DELETE FROM `session`
-            WHERE `sid` = '".$this->db->protect(session_id())."'
-            LIMIT 1"
-        );
-        return $this->db->affected_rows == 1;
+        unset($_SESSION['uid']);
+        unset($_SESSION['ip']);
     }
 
     public function get_current_user() {
-        $result = $this->db->query(
-           "SELECT `user`.`id`
-            FROM
-                `user`,
-                `session`
-            WHERE
-                `session`.`sid` = '".$this->db->protect(session_id())."' AND
-                `session`.`user_id` = `user`.`id`
-            LIMIT 1"
-        )->fetch_assoc();
-        if ($uid = $result['id']) {
-            return new ovp_user($uid);
+        if (isset($_SESSION['uid'])) {
+            return new ovp_user($_SESSION['uid']);
         }
         return new ovp_user('guest');
     }
