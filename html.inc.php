@@ -551,7 +551,7 @@ class ovp_password extends ovp_source {
               </tr>
               <tr>
                 <td id="ovp_status"></td>
-                <td><input type="submit" value="Ändern"></td>
+                <td><input type="submit" name="submit" value="Ändern"></td>
               </tr>
             </table>
           </form>

@@ -91,9 +91,8 @@ function send_msg(msg, callback, error_callback) {
                 callback(xhr);
             }
         };
-        // "url" is defined in the calling html document
-        // "callback" used as a boolean value here (to prevent not-yet-changed code from breaking)
-        // when done with DEBUG: remove parameter (defaults to "true")
+        // url is defined in the calling html document
+        // callback used as a boolean value here
         xhr.open('POST', url, callback);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.send(msg);
