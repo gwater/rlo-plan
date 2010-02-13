@@ -31,16 +31,15 @@ class ovp_config {
         if (!file_exists(self::FILENAME)) {
             self::init();
         }
-        $content = file_get_contents(self::FILENAME);
         $document = new DOMDocument('1.0', 'UTF8');
-        $document->loadXML($content);
+        $document->load(self::FILENAME);
         $this->root = $document->getElementById('root');
-	$this->document = $document;
+        $this->document = $document;
     }
 
     public function __destruct() {
-        $this->document->appendChild($this->root);
-        file_put_contents(self::FILENAME, $this->document->saveXML());
+        $dir = dirname($_SERVER['SCRIPT_FILENAME']);
+        $this->document->save($dir.'/'.self::FILENAME);
     }
 
     public static function get_singleton() {
@@ -53,6 +52,7 @@ class ovp_config {
     public static function init() {
         $document = new DOMDocument('1.0', 'UTF8');
         $root = $document->createElement('Root');
+        $root = $document->appendChild($root);
         $root->setAttribute('xml:id', 'root');
         $root->setAttribute('FIRST_RUN', true);
         $root->setAttribute('DEBUG', true);
@@ -60,8 +60,7 @@ class ovp_config {
         $root->setAttribute('PRIV_DEFAULT', ovp_user::VIEW_NONE);
         $root->setAttribute('DELETE_OLDER_THAN', -1);
         $root->setAttribute('DB_HOST', 'localhost');
-        $document->appendChild($root);
-        file_put_contents(self::FILENAME, $document->saveXML());
+        $document->save(self::FILENAME);
     }
 
     public function set($attribute, $value) {
