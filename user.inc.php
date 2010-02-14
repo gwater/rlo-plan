@@ -143,8 +143,12 @@ class ovp_user {
     }
 
     public function set_name($name) {
-        if (ovp_user_manager::name_exists($this->db, $name)) {
-            return false;
+        $user_manager = ovp_user_manager::get_singleton();
+        if (($id = $user_manager->name_exists($name)) !== false) {
+            if ($id === $this->id) {
+                return true;
+            }
+            ovp_http::fail('Name ist schon vorhanden');
         }
         return $this->db->query(
            "UPDATE `user`
@@ -250,12 +254,16 @@ class ovp_user_manager {
     }
 
     public function name_exists($name) {
-        return $this->db->query(
+        $row = $this->db->query(
            "SELECT `id`
             FROM `user`
             WHERE `name` = '".$this->db->protect($name)."'
             LIMIT 1"
-        )->num_rows == 1;
+        )->fetch_assoc();
+        if ($row) {
+            return $row['id'];
+        }
+        return false;
     }
 
     public function import($values) {
