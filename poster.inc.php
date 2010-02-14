@@ -300,21 +300,32 @@ class post_import extends poster {
         if (!isset($_FILES['data'])) {
             ovp_http::fail($upload_error);
         }
-        if ($_FILES['data']['error'] == UPLOAD_ERR_OK) {
+        switch ($_FILES['data']['error']) {
+        case UPLOAD_ERR_OK:
             if (move_uploaded_file($_FILES['data']['tmp_name'], 'import.tmp')) {
-                $param = 'import='.($this->import('import.tmp') ? 'success' : 'error');
-                $link = ovp_http::get_source_link('backup&'.$param.'&msg='.urlencode($this->msg));
+                $overwrite = $_POST['overwrite'];
+                if ($_POST['reset']) {
+                    $db = ovp_db::get_singleton();
+                    $db->reset_tables();
+                    $overwrite = false;
+                }
+                $result = ($this->import('import.tmp', $overwrite) ? 'success' : 'error');
+                $link = ovp_http::get_source_link('backup&import='.$result.'&msg='.urlencode($this->msg));
                 unlink('import.tmp');
             } else {
                 ovp_http::fail($upload_error.' (move_uploaded_file failed)');
             }
-        } else {
-            ovp_http::fail($upload_error.' (Fehlercode '.$_FILES['data']['error'].')');
+            break;
+        case UPLOAD_ERR_NO_FILE:
+            $link = ovp_http::get_source_link('backup&import=error&msg='.urlencode('Bitte wählen Sie eine Datei aus.'));
+            break;
+        default:
+            ovp_http::fail($upload_error.(ovp_config::get_singleton()->get('DEBUG') ? ' (Fehlercode '.$_FILES['data']['error'].')' : ''));
         }
         ovp_http::redirect($link);
     }
 
-    private function import($file) {
+    private function import($file, $overwrite) {
         $DOMDocument = new DOMDocument();
         $DOMDocument->load($file);
 
@@ -335,7 +346,7 @@ class post_import extends poster {
                 }
                 $values[$key] = $DOMUser->getAttribute($key);
             }
-            if (!$user_manager->import($values)) {
+            if (!$user_manager->import($values, $overwrite)) {
                 $this->msg = 'Der Benutzer "'.$name.'" konnte nicht importiert werden.';
                 return false;
             }
@@ -365,7 +376,7 @@ class post_import extends poster {
                 }
                 $values[$key] = $DOMEntry->getAttribute($key);
             }
-            if (!$entry_manager->import($values)) {
+            if (!$entry_manager->import($values, $overwrite)) {
                 $this->msg = 'Der Eintrag "'.$id.'" konnte nicht hinzugefügt werden.';
                 return false;
             }

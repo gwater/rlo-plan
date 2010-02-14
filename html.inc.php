@@ -692,6 +692,20 @@ class ovp_backup extends ovp_source {
     public static $title = 'Backup';
     public static $priv_req = ovp_user::VIEW_ADMIN;
 
+    public function generate_header() {
+        return
+           '<script type="text/javascript">
+                var form;
+                function init_import() {
+                    form = document.getElementById("form");
+                    form.reset.onchange = function() {
+                        form.overwrite.disabled = this.checked;
+                    }
+                }
+                document.addEventListener("DOMContentLoaded", init_import, false);
+            </script>';
+    }
+
     public function generate_view() {
         $link = ovp_http::get_poster_link(self::$type);
         $html =
@@ -700,8 +714,10 @@ class ovp_backup extends ovp_source {
                 <h2>Export</h2>
                 <p><a href="export.php">Download</a></p>
                 <h2>Import</h2>
-                <form action="'.$link.'" method="POST" enctype="multipart/form-data"><input type="hidden" name="MAX_FILE_SIZE" value="10240"><table>
+                <form id="form" action="'.$link.'" method="POST" enctype="multipart/form-data"><input type="hidden" name="MAX_FILE_SIZE" value="10240"><table>
                     <tr><td>Datei:</td><td><input type="file" name="data"></td></tr>
+                    <tr><td>Optionen:</td><td><input type="checkbox" name="reset" value="true">Datenbank vorher komplett löschen<br>
+                                              <input type="checkbox" name="overwrite" value="true">existierende Einträge überschreiben</td></tr>
                     <tr><td></td><td><input type="submit" value="Importieren"></td></tr>
                 </table></form>';
         if (isset($_GET['import']) && isset($_GET['msg'])) {

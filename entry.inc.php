@@ -182,9 +182,10 @@ class ovp_entry_manager {
         return $this->db->insert_id;
     }
 
-    public function import($values) {
+    public function import($values, $overwrite = false) {
+        $method = $overwrite ? 'REPLACE' : 'INSERT';
         return $this->db->query(
-           "REPLACE `entry` (
+            $method." `entry` (
                 `id`,
                 `date`,
                 `teacher`,
@@ -208,8 +209,8 @@ class ovp_entry_manager {
                 ".$this->db->prepare($values['change'  ]).",
                 ".$this->db->prepare($values['oldroom' ]).",
                 ".$this->db->prepare($values['newroom' ])."
-            )"
-        );
+            )",
+        false) || !$overwrite;
     }
 
     /**

@@ -65,8 +65,8 @@ class ovp_db extends mysqli {
         }
     }
 
-    public function query($query) {
-        if (!($result = parent::query($query))) {
+    public function query($query, $fail_on_error = true) {
+        if (!($result = parent::query($query)) && $fail_on_error) {
             ovp_http::debug($this->error);
             ovp_http::fail('SQL-Anfrage ungültig');
         }

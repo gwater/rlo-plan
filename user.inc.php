@@ -266,15 +266,16 @@ class ovp_user_manager {
         return false;
     }
 
-    public function import($values) {
+    public function import($values, $overwrite = false) {
         if (!is_numeric($values['id']) ||
             $values['name'] === '' ||
             strlen($values['pwd_hash']) != 64 ||
             !is_numeric($values['privilege'])) {
             return false;
         }
+        $method = $overwrite ? 'REPLACE' : 'INSERT';
         return $this->db->query(
-           "REPLACE `user` (
+            $method." `user` (
                 `id`,
                 `name`,
                 `pwd_hash`,
@@ -284,8 +285,8 @@ class ovp_user_manager {
                 ".$this->db->prepare($values['name'     ]).",
                 ".$this->db->prepare($values['pwd_hash' ]).",
                 ".$this->db->prepare($values['privilege'])."
-            )"
-        );
+            )",
+        false) || !$overwrite;
     }
 
     public function add($name, $password, $role) {
