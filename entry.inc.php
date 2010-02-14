@@ -57,16 +57,17 @@ class ovp_entry {
 
     public function get_values() {
         $row = $this->db->query(
-           "SELECT `date`
-                   `teacher`,
-                   `time`,
-                   `course`,
-                   `subject`,
-                   `duration`,
-                   `sub`,
-                   `change`,
-                   `oldroom`,
-                   `newroom`
+           "SELECT
+                `date`,
+                `teacher`,
+                `time`,
+                `course`,
+                `subject`,
+                `duration`,
+                `sub`,
+                `change`,
+                `oldroom`,
+                `newroom`
             FROM `entry`
             WHERE `id` = '".$this->id."'
             LIMIT 1"
