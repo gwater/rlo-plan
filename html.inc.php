@@ -687,6 +687,31 @@ class ovp_final extends ovp_source {
     }
 }
 
+class ovp_backup extends ovp_source {
+    public static $type = 'backup';
+    public static $title = 'Backup';
+    public static $priv_req = ovp_user::VIEW_ADMIN;
+
+    public function generate_view() {
+        $link = ovp_http::get_poster_link(self::$type);
+        $html =
+           '<div class="ovp_container">
+                <h1>'.self::$title.'</h1>
+                <h2>Export</h2>
+                <p><a href="export.php">Download</a></p>
+                <h2>Import</h2>
+                <form action="'.$link.'" method="POST" enctype="multipart/form-data"><input type="hidden" name="MAX_FILE_SIZE" value="10240"><table>
+                    <tr><td>Datei:</td><td><input type="file" name="data"></td></tr>
+                    <tr><td></td><td><input type="submit" value="Importieren"></td></tr>
+                </table></form>';
+        if (isset($_GET['import']) && isset($_GET['msg'])) {
+            $html .=
+               '<p><span class="ovp_'.htmlspecialchars($_GET['import']).'">'.htmlspecialchars($_GET['msg']).'</span></p>';
+        }
+        return $html.'</div>';
+    }
+}
+
 class ovp_navi_wizard extends ovp_source {
     public static $type = 'navi_wizard';
     public static $title = 'Installationsnavigator';
@@ -739,6 +764,7 @@ class ovp_navi extends ovp_source {
         $sources[] = get_class_vars('ovp_admin');
         $sources[] = get_class_vars('ovp_mysql');
         $sources[] = get_class_vars('ovp_settings');
+        $sources[] = get_class_vars('ovp_backup');
         $sources[] = get_class_vars('ovp_about');
         $sources[] = get_class_vars('ovp_password');
         $sources[] = get_class_vars('ovp_login');

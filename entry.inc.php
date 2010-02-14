@@ -182,6 +182,36 @@ class ovp_entry_manager {
         return $this->db->insert_id;
     }
 
+    public function import($values) {
+        return $this->db->query(
+           "REPLACE `entry` (
+                `id`,
+                `date`,
+                `teacher`,
+                `time`,
+                `course`,
+                `subject`,
+                `duration`,
+                `sub`,
+                `change`,
+                `oldroom`,
+                `newroom`
+            ) VALUES (
+                ".$this->db->prepare($values['id'      ]).",
+                ".$this->db->prepare($values['date'    ]).",
+                ".$this->db->prepare($values['teacher' ]).",
+                ".$this->db->prepare($values['time'    ]).",
+                ".$this->db->prepare($values['course'  ]).",
+                ".$this->db->prepare($values['subject' ]).",
+                ".$this->db->prepare($values['duration']).",
+                ".$this->db->prepare($values['sub'     ]).",
+                ".$this->db->prepare($values['change'  ]).",
+                ".$this->db->prepare($values['oldroom' ]).",
+                ".$this->db->prepare($values['newroom' ])."
+            )"
+        );
+    }
+
     /**
      * Deletes the entry referenced by the id $id.
      * @return: true if the entry was found and deleted

@@ -290,4 +290,91 @@ class post_account extends poster {
     }
 }
 
+class post_import extends poster {
+    public static $priv_req = ovp_user::VIEW_ADMIN;
+    private $msg;
+
+    public function evaluate($post) {
+        $upload_error = 'Fehler beim Hochladen der Datei';
+
+        if (!isset($_FILES['data'])) {
+            ovp_http::fail($upload_error);
+        }
+        if ($_FILES['data']['error'] == UPLOAD_ERR_OK) {
+            if (move_uploaded_file($_FILES['data']['tmp_name'], 'import.tmp')) {
+                $param = 'import='.($this->import('import.tmp') ? 'success' : 'error');
+                $link = ovp_http::get_source_link('backup&'.$param.'&msg='.urlencode($this->msg));
+                unlink('import.tmp');
+            } else {
+                ovp_http::fail($upload_error.' (move_uploaded_file failed)');
+            }
+        } else {
+            ovp_http::fail($upload_error.' (Fehlercode '.$_FILES['data']['error'].')');
+        }
+        ovp_http::redirect($link);
+    }
+
+    private function import($file) {
+        $DOMDocument = new DOMDocument();
+        $DOMDocument->load($file);
+
+        $user_manager = ovp_user_manager::get_singleton();
+        $DOMUserList = $DOMDocument->getElementsByTagName('user');
+        for ($index = 0; $index < $DOMUserList->length; $index++) {
+            $DOMUser = $DOMUserList->item($index);
+            $values = array(
+                'id'        => '',
+                'name'      => '',
+                'pwd_hash'  => '',
+                'privilege' => ''
+            );
+            foreach ($values as $key => $value) {
+                if (!$DOMUser->hasAttribute($key)) {
+                    $this->msg = $key.'-Attribut fehlt';
+                    return false;
+                }
+                $values[$key] = $DOMUser->getAttribute($key);
+            }
+            if (!$user_manager->import($values)) {
+                $this->msg = 'Der Benutzer "'.$name.'" konnte nicht importiert werden.';
+                return false;
+            }
+        }
+
+        $entry_manager = ovp_entry_manager::get_singleton();
+        $DOMEntryList = $DOMDocument->getElementsByTagName('entry');
+        for ($index = 0; $index < $DOMEntryList->length; $index++) {
+            $DOMEntry = $DOMEntryList->item($index);
+            $values = array(
+                'id'       => '',
+                'date'     => '',
+                'teacher'  => '',
+                'time'     => '',
+                'course'   => '',
+                'subject'  => '',
+                'duration' => '',
+                'sub'      => '',
+                'change'   => '',
+                'oldroom'  => '',
+                'newroom'  => ''
+            );
+            foreach ($values as $key => $value) {
+                if (!$DOMEntry->hasAttribute($key)) {
+                    $this->msg = $key.'-Attribut fehlt';
+                    return false;
+                }
+                $values[$key] = $DOMEntry->getAttribute($key);
+            }
+            if (!$entry_manager->import($values)) {
+                $this->msg = 'Der Eintrag "'.$id.'" konnte nicht hinzugefügt werden.';
+                return false;
+            }
+        }
+
+        $created = $DOMDocument->firstChild->getAttribute('created');
+        $this->msg = 'Das Backup von '.$created.' wurde erfolgreich importiert.';
+        return true;
+    }
+}
+
 ?>

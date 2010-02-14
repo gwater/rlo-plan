@@ -51,6 +51,9 @@ case 'mysql':
 case 'settings':
     $poster = new post_settings();
     break;
+case 'backup':
+    $poster = new post_import();
+    break;
 case 'login':
     $poster = new post_login();
     break;
@@ -94,6 +97,9 @@ case 'settings':
     break;
 case 'mysql':
     $source = new ovp_mysql();
+    break;
+case 'backup':
+    $source = new ovp_backup();
     break;
 case 'login':
     $source = new ovp_login();

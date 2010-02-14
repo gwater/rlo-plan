@@ -45,9 +45,6 @@ case 'settings':
 case 'account':
     $poster = new post_account($is_wiz);
     break;
-case 'login':
-    $poster = new post_login();
-    break;
 default:
     // DoNothing (tm)
 }
@@ -71,9 +68,6 @@ case 'settings':
     break;
 case 'account':
     $source = new ovp_account();
-    break;
-case 'login':
-    $source = new ovp_login();
     break;
 case 'final':
     $config->set('FIRST_RUN', false);

@@ -154,11 +154,15 @@ class ovp_user {
         );
     }
 
-    public function set_password($password) {
-        $hash = hash('sha256', $password);
+    public function set_password($password, $is_hash = false) {
+        if ($is_hash) {
+            $hash = $this->db->protect($password);
+        } else {
+            $hash = hash('sha256', $password);
+        }
         return $this->db->query(
            "UPDATE `user`
-            SET `pwd_hash` = '".$this->db->protect($hash)."'
+            SET `pwd_hash` = '".$hash."'
             WHERE `id` = '".$this->id."'
             LIMIT 1"
         );
@@ -246,13 +250,34 @@ class ovp_user_manager {
     }
 
     public function name_exists($name) {
-        $result = $this->db->query(
+        return $this->db->query(
            "SELECT `id`
             FROM `user`
             WHERE `name` = '".$this->db->protect($name)."'
             LIMIT 1"
+        )->num_rows == 1;
+    }
+
+    public function import($values) {
+        if (!is_numeric($values['id']) ||
+            $values['name'] === '' ||
+            strlen($values['pwd_hash']) != 64 ||
+            !is_numeric($values['privilege'])) {
+            return false;
+        }
+        return $this->db->query(
+           "REPLACE `user` (
+                `id`,
+                `name`,
+                `pwd_hash`,
+                `privilege`
+            ) VALUES (
+                ".$this->db->prepare($values['id'       ]).",
+                ".$this->db->prepare($values['name'     ]).",
+                ".$this->db->prepare($values['pwd_hash' ]).",
+                ".$this->db->prepare($values['privilege'])."
+            )"
         );
-        return $result->num_rows != 0;
     }
 
     public function add($name, $password, $role) {
