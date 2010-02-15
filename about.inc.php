@@ -6,7 +6,7 @@
     <p><a href="<?php
 
 require_once('interfaces.inc.php');
-echo(ovp_zipper::filename);
+echo(ovp_zipper::FILENAME);
 
 ?>">Quellcode der verwendeten Version von RLO-Plan</a></p>
     <p><a href="http://github.com/gwater/rlo-plan">RLO-Plan Projektseite</a></p>
