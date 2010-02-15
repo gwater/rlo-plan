@@ -15,6 +15,7 @@ $current_user = $user_manager->get_current_user();
 $current_user->authorize(ovp_user::VIEW_ADMIN);
 
 $DOMDocument = new DOMDocument('1.0', 'UTF8');
+$DOMDocument->formatOutput = true;
 $DOMBackup = $DOMDocument->createElement('backup');
 $DOMDocument->appendChild($DOMBackup);
 $DOMBackup->setAttribute('created', date('Y-m-d H:i:s P'));
