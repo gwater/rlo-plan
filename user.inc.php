@@ -347,8 +347,10 @@ class ovp_user_manager {
     }
 
     public function logout() {
-        unset($_SESSION['uid']);
-        unset($_SESSION['ip']);
+        $_SESSION = array();
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+        session_destroy();
     }
 
     public function get_current_user() {
