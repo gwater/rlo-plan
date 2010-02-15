@@ -59,16 +59,18 @@ class ovp_user {
             $this->id = $id;
             return;
         }
-        $result = $this->db->query(
+        if ($this->db->query(
            "SELECT `id`
             FROM `user`
             WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1"
-        );
-        if ($result->num_rows != 1) {
-            ovp_http::fail('ID ungültig');
+        )->num_rows != 1) {
+            // account deleted while user logged in
+            unset($_SESSION['uid']);
+            $this->id = 'guest';
+        } else {
+            $this->id = $id;
         }
-        $this->id = $id;
     }
 
     public function get_id() {
