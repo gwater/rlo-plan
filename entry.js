@@ -355,6 +355,7 @@ function newTeacher(name, entries) {
         var textbox = this.nextSibling;
         textbox.style.display = 'block';
         textbox.focus();
+        textbox.select();
     }
     teacher.appendChild(header);
 
