@@ -348,6 +348,7 @@ function newTeacher(name, entries) {
     var teacher = newElement('section');
 
     var header = newElement('h3');
+    header.style.display = 'table';
     header.innerHTML = name;
     header.onclick = function() {
         header.style.display = 'none';
@@ -391,7 +392,7 @@ function newTeacher(name, entries) {
         if (table.childNodes.length == 1 && this['create_entry_on_first_blur']) {
             this.parentNode.lastChild.onclick();
         }
-        header.style.display = 'block';
+        header.style.display = 'table';
     }
     teacher.appendChild(textbox);
 
@@ -418,6 +419,7 @@ function newDay(title, teachers) {
     var day = newElement('section');
 
     var header = newElement('h2');
+    header.style.display = 'table';
     header.innerHTML = title;
     header.onclick = function() {
         header.style.display = 'none';
@@ -467,7 +469,7 @@ function newDay(title, teachers) {
             }
         }
         textbox.style.display = 'none';
-        header.style.display = 'block';
+        header.style.display = 'table';
         if (this.parentNode.childNodes.length == 3 && this['create_teacher_on_first_blur']) {
             this.parentNode.lastChild.onclick();
         }
