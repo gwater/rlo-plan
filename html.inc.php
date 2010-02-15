@@ -565,7 +565,7 @@ class ovp_about extends ovp_source {
     public static $title ='Über RLO-Plan';
     public static $priv_req = ovp_user::VIEW_NONE;
 
-    public function generate_view() {
+    protected function generate_view() {
         ob_start();
         require('about.inc.php');
         $output = ob_get_contents();
@@ -579,7 +579,7 @@ class ovp_mysql extends ovp_source {
     public static $title = 'MySQL Konfiguration';
     public static $priv_req = ovp_user::VIEW_ADMIN;
 
-    public function generate_view() {
+    protected function generate_view() {
         $html = '<div class="ovp_container">
             <h1>'.self::$title.'</h1>';
         if (isset($_GET['error'])) {
@@ -605,7 +605,7 @@ class ovp_account extends ovp_source {
     public static $title = 'Administrationskonto anlegen';
     public static $priv_req = ovp_user::VIEW_ADMIN;
 
-    public function generate_view() {
+    protected function generate_view() {
         $link = ovp_http::get_poster_link(self::$type);
         $html = '<div class="ovp_container">
             <h1>'.self::$title.'</h1>
@@ -624,7 +624,7 @@ class ovp_settings extends ovp_source {
     public static $title = 'Konfiguration';
     public static $priv_req = ovp_user::VIEW_ADMIN;
 
-    public function generate_view() {
+    protected function generate_view() {
         $html = '<div class="ovp_container">
             <h1>'.self::$title.'</h1>';
         if (isset($_GET['error'])) {
@@ -678,7 +678,7 @@ class ovp_final extends ovp_source {
     public static $title = 'Konfiguration abgeschlossen';
     public static $priv_req = ovp_user::VIEW_NONE;
 
-    public function generate_view() {
+    protected function generate_view() {
         $html = '<div class="ovp_container">
               <h1>'.self::$title.'</h1>
               <p>Sie können jetzt die <a href="index.php">Startseite</a> öffnen.</p>
@@ -692,7 +692,7 @@ class ovp_backup extends ovp_source {
     public static $title = 'Backup';
     public static $priv_req = ovp_user::VIEW_ADMIN;
 
-    public function generate_header() {
+    protected function generate_header() {
         return
            '<script type="text/javascript">
                 var form;
@@ -706,7 +706,7 @@ class ovp_backup extends ovp_source {
             </script>';
     }
 
-    public function generate_view() {
+    protected function generate_view() {
         $link = ovp_http::get_poster_link(self::$type);
         $html =
            '<div class="ovp_container">
@@ -738,7 +738,7 @@ class ovp_navi_wizard extends ovp_source {
         $this->current = $current;
     }
 
-    public function generate_view() {
+    protected function generate_view() {
         $sources = array();
         $sources[] = get_class_vars('ovp_mysql');
         $sources[] = get_class_vars('ovp_settings');
@@ -772,7 +772,7 @@ class ovp_navi extends ovp_source {
         $this->user = $manager->get_current_user();
     }
 
-    public function generate_view() {
+    protected function generate_view() {
         $sources = array();
         $sources[] = get_class_vars('ovp_public');
         $sources[] = get_class_vars('ovp_print');
