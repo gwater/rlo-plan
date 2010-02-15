@@ -52,7 +52,7 @@ function remove_status(status, xhr) {
     var success = false;
     if (xhr) {
         success = xhr.status == 200;
-        status.textContent = success ? 'OK' : xhr.responseText;
+        status.textContent = xhr.responseText;
     } else {
         status.textContent = 'Konnte nicht gespeichert werden';
     }

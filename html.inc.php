@@ -480,9 +480,9 @@ class ovp_admin extends ovp_source {
             function fill_in_data() {
                 var users = [];';
         foreach ($this->users as $user) {
-            $role = $roles[$user->get_privilege()];
+            $role = $roles[$user->get('privilege')];
             $script .= '
-                users.push(newUser("'.$user->get_id().'", "'.$user->get_name().'", "***", "'.$role.'"));';
+                users.push(newUser("'.$user->get('id').'", "'.$user->get('name').'", "***", "'.$role.'"));';
         }
         $script .= '
                 insertUsers(users);
@@ -516,8 +516,7 @@ class ovp_password extends ovp_source {
 
 
     public function __construct() {
-        $manager = ovp_user_manager::get_singleton();
-        $this->user = $manager->get_current_user();
+        $this->user = ovp_user_manager::get_current_user();
     }
 
     protected function generate_header() {
@@ -535,7 +534,7 @@ class ovp_password extends ovp_source {
             <table id="ovp_table_'.self::$type.'">
               <tr>
                 <td>Name:</td>
-                <td>'.$this->user->get_name().'</td>
+                <td>'.$this->user->get('name').'</td>
               </tr>
               <tr>
                 <td>Altes Passwort:</td>
@@ -768,8 +767,7 @@ class ovp_navi extends ovp_source {
 
     public function __construct($current) {
         $this->current = $current;
-        $manager = ovp_user_manager::get_singleton();
-        $this->user = $manager->get_current_user();
+        $this->user = ovp_user_manager::get_current_user();
     }
 
     protected function generate_view() {

@@ -63,7 +63,7 @@ function delete_user(button) {
             remove(row);
         } else {
             show_buttons(button.previousSibling);
-            remove_status(status, this);
+            remove_status(status, xhr);
         }
     });
 }

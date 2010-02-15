@@ -23,8 +23,10 @@ require_once('interfaces.inc.php');
 require_once('db.inc.php');
 
 class ovp_user {
-    private $id;
     private $db;
+    private $attr;
+    private $attr_changed = false;
+
     // user privilege levels to authorize access to specific sources and posters
     const PRIV_LOGOUT = -2; // user is logged out
     const PRIV_LOGIN  = -1; // user is logged in
@@ -34,160 +36,129 @@ class ovp_user {
     const VIEW_AUTHOR =  3; // user may add, remove and edit entries
     const VIEW_ADMIN  =  4; // user may add, remove and edit accounts
 
-    private static $roles = array(self::VIEW_NONE   => 'none',
-                                  self::VIEW_PUBLIC => 'public',
-                                  self::VIEW_PRINT  => 'print',
-                                  self::VIEW_AUTHOR => 'author',
-                                  self::VIEW_ADMIN  => 'admin');
+    private static $roles = array(
+        self::VIEW_NONE   => 'none',
+        self::VIEW_PUBLIC => 'public',
+        self::VIEW_PRINT  => 'print',
+        self::VIEW_AUTHOR => 'author',
+        self::VIEW_ADMIN  => 'admin'
+    );
 
     public final static function get_roles() {
         return self::$roles;
     }
 
     public static function role_to_privilege($newrole) {
-        foreach (self::$roles as $priv => $role) {
-            if ($newrole == $role) {
-                return $priv;
-            }
-        }
-        return self::VIEW_NONE;
+        return array_search($newrole, self::$roles);
     }
 
     public function __construct($id = 'guest') {
         $this->db = ovp_db::get_singleton();
-        if ($id == 'guest') {
-            $this->id = $id;
-            return;
-        }
-        if ($this->db->query(
-           "SELECT `id`
+        if ($id == 'guest' || !($this->attr = $this->db->query(
+           "SELECT
+                `id`,
+                `name`,
+                `pwd_hash`,
+                `privilege`
             FROM `user`
             WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1"
-        )->num_rows != 1) {
-            // account deleted while user logged in
+        )->fetch_assoc())) {
             unset($_SESSION['uid']);
-            $this->id = 'guest';
-        } else {
-            $this->id = $id;
+            $config = ovp_config::get_singleton();
+            $this->attr = array(
+                'id' => 'guest',
+                'privilege' => $config->get('PRIV_DEFAULT')
+            );
         }
     }
 
-    public function get_id() {
-        return $this->id;
+    public function __destruct() {
+        if ($this->attr_changed) {
+            if (!$this->db->query(
+               "UPDATE `user`
+                SET
+                    `name`      = '".$this->db->protect($this->attr['name'     ])."',
+                    `pwd_hash`  = '".$this->db->protect($this->attr['pwd_hash' ])."',
+                    `privilege` = '".$this->db->protect($this->attr['privilege'])."'
+                WHERE `id`      = '".$this->db->protect($this->attr['id'       ])."'
+                LIMIT 1"
+            )) {
+                ovp_http::fail('Konto konnte nicht aktualisiert werden');
+            }
+        }
     }
 
-    public function get_privilege() {
-        $result = $this->db->query(
-           "SELECT `privilege`
-            FROM `user`
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        )->fetch_assoc();
-        return $result['privilege'];
+    public function get($attr_name) {
+        if ($attr_name == 'pwd_hash' && !ovp_user_manager::get_current_user()->is_authorized(self::VIEW_ADMIN)) {
+            ovp_http::fail('unberechtigter Zugriff');
+        }
+        return $this->_get($attr_name);
     }
 
-    public function get_name() {
-        $result = $this->db->query(
-           "SELECT `name`
-            FROM `user`
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        )->fetch_assoc();
-        return $result['name'];
-    }
-
-    public function get_pwd_hash() {
-        $user_manager = ovp_user_manager::get_singleton();
-        $current_user = $user_manager->get_current_user();
-        if ($current_user->is_authorized(self::VIEW_ADMIN)) {
-            return $this->_get_pwd_hash();
+    private function _get($attr_name) {
+        $attr_value = $this->attr[$attr_name];
+        if (isset($attr_value)) {
+            return $attr_value;
         }
         return false;
     }
 
-    private function _get_pwd_hash() {
-        $row = $this->db->query(
-           "SELECT `pwd_hash`
-            FROM `user`
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        )->fetch_assoc();
-        return $row['pwd_hash'];
+    public function set($key, $value) {
+        switch ($key) {
+        case 'name':
+            if (($id = ovp_user_manager::get_singleton()->name_exists($value)) !== false) {
+                if ($id === $this->attr['id']) {
+                    return true;
+                }
+                ovp_http::fail('Name ist schon vorhanden');
+            }
+            break;
+        case 'pwd':
+            $key = 'pwd_hash';
+            $value = hash('sha256', $value);
+            break;
+        case 'pwd_hash':
+            if (strlen($value) != 64) {
+                return false;
+            }
+            $value = $this->db->protect($value);
+            break;
+        case 'privilege':
+            if ($_SESSION['uid'] == $this->attr['id']) {
+                ovp_http::fail('Eigener Account darf nicht degradiert werden!');
+            }
+            if (!array_key_exists($value, self::$roles)) {
+                ovp_http::fail('Unbekannte Rolle "'.htmlspecialchars($value).'"');
+            }
+            break;
+        case 'role':
+            return (($priv = self::role_to_privilege($value)) !== false) && $this->set('privilege', $priv);
+        }
+        if (!isset($this->attr[$key])) {
+            ovp_http::fail('Unbekanntes Attribut "'.htmlspecialchars($key).'"');
+        }
+        $this->attr[$key] = $value;
+        $this->attr_changed = true;
+        return true;
     }
 
     public function check_password($password) {
-        return $this->_get_pwd_hash() == hash('sha256', $password);
-    }
-
-    public function set_privilege($newpriv) {
-        $manager = ovp_user_manager::get_singleton();
-        $admin = $manager->get_current_user();
-        if ($admin->get_id() == $this->id) {
-            ovp_http::fail('Eigener Account darf nicht degradiert werden');
-        }
-        foreach (self::$roles as $priv => $role) {
-            if ($newpriv == $priv) {
-                return $this->db->query(
-                   "UPDATE `user`
-                    SET `privilege` = '".$this->db->protect($newpriv)."'
-                    WHERE `id` = '".$this->id."'
-                    LIMIT 1"
-                );
-            }
-        }
-        return false;
-    }
-
-    public function set_role($role) {
-        $priv = self::role_to_privilege($role);
-        return $this->set_privilege($priv);
-    }
-
-    public function set_name($name) {
-        $user_manager = ovp_user_manager::get_singleton();
-        if (($id = $user_manager->name_exists($name)) !== false) {
-            if ($id === $this->id) {
-                return true;
-            }
-            ovp_http::fail('Name ist schon vorhanden');
-        }
-        return $this->db->query(
-           "UPDATE `user`
-            SET `name` = '".$this->db->protect($name)."'
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        );
-    }
-
-    public function set_password($password, $is_hash = false) {
-        if ($is_hash) {
-            $hash = $this->db->protect($password);
-        } else {
-            $hash = hash('sha256', $password);
-        }
-        return $this->db->query(
-           "UPDATE `user`
-            SET `pwd_hash` = '".$hash."'
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        );
+        return $this->attr['pwd_hash'] == hash('sha256', $password);
     }
 
     public function is_authorized($priv_req = 1) {
-        $logged_in = $this->id != 'guest';
+        $logged_in = $this->attr['id'] != 'guest';
         if ($priv_req == self::PRIV_LOGIN) {
             return $logged_in;
         } else if ($priv_req == self::PRIV_LOGOUT) {
             return !$logged_in;
         }
-        $config = ovp_config::get_singleton();
-        $priv_default = $config->get('PRIV_DEFAULT');
-        if ($priv_req <= $priv_default) {
+        if ($priv_req <= ovp_config::get_singleton()->get('PRIV_DEFAULT')) {
             return true;
         }
         if ($logged_in) {
-            if ($priv_req <= $this->get_privilege()) {
+            if ($priv_req <= $this->get('privilege')) {
                 return $this->session_ok();
             }
         }
@@ -203,13 +174,11 @@ class ovp_user {
             if ($_SERVER['QUERY_STRING'] != '') {
                 $continue .= '?'.$_SERVER['QUERY_STRING'];
             }
-            $link = 'index.php?source=login&continue='.urlencode($continue);
-            ovp_http::redirect($link); // does not return
+            ovp_http::redirect('index.php?source=login&continue='.urlencode($continue));
         }
         return true;
     }
 
-    // checks if the current user's ip address matches the one in the session
     public function session_ok() {
         return $_SERVER['REMOTE_ADDR'] == $_SESSION['ip'];
     }
@@ -218,6 +187,7 @@ class ovp_user {
 class ovp_user_manager {
     private static $singleton;
     private $db;
+    private static $current_user = false;
 
     private function __construct() {
         $this->db = ovp_db::get_singleton();
@@ -308,21 +278,12 @@ class ovp_user_manager {
                 '".$this->db->protect($privilege)."'
             )"
         );
-        $row = $this->db->query(
-           "SELECT `id`
-            FROM `user`
-            WHERE
-                `name`      = '".$this->db->protect($name)."' AND
-                `pwd_hash`  = '".$this->db->protect($hash)."' AND
-                `privilege` = '".$this->db->protect($privilege)."'
-            LIMIT 1"
-        )->fetch_assoc();
-        return $row['id'];
+        return $this->db->insert_id;
     }
 
     public function remove($id) {
         if ($_SESSION['uid'] == $id) {
-            ovp_http::fail('Eigener Account darf nicht gelöscht werden');
+            ovp_http::fail('Eigener Account darf nicht gelöscht werden!');
         }
         $this->db->query(
            "DELETE FROM `user`
@@ -355,11 +316,15 @@ class ovp_user_manager {
         session_destroy();
     }
 
-    public function get_current_user() {
-        if (isset($_SESSION['uid'])) {
-            return new ovp_user($_SESSION['uid']);
+    public static function get_current_user() {
+        if (self::$current_user === false) {
+            if (isset($_SESSION['uid'])) {
+                self::$current_user = new ovp_user($_SESSION['uid']);
+            } else {
+                self::$current_user = new ovp_user('guest');
+            }
         }
-        return new ovp_user('guest');
+        return self::$current_user;
     }
 }
 

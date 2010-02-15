@@ -61,27 +61,27 @@ class post_user extends poster {
                 case 'action':
                     break;
                 case 'name':
-                    $result = $user->set_name($value);
+                    $result = $user->set('name', $value);
                     break;
                 case 'password':
-                    $result = $user->set_password($value);
+                    $result = $user->set('pwd', $value);
                     break;
                 case 'role':
-                    $result = $user->set_role($value);
+                    $result = $user->set('role', $value);
                     break;
                 default:
                     // DoNothing (tm)
                 }
-                if (!($result)) {
+                if (!$result) {
                     ovp_http::fail('Änderung gescheitert');
                 }
             }
-            exit('updated');
+            exit('geändert');
         case 'delete':
             if (!isset($post['id'])) {
                 ovp_http::fail('ID fehlt');
             } else if ($this->manager->remove($post['id'])) {
-                exit('deleted');
+                exit('gelöscht');
             }
             ovp_http::fail('ID ungültig');
         default:
@@ -95,15 +95,14 @@ class post_password extends poster {
     private $user;
 
     public function __construct() {
-        $manager = ovp_user_manager::get_singleton();
-        $this->user = $manager->get_current_user();
+        $this->user = ovp_user_manager::get_current_user();
     }
 
     public function evaluate($post) {
         if (isset($post['newpwd']) && isset($post['oldpwd'])) {
             if ($this->user->check_password($post['oldpwd'])) {
-                if ($this->user->set_password($post['newpwd'])) {
-                    exit('updated');
+                if ($this->user->set('pwd', $post['newpwd'])) {
+                    exit('geändert');
                 } else {
                     ovp_http::fail('Passwort ändern gescheitert');
                 }
@@ -182,7 +181,7 @@ class post_entry extends poster {
             }
             $entry = new ovp_entry($post['id']);
             if ($entry->set_values($post)) {
-                exit('updated');
+                exit('geändert');
             }
             ovp_http::fail('Änderung gescheitert');
         case 'delete':

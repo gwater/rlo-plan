@@ -65,8 +65,7 @@ default:
 }
 if (isset($poster)) {
     $poster_vars = get_class_vars(get_class($poster));
-    $manager = ovp_user_manager::get_singleton();
-    $user = $manager->get_current_user();
+    $user = ovp_user_manager::get_current_user();
     if (!$user->is_authorized($poster_vars['priv_req'])) {
         ovp_http::fail('not logged in');
     }
@@ -120,8 +119,7 @@ default:
 }
 
 $source_vars = get_class_vars(get_class($source));
-$manager = ovp_user_manager::get_singleton();
-$user = $manager->get_current_user();
+$user = ovp_user_manager::get_current_user();
 $user->authorize($source_vars['priv_req']);
 $navi = new ovp_navi($source_vars['type']);
 $page = new ovp_page($source, $navi);

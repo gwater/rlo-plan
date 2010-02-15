@@ -10,8 +10,7 @@ header('Content-Type: application/xml; charset="utf-8"');
 header('Cache-Control: no-cache, must-revalidate');
 header('Expires: '.date('D, d M Y H:i:s T', 0));
 
-$user_manager = ovp_user_manager::get_singleton();
-$current_user = $user_manager->get_current_user();
+$current_user = ovp_user_manager::get_current_user();
 $current_user->authorize(ovp_user::VIEW_ADMIN);
 
 $DOMDocument = new DOMDocument('1.0', 'UTF8');
@@ -22,14 +21,14 @@ $DOMBackup->setAttribute('created', date('Y-m-d H:i:s P'));
 
 $DOMUsers = $DOMDocument->createElement('users');
 $DOMBackup->appendChild($DOMUsers);
+$user_manager = ovp_user_manager::get_singleton();
 $users = $user_manager->get_all_users();
 foreach ($users as $user) {
     $DOMUser = $DOMDocument->createElement('user');
     $DOMUsers->appendChild($DOMUser);
-    $DOMUser->setAttribute('id',        $user->get_id());
-    $DOMUser->setAttribute('name',      $user->get_name());
-    $DOMUser->setAttribute('pwd_hash',  $user->get_pwd_hash());
-    $DOMUser->setAttribute('privilege', $user->get_privilege());
+    foreach (array('id', 'name', 'pwd_hash', 'privilege') as $attr) {
+        $DOMUser->setAttribute($attr, $user->get($attr));
+    }
 }
 
 $DOMEntries = $DOMDocument->createElement('entries');
