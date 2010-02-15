@@ -22,41 +22,35 @@
 require_once('config.inc.php');
 
 class ovp_zipper {
-    const filename = 'source.zip';
+    const FILENAME = 'source.zip';
 
     public static function pack_dir() {
-        $dir = getcwd();
-        $files = self::list_files($dir);
-
         $zip = new ZipArchive;
-        if ($zip->open(self::filename, ZipArchive::OVERWRITE) !== true) {
+        if ($zip->open(self::FILENAME, ZipArchive::OVERWRITE) !== true) {
             return false;
         }
+        $files = self::list_files(getcwd());
         foreach ($files as $file) {
-            if ($file != ovp_config::FILENAME) {
-                $zip->addFile($file);
-            }
+            $zip->addFile($file);
         }
         return $zip->close();
     }
 
     private static function list_files($dir) {
         $handle = opendir($dir);
-
         $result = array();
+        $exclude = array(self::FILENAME, ovp_config::FILENAME);
         while (false !== ($file = readdir($handle))) {
-            if (!is_dir($file) && $file != self::filename) {
+            if (!is_dir($file) && (array_search($file, $exclude) === false)) {
                 $result[] = $file;
             }
         }
         closedir($handle);
-
         return $result;
     }
 }
 
 class ovp_http {
-    // TODO: add $code as parameter
     public static function fail($msg) {
         header('HTTP/1.0 400 Bad Request');
         exit($msg);
