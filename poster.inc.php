@@ -43,7 +43,8 @@ class post_user extends poster {
             if (isset($post['name']) && isset($post['password']) && isset($post['role'])) {
                 $id = $this->manager->add($post['name'], $post['password'], $post['role']);
                 if ($id) {
-                    exit($id);
+                    echo($id);
+                    exit;
                 } else {
                     ovp_http::fail('Hinzufügen gescheitert');
                 }
@@ -167,7 +168,8 @@ class post_entry extends poster {
                 ovp_http::fail('Daten unvollständig');
             }
             if ($id = $this->manager->add($post)) {
-                exit($id);
+                echo($id);
+                exit;
             }
             ovp_http::fail('Hinzufügen gescheitert');
         case 'update':
@@ -189,7 +191,7 @@ class post_entry extends poster {
                 ovp_http::fail('ID fehlt');
             }
             if ($this->manager->remove($post['id'])) {
-                exit('deleted');
+                exit('gelöscht');
             }
             ovp_http::fail('ID ungültig');
         default:
