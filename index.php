@@ -67,7 +67,7 @@ if (isset($poster)) {
     $poster_vars = get_class_vars(get_class($poster));
     $user = ovp_user_manager::get_current_user();
     if (!$user->is_authorized($poster_vars['priv_req'])) {
-        ovp_http::fail('not logged in');
+        ovp_http::fail('Sie sind nicht eingeloggt.');
     }
     exit($poster->evaluate($_POST));
 }

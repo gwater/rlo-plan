@@ -148,7 +148,7 @@ class ovp_user {
     }
 
     public function is_authorized($priv_req = 1) {
-        $logged_in = $this->attr['id'] != 'guest';
+        $logged_in = $this->attr['id'] != 'guest' && $this->session_ok();
         if ($priv_req == self::PRIV_LOGIN) {
             return $logged_in;
         } else if ($priv_req == self::PRIV_LOGOUT) {
@@ -157,12 +157,7 @@ class ovp_user {
         if ($priv_req <= ovp_config::get_singleton()->get('PRIV_DEFAULT')) {
             return true;
         }
-        if ($logged_in) {
-            if ($priv_req <= $this->get('privilege')) {
-                return $this->session_ok();
-            }
-        }
-        return false;
+        return $logged_in && ($priv_req <= $this->get('privilege'));
     }
 
     public function authorize($priv_req = 1) {
@@ -171,7 +166,7 @@ class ovp_user {
                 ovp_http::redirect(basename($_SERVER['SCRIPT_NAME']));
             }
             $continue = basename($_SERVER['SCRIPT_NAME']);
-            if ($_SERVER['QUERY_STRING'] != '') {
+            if (!empty($_SERVER['QUERY_STRING'])) {
                 $continue .= '?'.$_SERVER['QUERY_STRING'];
             }
             ovp_http::redirect('index.php?source=login&continue='.urlencode($continue));
@@ -179,15 +174,18 @@ class ovp_user {
         return true;
     }
 
-    public function session_ok() {
-        return $_SERVER['REMOTE_ADDR'] == $_SESSION['ip'];
+    private function session_ok() {
+        if (!($ok = $_SESSION['ip'] == $_SERVER['REMOTE_ADDR'])) {
+            ovp_user_manager::get_singleton()->logout();
+        }
+        return $ok;
     }
 }
 
 class ovp_user_manager {
     private static $singleton;
-    private $db;
     private static $current_user = false;
+    private $db;
 
     private function __construct() {
         $this->db = ovp_db::get_singleton();
