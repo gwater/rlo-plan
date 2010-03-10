@@ -22,7 +22,7 @@
 require_once('user.inc.php');
 
 class ovp_config {
-    const FILENAME = 'config.xml.php';
+    const FILENAME = 'config.xml';
     private static $singleton;
     private $root;
     private $document;
@@ -32,14 +32,14 @@ class ovp_config {
             self::init();
         }
         $document = new DOMDocument('1.0', 'UTF8');
-        $document->loadXML(substr(file_get_contents(self::FILENAME), 14));
+        $document->load(self::FILENAME);
         $this->root = $document->getElementById('root');
         $this->document = $document;
     }
 
     public function __destruct() {
-        $file = dirname($_SERVER['SCRIPT_FILENAME']).'/'.self::FILENAME;
-        file_put_contents($file, '<?php exit; ?>'.$this->document->saveXML());
+        $dir = dirname($_SERVER['SCRIPT_FILENAME']);
+        $this->document->save($dir.'/'.self::FILENAME);
     }
 
     public static function get_singleton() {
@@ -60,7 +60,7 @@ class ovp_config {
         $root->setAttribute('PRIV_DEFAULT', ovp_user::VIEW_NONE);
         $root->setAttribute('DELETE_OLDER_THAN', -1);
         $root->setAttribute('DB_HOST', 'localhost');
-        file_put_contents(self::FILENAME, '<?php exit; ?>'.$document->saveXML());
+        $document->save(self::FILENAME);
     }
 
     public function set($attribute, $value) {
