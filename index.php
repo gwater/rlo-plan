@@ -21,8 +21,8 @@
 
 require_once('config.inc.php');
 require_once('db.inc.php');
-require_once('html.inc.php');
-require_once('poster.inc.php');
+require_once('output.inc.php');
+require_once('post.inc.php');
 require_once('entry.inc.php');
 
 $config = ovp_config::get_singleton();
