@@ -173,13 +173,8 @@ class post_entry extends poster {
             }
             ovp_http::fail('Hinzufügen gescheitert');
         case 'update':
-            if (!(isset($post['id'])    &&
-                isset($post['date'])    && isset($post['teacher'])  &&
-                isset($post['time'])    && isset($post['course'])   &&
-                isset($post['subject']) && isset($post['duration']) &&
-                isset($post['sub'])     && isset($post['change'])   &&
-                isset($post['oldroom']) && isset($post['newroom']))) {
-                ovp_http::fail('Daten unvollständig');
+            if (!isset($post['id'])) {
+                ovp_http::fail('ID fehlt');
             }
             $entry = new ovp_entry($post['id']);
             if ($entry->set_values($post)) {

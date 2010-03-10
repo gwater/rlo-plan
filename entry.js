@@ -90,11 +90,11 @@ function save_entry(button) {
         }
         if (new_value != cell.lastChild.textContent) {
             cell.textContent = new_value;
+            msg += '&' + column_names[i] + '=' + new_value;
             contentHasChanged = true;
         } else {
             cell.textContent = cell.lastChild.textContent;
         }
-        msg += '&' + column_names[i] + '=' + cell.textContent;
     }
     if (contentHasChanged) {
         msg = 'action=update&id=' + row.id.substr(5) + msg;
