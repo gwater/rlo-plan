@@ -352,7 +352,7 @@ function newTeacher(name, entries) {
     header.innerHTML = name;
     header.onclick = function() {
         header.style.display = 'none';
-        var textbox = this.nextSibling;
+        var textbox = header.nextSibling;
         textbox.style.display = 'block';
         textbox.focus();
         textbox.select();
@@ -371,7 +371,7 @@ function newTeacher(name, entries) {
         } else if (e) {
             key = e.which;
         }
-        if (key == 9 && this['last_key'] == 0) {
+        if (key == 9 && textbox['last_key'] == 0) {
             textbox['create_entry_on_first_blur'] = true;
         }
         textbox['last_key'] = key - 9;
@@ -382,16 +382,16 @@ function newTeacher(name, entries) {
     }
     textbox.onblur = function() {
         textbox.style.display = 'none';
-        var header = this.previousSibling;
-        var table = this.nextSibling;
-        if (this.value != header.textContent && this.value != '') {
-            header.textContent = this.value;
+        var header = textbox.previousSibling;
+        var table = textbox.nextSibling;
+        if (textbox.value != header.textContent && textbox.value != '') {
+            header.textContent = textbox.value;
             if (table.childNodes.length > 1) {
-                save_teacher(this.parentNode);
+                save_teacher(textbox.parentNode);
             }
         }
-        if (table.childNodes.length == 1 && this['create_entry_on_first_blur']) {
-            this.parentNode.lastChild.onclick();
+        if (table.childNodes.length == 1 && textbox['create_entry_on_first_blur']) {
+            textbox.parentNode.lastChild.onclick();
         }
         header.style.display = 'table';
     }
@@ -424,7 +424,7 @@ function newDay(title, teachers) {
     header.innerHTML = title;
     header.onclick = function() {
         header.style.display = 'none';
-        var textbox = this.nextSibling;
+        var textbox = header.nextSibling;
         textbox.style.display = 'block';
         textbox.focus();
         textbox.select();
@@ -443,7 +443,7 @@ function newDay(title, teachers) {
         } else if (e) {
             key = e.which;
         }
-        if (key == 9 && this['last_key'] == 0) {
+        if (key == 9 && textbox['last_key'] == 0) {
             textbox['create_teacher_on_first_blur'] = true;
         }
         textbox['last_key'] = key - 9;
@@ -453,26 +453,26 @@ function newDay(title, teachers) {
         textbox['last_key'] = 0;
     }
     textbox.onblur = function() {
-        var header = this.previousSibling;
-        if (this.value != '') {
-            var new_date = parse_date(this.value);
+        var header = textbox.previousSibling;
+        if (textbox.value != '') {
+            var new_date = parse_date(textbox.value);
             if (new_date) {
                 var new_header = format_date_client(new_date);
                 if (header.textContent != new_header) {
                     header.textContent = new_header;
-                    var teachers = this.parentNode.getElementsByTagName('section');
+                    var teachers = textbox.parentNode.getElementsByTagName('section');
                     for (var i = 0; i < teachers.length; i++) {
                         save_teacher(teachers[i]);
                     }
                 }
             } else {
-                header.innerHTML = '<span class="ovp_error">' + this.value + '</span>';
+                header.innerHTML = '<span class="ovp_error">' + textbox.value + '</span>';
             }
         }
         textbox.style.display = 'none';
         header.style.display = 'table';
-        if (this.parentNode.childNodes.length == 3 && this['create_teacher_on_first_blur']) {
-            this.parentNode.lastChild.onclick();
+        if (textbox.parentNode.childNodes.length == 3 && textbox['create_teacher_on_first_blur']) {
+            textbox.parentNode.lastChild.onclick();
         }
     }
     day.appendChild(textbox);
