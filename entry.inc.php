@@ -24,7 +24,8 @@ require_once('interfaces.inc.php');
 
 class ovp_entry {
     private $db;
-    private $id;
+    private $attr;
+    private $attr_changed = false;
     private static $attributes = array('date', 'teacher', 'time', 'course',
                                        'subject', 'duration', 'sub',
                                        'change', 'oldroom', 'newroom');
@@ -40,24 +41,8 @@ class ovp_entry {
     public function __construct($id) {
         $this->db = ovp_db::get_singleton();
         $result = $this->db->query(
-           "SELECT `id`
-            FROM `entry`
-            WHERE `id` = '".$this->db->protect($id)."'
-            LIMIT 1"
-        );
-        if ($result->num_rows != 1) {
-            ovp_http::fail('ID ungültig');
-        }
-        $this->id = $id;
-    }
-
-    public function get_id() {
-        return $this->id;
-    }
-
-    public function get_values() {
-        $row = $this->db->query(
            "SELECT
+                `id`,
                 `date`,
                 `teacher`,
                 `time`,
@@ -69,65 +54,74 @@ class ovp_entry {
                 `oldroom`,
                 `newroom`
             FROM `entry`
-            WHERE `id` = '".$this->id."'
+            WHERE `id` = '".$this->db->protect($id)."'
             LIMIT 1"
-        )->fetch_assoc();
-        return $row;
+        );
+        if ($result->num_rows != 1) {
+            ovp_http::fail('ID ungültig');
+        }
+        $this->attr = $result->fetch_assoc();
+    }
+
+    public function __destruct() {
+        if ($this->attr_changed) {
+            if (!$this->db->query(
+               "UPDATE `entry`
+                SET
+                    `date`     = '".$this->db->protect($this->attr['date'    ])."',
+                    `teacher`  = '".$this->db->protect($this->attr['teacher' ])."',
+                    `time`     = '".$this->db->protect($this->attr['time'    ])."',
+                    `course`   = '".$this->db->protect($this->attr['course'  ])."',
+                    `subject`  = '".$this->db->protect($this->attr['subject' ])."',
+                    `duration` = '".$this->db->protect($this->attr['duration'])."',
+                    `sub`      = '".$this->db->protect($this->attr['sub'     ])."',
+                    `change`   = '".$this->db->protect($this->attr['change'  ])."',
+                    `oldroom`  = '".$this->db->protect($this->attr['oldroom' ])."',
+                    `newroom`  = '".$this->db->protect($this->attr['newroom' ])."'
+                WHERE `id`     = '".$this->db->protect($this->attr['id'      ])."'
+                LIMIT 1"
+            )) {
+                ovp_http::fail('Eintrag konnte nicht aktualisiert werden');
+            }
+        }
+    }
+
+    public function get($attr_key) {
+        $attr_value = $this->attr[$attr_key];
+        return isset($attr_value) ? $attr_value : false;
+    }
+
+    public function set($attr_key, $attr_value) {
+        // TODO: verify values
+        $this->attr[$attr_key] = $attr_value;
+        $this->attr_changed = true;
+        return true;
+    }
+
+    public function get_values() {
+        return $this->attr;
     }
 
     public function set_values($values) {
         $affected = false;
         foreach ($values as $attribute => $value) {
-            if (in_array($attribute, self::$attributes)) {
-                if ($this->set_value($attribute, $value)) {
-                    $affected = true;
-                }
-            } else {
-                // DoNothing (tm)
+            if (in_array($attribute, self::$attributes) && $this->set($attribute, $value)) {
+                $affected = true;
             }
         }
         return $affected;
     }
 
-    private function get_value($attribute) {
-        $row = $this->db->query(
-           "SELECT `".$this->db->protect($attribute)."`
-            FROM `entry`
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        )->fetch_assoc();
-        return $row[$attribute];
-    }
-
-    private function set_value($attribute, $value) {
-        if ($this->get_value($attribute) == $this->db->protect($value)) {
-            return true;
-        }
-        $this->db->query(
-           "UPDATE `entry`
-            SET `".$this->db->protect($attribute)."` = ".$this->db->prepare($value)."
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
-        );
-        return $this->db->affected_rows == 1;
-    }
-
     public function get_date() {
         $row = $this->db->query(
-           "SELECT DATE_FORMAT(`date`, '%W, %d.%m.%Y') AS 'date'
-            FROM `entry`
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
+           "SELECT DATE_FORMAT('".$this->attr['date']."', '%W, %d.%m.%Y') AS 'date'"
         )->fetch_assoc();
         return $row['date'];
     }
 
     public function get_time() {
         $row = $this->db->query(
-           "SELECT TIME_FORMAT(`time`, '%H:%i') AS 'time'
-            FROM `entry`
-            WHERE `id` = '".$this->id."'
-            LIMIT 1"
+           "SELECT TIME_FORMAT('".$this->attr['time']."', '%H:%i') AS 'time'"
         )->fetch_assoc();
         return $row['time'];
     }

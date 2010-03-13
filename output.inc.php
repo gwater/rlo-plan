@@ -355,15 +355,15 @@ class ovp_author extends ovp_source {
                         $values = $entry->get_values();
                         $script .= '
                     entries.push(newEntry('.
-                            $entry->get_id().   ', ["'.
+                            $values['id'      ].', ["'.
                             $entry->get_time(). '", "'.
-                            $values['course'].  '", "'.
-                            $values['subject']. '", "'.
+                            $values['course'  ].'", "'.
+                            $values['subject' ].'", "'.
                             $values['duration'].'", "'.
-                            $values['sub'].     '", "'.
-                            $values['change'].  '", "'.
-                            $values['oldroom']. '", "'.
-                            $values['newroom']. '"]));';
+                            $values['sub'     ].'", "'.
+                            $values['change'  ].'", "'.
+                            $values['oldroom' ].'", "'.
+                            $values['newroom' ].'"]));';
                     }
                     $script .= '
                     teachers.push(newTeacher("'.$teacher.'", entries));';

@@ -96,12 +96,9 @@ class ovp_user {
         return $this->_get($attr_name);
     }
 
-    private function _get($attr_name) {
-        $attr_value = $this->attr[$attr_name];
-        if (isset($attr_value)) {
-            return $attr_value;
-        }
-        return false;
+    private function _get($attr_key) {
+        $attr_value = $this->attr[$attr_key];
+        return isset($attr_value) ? $attr_value : false;
     }
 
     public function set($key, $value) {
